@@ -3,7 +3,7 @@ require('./css/index.scss');
 function component() {
     const element = document.createElement('div');
     
-    element.innerHTML = "Hello Webpack"; //_.join(['Hello', 'webpack'], ' ');
+    element.innerHTML = "Hello World";
     
     return element;
 }
