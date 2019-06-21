@@ -25,33 +25,51 @@ require('./css/index.scss');
 // Start();
 
 class FortressDesigner extends Component {
-    private timer: any;
+    private pixiApp: PIXI.Application;
     //PIXI.utils.skipHello();
     //const app = new PIXI.Application();
     //document.getElementById("canvas").appendChild(app.view);
 
     constructor() {
         super();
-        // set initial time:
-        this.setState({ time: Date.now() });
+        PIXI.utils.skipHello();
+        //this.setState({ time: Date.now() });
     }
 
     componentDidMount() {
-        // update time every second
-        this.timer = setInterval(() => {
-            this.setState({ time: Date.now() });
-        }, 1000);
+        let canvasTarget = document.getElementById("canvas");
+        this.pixiApp = new PIXI.Application({
+            width: canvasTarget.clientWidth,
+            height: canvasTarget.scrollHeight,
+            //backgroundColor: 0x1099bb, 
+            resolution: window.devicePixelRatio || 1
+        });
+        
+        canvasTarget.appendChild(this.pixiApp.view);
+        
+        const container = new PIXI.Container();
+        container.x = this.pixiApp.screen.width / 2;
+        container.y = this.pixiApp.screen.height / 2;
+
+        this.pixiApp.stage.addChild(container);
+        // this.pixiApp.ticker.add((delta) => {
+        //     // use delta to create frame-independent transform
+        //     //container.rotation -= 0.01 * delta;
+        // });
     }
 
     componentWillUnmount() {
         // stop when not renderable
-        clearInterval(this.timer);
+        // clearInterval(this.timer);
     }
 
     render(props, state) {
-        let time = new Date(state.time).toLocaleTimeString();
-        return <span>{ time }</span>;
+        // let time = new Date(state.time).toLocaleTimeString();
+        // return <span>{ time }</span>;
+        return ( 
+            <div>Menu Will Go Here</div>
+        );
     }
 }
 
-render(<FortressDesigner />, document.getElementById("canvas"));
+render(<FortressDesigner />, document.getElementById("menu"));
