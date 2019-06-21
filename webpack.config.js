@@ -1,24 +1,20 @@
 const path = require('path');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
 const MiniCssExtractPlugin = require("mini-css-extract-plugin");
+const Webpack = require('webpack');
 
 module.exports = (env, argv) => {
     const isDev = argv.mode !== 'production';
-
+    
     return {
-        entry: './src/index.ts',
-        resolve: {
-            extensions: ['.ts', '.tsx', '.js']
-        },
         devtool: isDev ? "source-map" : false,
-        output: {
-            filename: 'main.js',
-            path: path.resolve(__dirname, 'dist')
-        },
+        entry: './src/index.tsx',
+        mode: isDev ? 'development' : 'production',
         module: {
             rules: [
                 {
                     test: /\.s(a|c)ss$/,
+                    include: path.resolve(__dirname, 'src'),
                     use: [
                         MiniCssExtractPlugin.loader,
                         {
@@ -38,11 +34,43 @@ module.exports = (env, argv) => {
                         }
                     ]
                 },
-                { 
-                    test: /\.tsx?$/, 
-                    loader: 'awesome-typescript-loader'
-                }
+                {
+                    test: /\.tsx$/,
+                    include: path.resolve(__dirname, 'src'),
+                    use: [
+                        { 
+                            loader: 'babel-loader', 
+                            options: 
+                            {
+                                presets: ['@babel/preset-env'],
+                                plugins: ["@babel/plugin-proposal-class-properties"]
+                                //plugins: isDev ? ["transform-react-jsx-source"] : []
+                            }
+                        },
+                        'awesome-typescript-loader',
+                        //'babel-loader'
+                    ]
+                },
             ]
+        },
+        optimization: {
+            splitChunks: {
+                cacheGroups: {
+                    styles: {
+                        name: 'styles',
+                        test: /\.css$/,
+                        chunks: 'all',
+                        enforce: true,
+                    },
+                },
+            },
+        },
+        output: {
+            filename: 'main.js',
+            path: path.resolve(__dirname, 'dist')
+        },
+        performance: {
+            hints: false
         },
         plugins: [
             new HtmlWebpackPlugin({
@@ -52,6 +80,8 @@ module.exports = (env, argv) => {
                 filename: 'app.css'
             })
         ],
-        mode: isDev ? 'development' : 'production'
+        resolve: {
+            extensions: ['.ts', '.tsx', '.js']
+        }
     };
 };

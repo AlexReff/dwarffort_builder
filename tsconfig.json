@@ -3,6 +3,7 @@
         "outDir": "./dist",
         "sourceMap": true,
         "noImplicitAny": false,
+        "experimentalDecorators": true,
         "module": "commonjs",
         "target": "es6",
         "lib": [
@@ -14,7 +15,8 @@
         "removeComments": true,
         "allowSyntheticDefaultImports": false,
         "jsx": "react",
-        "baseUrl": "./"
+        "baseUrl": "./",
+        "jsxFactory": "h"
     },
     "exclude": ["node_modules", "dist"]
 }

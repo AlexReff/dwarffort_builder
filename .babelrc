@@ -1,0 +1,11 @@
+{
+    "presets": [
+        "@babel/preset-env",
+        "@babel/react",
+        //"es2015"
+    ],
+    "plugins": [
+        "@babel/plugin-syntax-jsx",
+        ["@babel/plugin-transform-react-jsx", { "pragma":"h" }]
+    ]
+}
