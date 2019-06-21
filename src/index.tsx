@@ -26,9 +26,11 @@ require('./css/index.scss');
 
 class FortressDesigner extends Component {
     private pixiApp: PIXI.Application;
-    //PIXI.utils.skipHello();
-    //const app = new PIXI.Application();
-    //document.getElementById("canvas").appendChild(app.view);
+    private tileMap: PIXI.Graphics;
+
+    private tileSize: number = 32;
+    private grid_offset_x: number = 1;
+    private grid_offset_y: number = 1;
 
     constructor() {
         super();
@@ -52,9 +54,21 @@ class FortressDesigner extends Component {
         container.y = this.pixiApp.screen.height / 2;
 
         this.pixiApp.stage.addChild(container);
+
+        this.tileMap = new PIXI.Graphics();
+        this.tileMap.lineStyle(2, 0xFFFFFF, 1);
+        this.pixiApp.stage.addChild(this.tileMap);
+
+        let xLimit = (canvasTarget.clientWidth / this.tileSize) + 1;
+        let yLimit = (canvasTarget.clientHeight / this.tileSize) + 1;
+        for (let x = 0; x < xLimit; x++) {
+            for (let y = 0; y < yLimit; y++) {
+                this.tileMap.drawRect(this.grid_offset_x + this.tileSize * x, this.grid_offset_y + this.tileSize * y, this.tileSize, this.tileSize);
+            }
+        }
+
         // this.pixiApp.ticker.add((delta) => {
-        //     // use delta to create frame-independent transform
-        //     //container.rotation -= 0.01 * delta;
+        //     //
         // });
     }
 

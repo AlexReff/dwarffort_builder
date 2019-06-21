@@ -1,0 +1,39 @@
+#header {
+    padding: 0 16px;
+    background: $frame-border-color;
+
+    display: grid;
+    grid-template-columns: 200px 1fr 200px;
+
+    .left, .right {
+        margin: auto 0; //vertical centering
+        font-size: 14px;
+    }
+
+    .center {
+        text-align: center;
+        margin: auto; //horizontal+vertical centering
+    }
+
+    .right {
+        text-align: right;
+        color: #CCC;
+    }
+
+    a {
+        color: #FFF;
+        background: #3888AA;
+        text-decoration: none !important;
+        padding: 5px 0;
+
+        &:hover, &:focus, &:active, &:visited {
+            color: #FFF;
+        }
+    }
+
+    .title {
+        background: #BBB1A7;
+        padding: 4px 10px;
+        color: #000;
+    }
+}
