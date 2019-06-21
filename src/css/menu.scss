@@ -1,4 +1,9 @@
 #menu {
-    border-left: 4px solid $frame-border-color;
+    border-left: 8px solid $frame-border-color;
     padding: 10px;
+    font-size: 12px;
+
+    .menu-item {
+        margin-bottom: 2px;
+    }
 }

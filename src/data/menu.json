@@ -1,0 +1,19 @@
+{
+    "items": [
+        {
+            "text": "Building",
+            "key": "b",
+            "id": "building"
+        },
+        {
+            "text": "Designations",
+            "key": "d",
+            "id": "designate"
+        },
+        {
+            "text": "Stockpiles",
+            "key": "p",
+            "id": "stockpile"
+        }
+    ]
+}

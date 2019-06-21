@@ -1,9 +1,10 @@
 $frame-border-color: #877D73;
 $header-height: 24px;
+$menu-width: 245px;
 
 @font-face {
     font-family: px437;
-    src: url('/assets/Px437_IBM_BIOS.ttf');
+    src: url('./assets/Px437_IBM_BIOS.ttf');
 }
 
 body {
@@ -23,7 +24,7 @@ body {
     //"canvas canvas menu"
     //"foot foot foot";
     
-    grid-template-columns: 1fr 250px;
+    grid-template-columns: 1fr $menu-width;
     grid-template-rows: $header-height 1fr;
     
     #header {

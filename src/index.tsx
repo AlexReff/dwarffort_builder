@@ -1,28 +1,27 @@
 /// <reference path="../node_modules/pixi.js/pixi.js.d.ts" />
 import { h, render, Component } from 'preact';
+import { items } from "./data/menu.json";
 
 require('./css/index.scss');
 
-// function Start() {
-//     PIXI.utils.skipHello();
-//     const app = new PIXI.Application();
-//     document.getElementById("canvas").appendChild(app.view);
-//     /*
-//         Draw a 2d grid on the canvas
-//         Add Mouse support for hover/click on tiles
-//         Add drag support to tilegrid
-//         Add sidebar with build options (+hotkeys?)
-//         Ability to click on sidebar item and modify cursor hover/click behavior
-//         Add drag behavior option - rectangular select or paint (select rectangular area to modify/move/clear or 'paint' - select every item the cursor directly moves over)
-//         Add arrow key support + keyboard tile cursor
-//         Add stockpiles, workshops, walls, multiple z-levels
+/*
+    --Draw a 2d grid on the canvas
+    Add Mouse support for hover/click on tiles
+    Add drag support to tilegrid
+    Add sidebar with build options (+hotkeys?)
+    Ability to click on sidebar item and modify cursor hover/click behavior
+    Add drag behavior option - rectangular select or paint (select rectangular area to modify/move/clear or 'paint' - select every item the cursor directly moves over)
+    Add arrow key support + keyboard tile cursor
+    Add stockpiles, workshops, walls, multiple z-levels
 
-        
-//         Add google analytics + simple text ads before public release?
-//     */
-// }
-
-// Start();
+    Add menu state tracking + submenus
+    Add virtual grid object mapping data structure
+    Add arrow key support to shift everything on-screen
+    Add browser resize detection + canvas resizing
+    
+    '?: Help' Menu?
+    Add google analytics + simple text ads before public release?
+*/
 
 class FortressDesigner extends Component {
     private pixiApp: PIXI.Application;
@@ -81,7 +80,15 @@ class FortressDesigner extends Component {
         // let time = new Date(state.time).toLocaleTimeString();
         // return <span>{ time }</span>;
         return ( 
-            <div>Menu Will Go Here</div>
+            <div>
+                {items.map((item) => {
+                    return (
+                        <div class="menu-item">
+                            {item.key}: {item.text}
+                        </div>
+                    );
+                })}
+            </div>
         );
     }
 }
