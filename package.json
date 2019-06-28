@@ -4,10 +4,14 @@
     "description": "",
     "private": true,
     "dependencies": {
+        "@types/gsap": "^1.20.2",
+        "gsap": "^2.1.3",
+        "lodash": "^4.17.11",
         "pixi.js": "^5.0.4",
         "preact": "^8.4.2"
     },
     "devDependencies": {
+        "@babel/cli": "^7.4.4",
         "@babel/core": "^7.4.5",
         "@babel/plugin-proposal-class-properties": "^7.4.4",
         "@babel/plugin-syntax-jsx": "^7.2.0",
@@ -16,6 +20,7 @@
         "@babel/preset-react": "^7.0.0",
         "awesome-typescript-loader": "^5.2.1",
         "babel-loader": "^8.0.6",
+        "babel-plugin-lodash": "^3.3.4",
         "copy-webpack-plugin": "^5.0.3",
         "css-loader": "^3.0.0",
         "html-webpack-plugin": "^3.2.0",

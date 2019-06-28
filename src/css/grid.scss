@@ -1,0 +1,64 @@
+$tilesheetUrl: "/assets/Phoebus_16x16.png";
+$tilesheetResolution: 16; //length dimension of each tile in the image file
+$tileSize: 16; //size of tile to display on our front end
+$tileBgSize: #{$tileSize * 16}px; //background size of the image
+
+#grid {
+    overflow: hidden;
+    cursor: grab;
+    user-select: none;
+
+    &:active {
+        cursor: grabbing;
+    }
+
+    #inner-grid {
+        position: relative;
+        width: 100%;
+        height: 100%;
+    }
+
+    .grid-tile {
+        position: absolute;
+        display: inline-block;
+        width: #{$tileSize}px;
+        height: #{$tileSize}px;
+        background-size: $tileBgSize $tileBgSize;
+        background-color: #000;
+        background-image: url($tilesheetUrl);
+
+        @for $i from 1 through 256 {
+            &.p-#{$i} {
+                background-position-x: -#{(($i - 1) % $tilesheetResolution * $tilesheetResolution) * $tileSize / $tilesheetResolution}px;
+                background-position-y: #{(floor(($i - 1) / $tilesheetResolution) * $tilesheetResolution) * $tileSize / $tilesheetResolution}px;
+            }
+        }
+
+        &.concrete {
+            background-color: #7E7974;
+        }
+    }
+
+    &.two {
+        .inner-grid {
+            transform: scale(2);
+        }
+        // .grid-tile {
+        //     width: #{$tileSize * 2}px;
+        //     height: #{$tileSize * 2}px;
+            
+        //     @for $i from 1 through 256 {
+        //         &.p-#{$i} {
+        //             background-position-x: -#{(($i - 1) % $tilesheetResolution * $tilesheetResolution) * $tileSize * 2 / $tilesheetResolution}px;
+        //             background-position-y: #{(floor(($i - 1) / $tilesheetResolution) * $tilesheetResolution) * $tileSize * 2 / $tilesheetResolution}px;
+        //         }
+        //     }
+        // }
+    }
+
+    &.three {
+        .inner-grid {
+            transform: scale(3);
+        }
+    }
+}

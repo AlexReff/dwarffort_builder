@@ -1,5 +1,5 @@
 $frame-border-color: #877D73;
-$header-height: 24px;
+$header-height: 32px;
 $menu-width: 245px;
 
 @font-face {
@@ -42,4 +42,4 @@ canvas {
     display: block;
 }
 
-@import 'header', 'menu';
+@import 'header', 'menu', 'grid';

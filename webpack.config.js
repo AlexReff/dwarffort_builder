@@ -2,6 +2,7 @@ const path = require('path');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
 const MiniCssExtractPlugin = require("mini-css-extract-plugin");
 const CopyPlugin = require('copy-webpack-plugin');
+//const BabelLodashPlugin = require('babel-plugin-lodash');
 
 module.exports = (env, argv) => {
     const isDev = argv.mode !== 'production';
@@ -9,6 +10,10 @@ module.exports = (env, argv) => {
     return {
         devtool: isDev ? "source-map" : false,
         entry: './src/index.tsx',
+        externals: {
+            gsap: '_gsScope',
+            lodash: '_'
+        },
         mode: isDev ? 'development' : 'production',
         module: {
             rules: [
@@ -39,7 +44,7 @@ module.exports = (env, argv) => {
                     include: path.resolve(__dirname, 'src'),
                     use: [
                         { 
-                            loader: 'babel-loader', 
+                            loader: 'babel-loader',
                             options: 
                             {
                                 presets: ['@babel/preset-env'],
@@ -81,7 +86,8 @@ module.exports = (env, argv) => {
             }),
             new CopyPlugin([
                 { from: 'assets', to: 'assets' }
-            ]),
+            ])
+            //new BabelLodashPlugin()
         ],
         resolve: {
             extensions: ['.ts', '.tsx', '.js']

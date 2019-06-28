@@ -2,6 +2,16 @@
     border-left: 8px solid $frame-border-color;
     padding: 10px;
     font-size: 12px;
+    display: flex;
+    flex-direction: column;
+
+    .menu-items {
+
+    }
+
+    .menu-bottom {
+        margin-top: auto;
+    }
 
     .menu-item {
         margin-bottom: 2px;

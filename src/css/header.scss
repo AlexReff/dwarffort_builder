@@ -7,7 +7,6 @@
 
     .left, .right {
         margin: auto 0; //vertical centering
-        font-size: 14px;
     }
 
     .center {
@@ -20,11 +19,13 @@
         color: #CCC;
     }
 
-    a {
+    .home-link {
+        $fontSize: 14px;
+        font-size: $fontSize;
         color: #FFF;
         background: #3888AA;
         text-decoration: none !important;
-        padding: 5px 0;
+        padding: #{($header-height - $fontSize) / 2} 4px;
 
         &:hover, &:focus, &:active, &:visited {
             color: #FFF;
@@ -32,8 +33,15 @@
     }
 
     .title {
+        $fontSize: 16px;
+        font-size: $fontSize;
         background: #BBB1A7;
-        padding: 4px 10px;
+        padding: #{($header-height - $fontSize) / 2} 14px;
         color: #000;
+        text-decoration: none;
+    }
+
+    .cursors {
+
     }
 }
