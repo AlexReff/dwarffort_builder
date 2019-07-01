@@ -2,7 +2,7 @@
 //// <reference path="../node_modules/@types/gsap/index.d.ts" />
 
 import * as _ from 'lodash';
-import { Path, Point, view, setup, Size, Color, Raster, Tool, Rectangle, PaperScope, Group } from 'paper';
+import { Path, Point, view, setup, Size, Color, Raster, Tool, Rectangle, PaperScope, Group, SymbolDefinition, SymbolItem, ToolEvent } from 'paper';
 import { h, render, Component } from 'preact';
 import { items as MENU_ITEMS } from "./data/menu.json";
 // import { TweenMax } from 'gsap';
@@ -60,8 +60,6 @@ Add browser resize detection + canvas resizing
 Add google analytics + simple text ads before public release?
 */
 
-let tileCounter = 1;
-
 class FortressTile {
     public xCoord: number;
     public yCoord: number;
@@ -112,24 +110,35 @@ class CanvasTile {
     private raster: Raster;
     private id: number;
 
-    constructor() {
-        //
+    constructor(tileId?: number) {
+        // this.raster = _raster;
+        this.id = tileId;
     }
 }
 
-class FortressDesigner extends Component {
+class FortressDesigner extends Component<{}, {
+    rightMouseDown: boolean
+}> {
     private gridElement: HTMLElement;
     // private innerGridElement: HTMLElement;
     private canvasElement: HTMLCanvasElement;
     private tool: Tool;
     private group: Group;
 
-    private TileRasters: Array<Raster> = new Array(256);
-    private TileGrid: Map<number, Map<number, Raster>> = new Map(); //active tile grid
-    private TilePool: Array<Array<Raster>> = new Array(256); //tile rasters to pull from instead of cloning new ones
+    private TileSymbols: Array<SymbolDefinition> = new Array();
+    private ActiveTiles: Array<SymbolItem> = new Array();
+    // private TileGrid: Map<number, Map<number, Raster>> = new Map(); //active tile grid
+    private TilePool: Array<Array<SymbolItem>> = new Array(); //tile rasters to pull from instead of cloning new ones
 
-    // private offsetX: number;
-    // private offsetY: number;
+    private tileWidth: number;
+    private tileHeight: number;
+
+    private mouseHighlightPosition: Point;
+
+    // private rightMouseDown: boolean;
+
+    private offsetX: number;
+    private offsetY: number;
     // private zoomLevel: number;
 
     // private dragging: Boolean = false;
@@ -150,6 +159,9 @@ class FortressDesigner extends Component {
         // this.offsetY = 0;
         // this.zoomLevel = 1;
         // this.totalRowSize = this.totalColSize = 48 * 1;
+        this.setState({
+            rightMouseDown: false,
+        });
     }
 
     componentDidMount() {
@@ -158,76 +170,39 @@ class FortressDesigner extends Component {
         //define click behaviors
         //add submenu selectable things
 
-        this.gridElement = document.getElementById("grid");
-        // this.innerGridElement = document.getElementById("inner-grid");
+        this.initBase();
 
-        this.canvasElement = document.getElementById("canvas") as HTMLCanvasElement;
+        let _this = this;
 
-        this.canvasElement.width = this.gridElement.offsetWidth;
-        this.canvasElement.height = this.gridElement.offsetHeight;
+        //draw the initial grid of tiles
+        let initialGridWidth = _.floor(this.gridElement.offsetWidth / 16) + 1;
+        let initialGridHeight = _.floor(this.gridElement.offsetHeight / 16) + 1;
 
-        setup(this.canvasElement);
-
-        this.tool = new Tool();
-
-        // this.tool.onMouseDown = function(event) {
-		// 	// path = new Path();
-		// 	// path.strokeColor = 'black';
-		// 	// path.add(event.point);
-		// }
-
-		// this.tool.onMouseDrag = function(event) {
-		// 	// path.add(event.point);
-        // }
-        var raster = new Raster("sprites");
-
-        // this.offsetX = raster.size.width / 2;
-        // this.offsetY = raster.size.height / 2;
-
-        this.group = new Group({
-            applyMatrix: false,
-            position: new Point(raster.size.width / 16 / 2, raster.size.height / 16 / 2)
-        });
-        //this.group.position = new Point(this.offsetX, this.offsetY);
-
-        this.group.addChild(raster);
-        
-        raster.position = new Point(0, 0);
-
-        // let tileRasters: Array<Raster> = new Array(256);
-
-        let tileWidth = raster.size.width / 16;
-        let tileHeight = raster.size.height / 16;
-
-        let i = 0;
-        for (let y = 0; y < 16; y++) {
-            for (let x = 0; x < 16; x++) {
-                let subRect: Rectangle = new Rectangle(x * tileWidth, y * tileHeight, tileWidth, tileHeight);
-                let subRaster = raster.getSubRaster(subRect);
-                this.group.addChild(subRaster);
-                this.TileRasters[i++] = subRaster;
-                subRaster.remove();
-                // subRaster.visible = false;
-            }
-        }
-
-        raster.remove();
-
-        i = 0;
-        for (let y = 0; y < 16; y++) {
-            for (let x = 0; x < 16; x++) {
+        for (let y = 0; y < initialGridHeight; y++) {
+            for (let x = 0; x < initialGridWidth; x++) {
                 let targetId = 0;
                 if (_.random(0, 100, false) > 90) {
                     targetId = 130;
                 }
-                // let newRaster = this.TileRasters[targetId].clone() as Raster;
-                let newRaster = this.getTileInstance(targetId);
-                newRaster.position = new Point(x * tileWidth, y * tileHeight);
-                // newRaster.visible = true;
-                this.group.addChild(newRaster);
+                let thisTile = this.getTileInstance(targetId);
+                thisTile.position = new Point(x * this.tileWidth, y * this.tileHeight);
+                this.group.addChild(thisTile);
+                this.ActiveTiles.push(thisTile);
+                
+                //TODO: create the 'highlight' cursor raster/item + move it's position with this event
+                //      attach to the entire canvas mouseout (or group?) instead of individual items
+                thisTile.onMouseEnter = function(event: any) {
+                    // this.fillColor = 'red';
+                    _this.mouseHighlightPosition = new Point(event.currentTarget.position.x, event.currentTarget.position.y);
+                    //console.log(event);
+                }
+                thisTile.onMouseLeave = function(event) {
+                    // this.fillColor = 'red';
+                    //_this.mouseHighlightPosition = new Point(event.currentTarget.position.x, event.currentTarget.position.y);
+                    console.log(event);
+                }
             }
         }
-
         
 		view.onFrame = function(event) {
             //
@@ -238,41 +213,6 @@ class FortressDesigner extends Component {
         }
 
         window.addEventListener('resize', this.onWindowResize.bind(this));
-
-        // this.canvas.addEventListener('mousedown', this.onStart.bind(this), false);
-        // this.canvas.addEventListener('touchstart', this.onStart.bind(this), false);
-        // this.canvas.addEventListener('mousemove', this.onMove.bind(this), false);
-        // this.canvas.addEventListener('touchmove', this.onMove.bind(this), false);
-        // this.canvas.addEventListener('mouseup', this.onEnd.bind(this), false);
-        // this.canvas.addEventListener('touchend', this.onEnd.bind(this), false);
-
-        // for (let row = 0; row <= this.totalRowSize; row++) {
-        //     for (let col = 0; col <= this.totalColSize; col++) {
-        //         //create every item as empty by default
-        //         let xPos = col * TILE_SIZE;
-        //         let yPos = row * TILE_SIZE;
-        //         let tile = new FortressTile();
-        //         tile.xCoord = xPos;
-        //         tile.yCoord = yPos;
-        //         tile.appendTo(this.innerGridElement);
-        //         tile.update();
-        //     }
-        // }
-
-        // this.onDragCallback(0, 0);
-
-        // let center = this.getCenterPos();
-        // this.snapBackCallback(center.x, center.y);
-
-        //this.updateGrid();
-
-        // let xLimit = (canvasTarget.clientWidth / this.tileSize) + 1;
-        // let yLimit = (canvasTarget.clientHeight / this.tileSize) + 1;
-        // for (let x = 0; x < xLimit; x++) {
-        //     for (let y = 0; y < yLimit; y++) {
-        //         this.tileMap.drawRect(this.grid_offset_x + this.tileSize * x, this.grid_offset_y + this.tileSize * y, this.tileSize, this.tileSize);
-        //     }
-        // }
     }
 
     onWindowResize() {
@@ -284,25 +224,113 @@ class FortressDesigner extends Component {
         // clearInterval(this.timer);
     }
 
-    getTileInstance(id: number) {
-        if (typeof this.TilePool[id] !== "undefined") {
-            if (this.TilePool[id].length) {
-                return this.TilePool[id].pop();
+    initBase() {
+        let _this = this;
+
+        this.gridElement = document.getElementById("grid");
+        this.canvasElement = document.getElementById("canvas") as HTMLCanvasElement;
+        
+        //disable right-click canvas context menu
+        this.canvasElement.oncontextmenu = function (e) {
+            e.preventDefault();
+        };
+
+        this.canvasElement.width = this.gridElement.offsetWidth;
+        this.canvasElement.height = this.gridElement.offsetHeight;
+
+        setup(this.canvasElement);
+
+        //create the base raster from the spritesheet
+        var raster = new Raster("sprites");
+        
+        this.tileWidth = raster.size.width / 16;
+        this.tileHeight = raster.size.height / 16;
+
+        //slice the spritesheet into tiles
+        for (let y = 0; y < 16; y++) {
+            for (let x = 0; x < 16; x++) {
+                let subRect = new Rectangle(x * this.tileWidth, y * this.tileHeight, this.tileWidth, this.tileHeight);
+                let subRaster = raster.getSubRaster(subRect);
+                this.TileSymbols.push(new SymbolDefinition(subRaster));
+                // this.TileSymbols[this.TileSymbols.length - 1].item.onMouseEnter = function(event: any) {
+                //     // this.fillColor = 'red';
+                //     //_this.mouseHighlightPosition = event.currentTarget.position
+                //     console.log(event);
+                // }
+                // this.TileSymbols[this.TileSymbols.length - 1].item.onMouseLeave = function(event) {
+                //     // this.fillColor = 'red';
+                //     console.log(event);
+                // }
+                subRaster.remove();
             }
         }
-        else {
-            this.TilePool[id] = new Array();
-        }
 
-        return this.TileRasters[id].clone() as Raster;
+        raster.remove();
+
+        this.offsetX = this.tileWidth / 2;
+        this.offsetY = this.tileHeight / 2;
+
+        //create a group to allow for moving/modifying the entire grid
+        this.group = new Group({
+            applyMatrix: false,
+            position: new Point(this.offsetX, this.offsetY),
+            // children: [raster]
+        });
+
+        //tool interaction config
+        this.tool = new Tool();
+
+        this.tool.onMouseDown = function(event) {
+            //event.event.button | 1: left, 2: right
+            if (event.event.button === 2) {
+                // _this.rightMouseDown = true;
+                _this.setState({
+                    rightMouseDown: true,
+                });
+            }
+
+			// path = new Path();
+			// path.strokeColor = 'black';
+			// path.add(event.point);
+		}
+
+        this.tool.onMouseUp = function(event) {
+            //event.event.button | 1: left, 2: right
+            if (event.event.button === 2) {
+                event.event.stopPropagation();
+                // _this.rightMouseDown = false;
+                _this.setState({
+                    rightMouseDown: false,
+                });
+
+                //TODO: recycle off-screen tiles and draw new tiles as needed
+            }
+		}
+
+		this.tool.onMouseDrag = function(event: ToolEvent) {
+            if (_this.state.rightMouseDown) {
+                _this.group.position = _this.group.position.add(new Point(event.delta.x, event.delta.y));
+            }
+        }
     }
 
-    onStart(e: MouseEvent | TouchEvent) {
-        e.preventDefault();
-        let event = e instanceof MouseEvent ? e : e.touches[0];
-        // this.lastX = event.clientX;
-        // this.lastY = event.clientY;
-        // this.dragging = true;
+    getTileInstance(id: number) {
+        //return an instance of the specified ID
+        //if we have one sitting in the pool, pop it
+        if (id < 0 || id >= this.TileSymbols.length) {
+            return;
+        }
+        if (typeof this.TilePool === "undefined") {
+            this.TilePool = new Array(256);
+        }
+        if (typeof this.TilePool[id] === "undefined") {
+            this.TilePool[id] = new Array();
+        }
+        if (this.TilePool[id].length > 0) {
+            return this.TilePool[id].pop();
+        }
+
+        return this.TileSymbols[id].place();
     }
 
     // onEnd(e: MouseEvent | TouchEvent) {
@@ -334,33 +362,11 @@ class FortressDesigner extends Component {
     //     }
     // }
 
-    // getCenterPos() {
-    //     return {
-    //         x: (this.gridElement.offsetWidth - (this.totalColSize * TILE_SIZE)) / 2,
-    //         y: (this.gridElement.offsetHeight - (this.totalRowSize * TILE_SIZE)) / 2
-    //     };
-    // }
-
-    // snapBackCallback(x: number, y: number) {
-    //     this.offsetX = x;
-    //     this.offsetY = y;
-    //     this.updatePosition();
-    // }
-
-    // onDragCallback(deltaX: number, deltaY: number) {
-    //     this.offsetX += deltaX;
-    //     this.offsetY += deltaY;
-    //     this.updatePosition();
-    // }
 
     // updatePosition() {
     //     this.innerGridElement.setAttribute("style", `transform: translate3d(${this.offsetX}px, ${this.offsetY}px, 0) scale(${this.zoomLevel});`);
     //     // this.innerGridElement.setAttribute("style", `left: ${this.offsetX}px; top: ${this.offsetY}px; transform: scale(${this.zoomLevel});`);
     // }
-
-    onResize() {
-        //
-    }
 
     // onMove(e: MouseEvent | TouchEvent) {
     //     if (this.dragging) {
@@ -388,70 +394,6 @@ class FortressDesigner extends Component {
     //     }
     // }
 
-    // updateGrid() {
-    //     // let newTiles = new Map();
-    //     // let colOffset = ~~(this.offsetX / TILE_SIZE) * -1;
-    //     // let rowOffset = ~~(this.offsetY / TILE_SIZE) * -1;
-
-    //     //start with an 'empty' grid at 3x3 size
-
-    //     // for (let row = 0; row < this.viewRows; row++) {
-    //     //     for (let col = 0; col < this.viewCols; col++) {
-    //     //         //if this pos is visible on screen, render the card
-    //     //         let xPos = row * TILE_SIZE + this.offsetX;
-    //     //         let yPos = col * TILE_SIZE + this.offsetY;
-    //     //         let tCol = colOffset + col;
-    //     //         let tRow = rowOffset + row;
-
-    //     //         //get the x,y coord for this tile
-    //     //         //the tile should have an 'origin' attribute
-    //     //         //we need to _DRAW_ just the ones visible
-    //     //         //we should DRAG the inner-grid position, 
-    //     //         //upon drag, we need to ADD new tiles that are now visible
-
-    //     //         // if (tCol > 0 && tRow > 0 &&
-    //     //         //     tCol < )
-    //     //         let index = (col + colOffset) + "" + (row + rowOffset);
-    //     //         let thisTile: FortressTile = this.activeTiles[index] || this.getTile(index); //new FortressTile(xPos, yPos);
-    //     //         delete this.activeTiles[index];
-    //     //         thisTile.xCoord = xPos;
-    //     //         thisTile.yCoord = yPos;
-    //     //         thisTile.appendTo(this.innerGridElement);
-    //     //         thisTile.update();
-
-    //     //         newTiles[index] = thisTile;
-    //     //     }
-    //     // }
-
-    //     // this.cleanTiles();
-    //     // this.activeTiles = newTiles;
-    // }
-
-    // cleanTiles() {
-    //     let keys = Object.keys(this.activeTiles);
-    //     for (let i = 0; i < keys.length; i++) {
-    //         let tile: FortressTile = this.activeTiles[keys[i]];
-    //         tile.removeSelf();
-    //         this.tilePool.push(tile);
-    //     }
-    //     this.activeTiles = null;
-    // }
-
-    // getTile(posCoord: string) {
-    //     if (this.tilePool.length > 0) {
-    //         let tile = this.tilePool.pop();
-    //         return tile;
-    //     }
-    //     else {
-    //         return new FortressTile();
-    //     }
-    // }
-
-    // setZoom(level: number) {
-    //     this.zoomLevel = level;
-    //     this.updatePosition();
-    // }
-
     render(props, state) {
         return (
             <div class="wrapper">
@@ -470,7 +412,7 @@ class FortressDesigner extends Component {
                 {/* <div id="grid">
                     <div id="inner-grid"></div>
                 </div> */}
-                <div id="grid"><canvas id="canvas"></canvas></div>
+                <div id="grid" class={state.rightMouseDown ? "dragging" : null}><canvas id="canvas" data-paper-hidpi="off"></canvas></div>
                 <div id="menu">
                     <div class="menu-items">
                         {MENU_ITEMS.map((item) => {
