@@ -2,9 +2,10 @@
 //// <reference path="../node_modules/@types/gsap/index.d.ts" />
 
 import * as _ from 'lodash';
+import { Path, Point, view, setup, Size, Color, Raster, Tool, Rectangle, PaperScope, Group } from 'paper';
 import { h, render, Component } from 'preact';
 import { items as MENU_ITEMS } from "./data/menu.json";
-import { TweenMax } from 'gsap';
+// import { TweenMax } from 'gsap';
 
 require('./css/index.scss');
 
@@ -107,41 +108,48 @@ class FortressTile {
     }
 }
 
+class CanvasTile {
+    private raster: Raster;
+    private id: number;
+
+    constructor() {
+        //
+    }
+}
+
 class FortressDesigner extends Component {
-    // private pixiApp: PIXI.Application;
-    // private tileMap: PIXI.Graphics;
-
     private gridElement: HTMLElement;
-    private innerGridElement: HTMLElement;
-    // private grid_offset_x: number = 1;
-    // private grid_offset_y: number = 1;
+    // private innerGridElement: HTMLElement;
+    private canvasElement: HTMLCanvasElement;
+    private tool: Tool;
+    private group: Group;
 
-    private offsetX: number;
-    private offsetY: number;
-    private zoomLevel: number;
+    private TileRasters: Array<Raster> = new Array(256);
+    private TileGrid: Map<number, Map<number, Raster>> = new Map(); //active tile grid
+    private TilePool: Array<Array<Raster>> = new Array(256); //tile rasters to pull from instead of cloning new ones
 
-    private dragging: Boolean = false;
-    private tween: TweenMax;
-    private lastX: number;
-    private lastY: number;
-    // private viewRows: number;
-    // private viewCols: number;
-    private totalRowSize: number;
-    private totalColSize: number;
+    // private offsetX: number;
+    // private offsetY: number;
+    // private zoomLevel: number;
 
-    private activeTiles: Map<string, FortressTile> = new Map();
+    // private dragging: Boolean = false;
+    // private tween: TweenMax;
+    // private lastX: number;
+    // private lastY: number;
+    // private totalRowSize: number;
+    // private totalColSize: number;
+
+    // private activeTiles: Map<string, FortressTile> = new Map();
 
     //cached element pool for reuse
-    private tilePool: Array<FortressTile> = [];
+    // private tilePool: Array<FortressTile> = [];
 
     constructor() {
         super();
-        // PIXI.utils.skipHello();
-        //this.setState({ time: Date.now() });
-        this.offsetX = 0;
-        this.offsetY = 0;
-        this.zoomLevel = 1;
-        this.totalRowSize = this.totalColSize = 48 * 1;
+        // this.offsetX = 0;
+        // this.offsetY = 0;
+        // this.zoomLevel = 1;
+        // this.totalRowSize = this.totalColSize = 48 * 1;
     }
 
     componentDidMount() {
@@ -149,62 +157,114 @@ class FortressDesigner extends Component {
         //add :hover effects to each
         //define click behaviors
         //add submenu selectable things
+
         this.gridElement = document.getElementById("grid");
-        this.innerGridElement = document.getElementById("inner-grid");
+        // this.innerGridElement = document.getElementById("inner-grid");
 
-        window.addEventListener('resize', this.onResize.bind(this));
+        this.canvasElement = document.getElementById("canvas") as HTMLCanvasElement;
 
-        this.gridElement.addEventListener('mousedown', this.onStart.bind(this), false);
-        this.gridElement.addEventListener('touchstart', this.onStart.bind(this), false);
-        this.gridElement.addEventListener('mousemove', this.onMove.bind(this), false);
-        this.gridElement.addEventListener('touchmove', this.onMove.bind(this), false);
-        this.gridElement.addEventListener('mouseup', this.onEnd.bind(this), false);
-        this.gridElement.addEventListener('touchend', this.onEnd.bind(this), false);
+        this.canvasElement.width = this.gridElement.offsetWidth;
+        this.canvasElement.height = this.gridElement.offsetHeight;
 
-        // this.viewCols = Math.ceil(this.gridElement.offsetHeight / TILE_SIZE) + 2;
-        // this.viewRows = Math.ceil(this.gridElement.offsetWidth / TILE_SIZE) + 2;
-        //this.viewCols = this.viewRows = 16;
+        setup(this.canvasElement);
 
-        for (let row = 0; row <= this.totalRowSize; row++) {
-            for (let col = 0; col <= this.totalColSize; col++) {
-                //create every item as empty by default
-                let xPos = col * TILE_SIZE;
-                let yPos = row * TILE_SIZE;
-                let tile = new FortressTile();
-                tile.xCoord = xPos;
-                tile.yCoord = yPos;
-                tile.appendTo(this.innerGridElement);
-                tile.update();
+        this.tool = new Tool();
+
+        // this.tool.onMouseDown = function(event) {
+		// 	// path = new Path();
+		// 	// path.strokeColor = 'black';
+		// 	// path.add(event.point);
+		// }
+
+		// this.tool.onMouseDrag = function(event) {
+		// 	// path.add(event.point);
+        // }
+        var raster = new Raster("sprites");
+
+        // this.offsetX = raster.size.width / 2;
+        // this.offsetY = raster.size.height / 2;
+
+        this.group = new Group({
+            applyMatrix: false,
+            position: new Point(raster.size.width / 16 / 2, raster.size.height / 16 / 2)
+        });
+        //this.group.position = new Point(this.offsetX, this.offsetY);
+
+        this.group.addChild(raster);
+        
+        raster.position = new Point(0, 0);
+
+        // let tileRasters: Array<Raster> = new Array(256);
+
+        let tileWidth = raster.size.width / 16;
+        let tileHeight = raster.size.height / 16;
+
+        let i = 0;
+        for (let y = 0; y < 16; y++) {
+            for (let x = 0; x < 16; x++) {
+                let subRect: Rectangle = new Rectangle(x * tileWidth, y * tileHeight, tileWidth, tileHeight);
+                let subRaster = raster.getSubRaster(subRect);
+                this.group.addChild(subRaster);
+                this.TileRasters[i++] = subRaster;
+                subRaster.remove();
+                // subRaster.visible = false;
             }
         }
 
+        raster.remove();
+
+        i = 0;
+        for (let y = 0; y < 16; y++) {
+            for (let x = 0; x < 16; x++) {
+                let targetId = 0;
+                if (_.random(0, 100, false) > 90) {
+                    targetId = 130;
+                }
+                // let newRaster = this.TileRasters[targetId].clone() as Raster;
+                let newRaster = this.getTileInstance(targetId);
+                newRaster.position = new Point(x * tileWidth, y * tileHeight);
+                // newRaster.visible = true;
+                this.group.addChild(newRaster);
+            }
+        }
+
+        
+		view.onFrame = function(event) {
+            //
+        }
+        
+        view.onResize = function(event) {
+			//console.log("view resized");
+        }
+
+        window.addEventListener('resize', this.onWindowResize.bind(this));
+
+        // this.canvas.addEventListener('mousedown', this.onStart.bind(this), false);
+        // this.canvas.addEventListener('touchstart', this.onStart.bind(this), false);
+        // this.canvas.addEventListener('mousemove', this.onMove.bind(this), false);
+        // this.canvas.addEventListener('touchmove', this.onMove.bind(this), false);
+        // this.canvas.addEventListener('mouseup', this.onEnd.bind(this), false);
+        // this.canvas.addEventListener('touchend', this.onEnd.bind(this), false);
+
+        // for (let row = 0; row <= this.totalRowSize; row++) {
+        //     for (let col = 0; col <= this.totalColSize; col++) {
+        //         //create every item as empty by default
+        //         let xPos = col * TILE_SIZE;
+        //         let yPos = row * TILE_SIZE;
+        //         let tile = new FortressTile();
+        //         tile.xCoord = xPos;
+        //         tile.yCoord = yPos;
+        //         tile.appendTo(this.innerGridElement);
+        //         tile.update();
+        //     }
+        // }
+
         // this.onDragCallback(0, 0);
 
-        let center = this.getCenterPos();
-        this.snapBackCallback(center.x, center.y);
+        // let center = this.getCenterPos();
+        // this.snapBackCallback(center.x, center.y);
 
         //this.updateGrid();
-
-
-        // let canvasTarget = document.getElementById("canvas");
-        // this.pixiApp = new PIXI.Application({
-        //     width: canvasTarget.clientWidth,
-        //     height: canvasTarget.scrollHeight,
-        //     //backgroundColor: 0x1099bb, 
-        //     resolution: window.devicePixelRatio || 1
-        // });
-
-        // canvasTarget.appendChild(this.pixiApp.view);
-
-        // const container = new PIXI.Container();
-        // container.x = this.pixiApp.screen.width / 2;
-        // container.y = this.pixiApp.screen.height / 2;
-
-        // this.pixiApp.stage.addChild(container);
-
-        // this.tileMap = new PIXI.Graphics();
-        // this.tileMap.lineStyle(2, 0xFFFFFF, 1);
-        // this.pixiApp.stage.addChild(this.tileMap);
 
         // let xLimit = (canvasTarget.clientWidth / this.tileSize) + 1;
         // let yLimit = (canvasTarget.clientHeight / this.tileSize) + 1;
@@ -213,10 +273,10 @@ class FortressDesigner extends Component {
         //         this.tileMap.drawRect(this.grid_offset_x + this.tileSize * x, this.grid_offset_y + this.tileSize * y, this.tileSize, this.tileSize);
         //     }
         // }
+    }
 
-        // this.pixiApp.ticker.add((delta) => {
-        //     //
-        // });
+    onWindowResize() {
+        view.viewSize = new Size(this.gridElement.offsetWidth, this.gridElement.offsetHeight);
     }
 
     componentWillUnmount() {
@@ -224,96 +284,109 @@ class FortressDesigner extends Component {
         // clearInterval(this.timer);
     }
 
+    getTileInstance(id: number) {
+        if (typeof this.TilePool[id] !== "undefined") {
+            if (this.TilePool[id].length) {
+                return this.TilePool[id].pop();
+            }
+        }
+        else {
+            this.TilePool[id] = new Array();
+        }
+
+        return this.TileRasters[id].clone() as Raster;
+    }
+
     onStart(e: MouseEvent | TouchEvent) {
         e.preventDefault();
         let event = e instanceof MouseEvent ? e : e.touches[0];
-        this.lastX = event.clientX;
-        this.lastY = event.clientY;
-        this.dragging = true;
+        // this.lastX = event.clientX;
+        // this.lastY = event.clientY;
+        // this.dragging = true;
     }
 
-    onEnd(e: MouseEvent | TouchEvent) {
-        e.preventDefault();
-        this.dragging = false;
+    // onEnd(e: MouseEvent | TouchEvent) {
+    //     e.preventDefault();
+    //     this.dragging = false;
 
-        let maxWidthOffset = (this.totalColSize + 1) * TILE_SIZE - this.gridElement.offsetWidth;
-        let maxHeightOffset = (this.totalRowSize + 1) * TILE_SIZE - this.gridElement.offsetHeight;
+    //     let maxWidthOffset = (this.totalColSize + 1) * TILE_SIZE - this.gridElement.offsetWidth;
+    //     let maxHeightOffset = (this.totalRowSize + 1) * TILE_SIZE - this.gridElement.offsetHeight;
 
-        if (this.offsetX > 0 || this.offsetY > 0 ||
-            maxWidthOffset < 0 || maxHeightOffset < 0 ||
-            this.offsetX < -1 * Math.abs(maxWidthOffset) || 
-            this.offsetY < -1 * Math.abs(maxHeightOffset)) {
-            let v = { x: this.offsetX, y: this.offsetY };
-            if (this.tween) this.tween.kill();
-            let center = this.getCenterPos();
-            let thisX = maxWidthOffset > 0 ? -1 * maxWidthOffset : center.x;
-            let thisY = maxHeightOffset > 0 ? -1 * maxHeightOffset : center.y;
-            this.tween = TweenMax.to(v, 0.4,
-                {
-                    // x: Math.max(Math.min(0, this.offsetX), -1 * maxWidthOffset), 
-                    // y: Math.max(Math.min(0, this.offsetY), -1 * maxHeightOffset), 
-                    x: thisX, // _.clamp(this.offsetX, -1 * maxWidthOffset, 0),
-                    y: thisY, // _.clamp(this.offsetY, -1 * maxHeightOffset, 0),
-                    onUpdate: () => {
-                        this.snapBackCallback(v.x, v.y);
-                    }
-                });
-        }
-    }
+    //     if (this.offsetX > 0 || this.offsetY > 0 ||
+    //         maxWidthOffset < 0 || maxHeightOffset < 0 ||
+    //         this.offsetX < -1 * Math.abs(maxWidthOffset) || 
+    //         this.offsetY < -1 * Math.abs(maxHeightOffset)) {
+    //         let v = { x: this.offsetX, y: this.offsetY };
+    //         if (this.tween) this.tween.kill();
+    //         let center = this.getCenterPos();
+    //         let thisX = maxWidthOffset > 0 ? -1 * maxWidthOffset : center.x;
+    //         let thisY = maxHeightOffset > 0 ? -1 * maxHeightOffset : center.y;
+    //         this.tween = TweenMax.to(v, 0.4,
+    //             {
+    //                 // x: Math.max(Math.min(0, this.offsetX), -1 * maxWidthOffset), 
+    //                 // y: Math.max(Math.min(0, this.offsetY), -1 * maxHeightOffset), 
+    //                 x: thisX, // _.clamp(this.offsetX, -1 * maxWidthOffset, 0),
+    //                 y: thisY, // _.clamp(this.offsetY, -1 * maxHeightOffset, 0),
+    //                 onUpdate: () => {
+    //                     this.snapBackCallback(v.x, v.y);
+    //                 }
+    //             });
+    //     }
+    // }
 
-    getCenterPos() {
-        return {
-            x: (this.gridElement.offsetWidth - (this.totalColSize * TILE_SIZE)) / 2,
-            y: (this.gridElement.offsetHeight - (this.totalRowSize * TILE_SIZE)) / 2
-        };
-    }
+    // getCenterPos() {
+    //     return {
+    //         x: (this.gridElement.offsetWidth - (this.totalColSize * TILE_SIZE)) / 2,
+    //         y: (this.gridElement.offsetHeight - (this.totalRowSize * TILE_SIZE)) / 2
+    //     };
+    // }
 
-    snapBackCallback(x: number, y: number) {
-        this.offsetX = x;
-        this.offsetY = y;
-        this.updatePosition();
-    }
+    // snapBackCallback(x: number, y: number) {
+    //     this.offsetX = x;
+    //     this.offsetY = y;
+    //     this.updatePosition();
+    // }
 
-    onDragCallback(deltaX: number, deltaY: number) {
-        this.offsetX += deltaX;
-        this.offsetY += deltaY;
-        this.updatePosition();
-    }
+    // onDragCallback(deltaX: number, deltaY: number) {
+    //     this.offsetX += deltaX;
+    //     this.offsetY += deltaY;
+    //     this.updatePosition();
+    // }
 
-    updatePosition() {
-        this.innerGridElement.setAttribute("style", `transform: translate3d(${this.offsetX}px, ${this.offsetY}px, 0) scale(${this.zoomLevel});`);
-        // this.innerGridElement.setAttribute("style", `left: ${this.offsetX}px; top: ${this.offsetY}px; transform: scale(${this.zoomLevel});`);
-    }
+    // updatePosition() {
+    //     this.innerGridElement.setAttribute("style", `transform: translate3d(${this.offsetX}px, ${this.offsetY}px, 0) scale(${this.zoomLevel});`);
+    //     // this.innerGridElement.setAttribute("style", `left: ${this.offsetX}px; top: ${this.offsetY}px; transform: scale(${this.zoomLevel});`);
+    // }
 
     onResize() {
         //
     }
 
-    onMove(e: MouseEvent | TouchEvent) {
-        if (this.dragging) {
-            let target = e instanceof MouseEvent ? e : e.touches[0];
-            let xDelta = target.clientX - this.lastX;
-            let yDelta = target.clientY - this.lastY;
-            let velocity = Math.abs(xDelta * yDelta);
+    // onMove(e: MouseEvent | TouchEvent) {
+    //     if (this.dragging) {
+    //         let target = e instanceof MouseEvent ? e : e.touches[0];
+    //         let xDelta = target.clientX - this.lastX;
+    //         let yDelta = target.clientY - this.lastY;
+    //         let velocity = Math.abs(xDelta * yDelta);
 
-            if (velocity > MAX_VELOCITY) {
-                let v = { x: xDelta * 0.5, y: yDelta * 0.5 };
-                if (this.tween) this.tween.kill();
-                this.tween = TweenMax.to(v, 0.5,
-                    {
-                        x: 0, y: 0,
-                        onUpdate: () => {
-                            this.onDragCallback(v.x, v.y);
-                        }
-                    });
-            }
+    //         if (velocity > MAX_VELOCITY) {
+    //             let v = { x: xDelta * 0.5, y: yDelta * 0.5 };
+    //             if (this.tween) this.tween.kill();
+    //             this.tween = TweenMax.to(v, 0.5,
+    //                 {
+    //                     x: 0, y: 0,
+    //                     onUpdate: () => {
+    //                         this.onDragCallback(v.x, v.y);
+    //                     }
+    //                 });
+    //         }
 
-            this.lastX = target.clientX;
-            this.lastY = target.clientY;
+    //         this.lastX = target.clientX;
+    //         this.lastY = target.clientY;
 
-            this.onDragCallback(xDelta, yDelta);
-        }
-    }
+    //         this.onDragCallback(xDelta, yDelta);
+    //     }
+    // }
 
     // updateGrid() {
     //     // let newTiles = new Map();
@@ -374,10 +447,10 @@ class FortressDesigner extends Component {
     //     }
     // }
 
-    setZoom(level: number) {
-        this.zoomLevel = level;
-        this.updatePosition();
-    }
+    // setZoom(level: number) {
+    //     this.zoomLevel = level;
+    //     this.updatePosition();
+    // }
 
     render(props, state) {
         return (
@@ -388,15 +461,16 @@ class FortressDesigner extends Component {
                         <a href="/" class="title">Fortress Designer</a>
                     </div>
                     <div class="right">
-                        <div class="cursors">
+                        {/* <div class="cursors">
                             <a><i class="fas fa-mouse-pointer"></i></a>
                             <a><i class="far fa-hand-pointer"></i></a>
-                        </div>
+                        </div> */}
                     </div>
                 </div>
-                <div id="grid">
+                {/* <div id="grid">
                     <div id="inner-grid"></div>
-                </div>
+                </div> */}
+                <div id="grid"><canvas id="canvas"></canvas></div>
                 <div id="menu">
                     <div class="menu-items">
                         {MENU_ITEMS.map((item) => {

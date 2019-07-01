@@ -20,12 +20,12 @@
     }
 
     .home-link {
-        $fontSize: 14px;
-        font-size: $fontSize;
+        @include font-play;
+        font-size: 18px;
+        padding: 6px 6px 5px 6px;
         color: #FFF;
         background: #3888AA;
         text-decoration: none !important;
-        padding: #{($header-height - $fontSize) / 2} 4px;
 
         &:hover, &:focus, &:active, &:visited {
             color: #FFF;
@@ -35,13 +35,13 @@
     .title {
         $fontSize: 16px;
         font-size: $fontSize;
-        background: #BBB1A7;
         padding: #{($header-height - $fontSize) / 2} 14px;
+        background: #BBB1A7;
         color: #000;
-        text-decoration: none;
+        text-decoration: none !important;
     }
 
     .cursors {
-
+        //
     }
 }

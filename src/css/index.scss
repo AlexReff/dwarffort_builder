@@ -7,6 +7,14 @@ $menu-width: 245px;
     src: url('./assets/Px437_IBM_BIOS.ttf');
 }
 
+@mixin font-play {
+    font-family: 'Play', sans-serif;
+}
+
+@mixin font-nunito {
+    font-family: 'Nunito Sans', sans-serif;
+}
+
 body {
     padding: 0;
     margin: 0;
@@ -19,22 +27,19 @@ body {
     width: 100%;
     height: 100vh;
     display: grid;
-    grid-template-areas: "head head"
-                         "canvas menu";
-    //"canvas canvas menu"
-    //"foot foot foot";
+    grid-template-areas: "h h" "c m";
     
     grid-template-columns: 1fr $menu-width;
     grid-template-rows: $header-height 1fr;
     
     #header {
-        grid-area: head;
+        grid-area: h;
     }
-    #canvas {
-        grid-area: canvas;
+    #grid {
+        grid-area: c;
     }
     #menu {
-        grid-area: menu;
+        grid-area: m;
     }
 }
 
