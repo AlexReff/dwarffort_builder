@@ -2,7 +2,7 @@
 //// <reference path="../node_modules/@types/gsap/index.d.ts" />
 
 import * as _ from 'lodash';
-import { Path, Point, view, setup, Size, Color, Raster, Tool, Rectangle, PaperScope, Group, SymbolDefinition, SymbolItem, ToolEvent } from 'paper';
+import { Path, Point, view, setup, Size, Color, Raster, Tool, Rectangle, PaperScope, Group, SymbolDefinition, SymbolItem, ToolEvent, Shape } from 'paper';
 import { h, render, Component } from 'preact';
 import { items as MENU_ITEMS } from "./data/menu.json";
 // import { TweenMax } from 'gsap';
@@ -60,52 +60,6 @@ Add browser resize detection + canvas resizing
 Add google analytics + simple text ads before public release?
 */
 
-class FortressTile {
-    public xCoord: number;
-    public yCoord: number;
-
-    public gridLocation: { x: number, y: number };
-    private rootElement: HTMLElement;
-
-    constructor() {
-        this.rootElement = document.createElement("div");
-        this.rootElement.classList.add("grid-tile");
-        // var rnd = Math.floor(Math.random() * Math.floor(spriteMap['ground'].length));
-        // this.rootElement.classList.add(`p-${spriteMap['ground'][rnd]}`);
-        // this.rootElement.classList.add("p-" + ((tileCounter++) % 256));
-
-        if (_.random(0, 100, false) >= 5) {
-            // this.rootElement.classList.add('p-133');
-            // this.rootElement.classList.add('concrete');
-            this.rootElement.classList.add('p-1');
-        }
-        else {
-            this.rootElement.classList.add('p-131');
-            // this.rootElement.classList.add('p-81');
-        }
-    }
-
-    update() {
-        // this.rootElement.setAttribute("style", `transform: translate3d(${this.yCoord}px, ${this.xCoord}px, 0);`);
-        this.rootElement.setAttribute("style", `top: ${this.yCoord}px; left: ${this.xCoord}px;`);
-    }
-
-    appendTo(el: HTMLElement) {
-        if (this.rootElement.parentElement !== el) {
-            el.appendChild(this.rootElement);
-            this.rootElement.classList.toggle('hidden', false);
-            //this.load();
-        }
-    }
-
-    removeSelf() {
-        if (this.rootElement.parentElement) {
-            this.rootElement.classList.toggle('hidden', true);
-            this.rootElement.parentElement.removeChild(this.rootElement);
-        }
-    }
-}
-
 class CanvasTile {
     private raster: Raster;
     private id: number;
@@ -124,6 +78,7 @@ class FortressDesigner extends Component<{}, {
     private canvasElement: HTMLCanvasElement;
     private tool: Tool;
     private group: Group;
+    private cursor: Shape.Rectangle;
 
     private TileSymbols: Array<SymbolDefinition> = new Array();
     private ActiveTiles: Array<SymbolItem> = new Array();
@@ -135,23 +90,9 @@ class FortressDesigner extends Component<{}, {
 
     private mouseHighlightPosition: Point;
 
-    // private rightMouseDown: boolean;
-
     private offsetX: number;
     private offsetY: number;
     // private zoomLevel: number;
-
-    // private dragging: Boolean = false;
-    // private tween: TweenMax;
-    // private lastX: number;
-    // private lastY: number;
-    // private totalRowSize: number;
-    // private totalColSize: number;
-
-    // private activeTiles: Map<string, FortressTile> = new Map();
-
-    //cached element pool for reuse
-    // private tilePool: Array<FortressTile> = [];
 
     constructor() {
         super();
@@ -181,35 +122,35 @@ class FortressDesigner extends Component<{}, {
         for (let y = 0; y < initialGridHeight; y++) {
             for (let x = 0; x < initialGridWidth; x++) {
                 let targetId = 0;
-                if (_.random(0, 100, false) > 90) {
+                if (_.random(0, 100, false) > 95) {
                     targetId = 130;
                 }
                 let thisTile = this.getTileInstance(targetId);
                 thisTile.position = new Point(x * this.tileWidth, y * this.tileHeight);
                 this.group.addChild(thisTile);
                 this.ActiveTiles.push(thisTile);
-                
+
                 //TODO: create the 'highlight' cursor raster/item + move it's position with this event
                 //      attach to the entire canvas mouseout (or group?) instead of individual items
-                thisTile.onMouseEnter = function(event: any) {
+                thisTile.onMouseEnter = function (event: any) {
                     // this.fillColor = 'red';
                     _this.mouseHighlightPosition = new Point(event.currentTarget.position.x, event.currentTarget.position.y);
                     //console.log(event);
                 }
-                thisTile.onMouseLeave = function(event) {
+                thisTile.onMouseLeave = function (event) {
                     // this.fillColor = 'red';
                     //_this.mouseHighlightPosition = new Point(event.currentTarget.position.x, event.currentTarget.position.y);
                     console.log(event);
                 }
             }
         }
-        
-		view.onFrame = function(event) {
+
+        view.onFrame = function (event) {
             //
         }
-        
-        view.onResize = function(event) {
-			//console.log("view resized");
+
+        view.onResize = function (event) {
+            //console.log("view resized");
         }
 
         window.addEventListener('resize', this.onWindowResize.bind(this));
@@ -229,7 +170,7 @@ class FortressDesigner extends Component<{}, {
 
         this.gridElement = document.getElementById("grid");
         this.canvasElement = document.getElementById("canvas") as HTMLCanvasElement;
-        
+
         //disable right-click canvas context menu
         this.canvasElement.oncontextmenu = function (e) {
             e.preventDefault();
@@ -242,7 +183,7 @@ class FortressDesigner extends Component<{}, {
 
         //create the base raster from the spritesheet
         var raster = new Raster("sprites");
-        
+
         this.tileWidth = raster.size.width / 16;
         this.tileHeight = raster.size.height / 16;
 
@@ -267,20 +208,17 @@ class FortressDesigner extends Component<{}, {
 
         raster.remove();
 
+        this.cursor = new Shape.Rectangle(new Point(-100,-100), new Size(this.tileWidth, this.tileHeight));
+        this.cursor.fillColor = new Color(0, 0);
+        this.cursor.strokeColor = new Color(.2, .5, .1);
+
         this.offsetX = this.tileWidth / 2;
         this.offsetY = this.tileHeight / 2;
-
-        //create a group to allow for moving/modifying the entire grid
-        this.group = new Group({
-            applyMatrix: false,
-            position: new Point(this.offsetX, this.offsetY),
-            // children: [raster]
-        });
 
         //tool interaction config
         this.tool = new Tool();
 
-        this.tool.onMouseDown = function(event) {
+        this.tool.onMouseDown = function (event) {
             //event.event.button | 1: left, 2: right
             if (event.event.button === 2) {
                 // _this.rightMouseDown = true;
@@ -289,12 +227,12 @@ class FortressDesigner extends Component<{}, {
                 });
             }
 
-			// path = new Path();
-			// path.strokeColor = 'black';
-			// path.add(event.point);
-		}
+            // path = new Path();
+            // path.strokeColor = 'black';
+            // path.add(event.point);
+        }
 
-        this.tool.onMouseUp = function(event) {
+        this.tool.onMouseUp = function (event) {
             //event.event.button | 1: left, 2: right
             if (event.event.button === 2) {
                 event.event.stopPropagation();
@@ -305,13 +243,20 @@ class FortressDesigner extends Component<{}, {
 
                 //TODO: recycle off-screen tiles and draw new tiles as needed
             }
-		}
+        }
 
-		this.tool.onMouseDrag = function(event: ToolEvent) {
+        this.tool.onMouseDrag = function (event: ToolEvent) {
             if (_this.state.rightMouseDown) {
                 _this.group.position = _this.group.position.add(new Point(event.delta.x, event.delta.y));
             }
         }
+
+        //create a group to allow for moving/modifying the entire grid
+        this.group = new Group({
+            applyMatrix: false,
+            position: new Point(this.offsetX, this.offsetY),
+            children: [this.cursor, this.tool]
+        });
     }
 
     getTileInstance(id: number) {
