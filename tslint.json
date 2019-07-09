@@ -6,6 +6,7 @@
         "comment-format": false,
         "no-var-requires": false,
         "max-classes-per-file": false,
-        "member-access": false
+        "member-access": false,
+        "object-literal-sort-keys": false
     }
 }

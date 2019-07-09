@@ -1,5 +1,5 @@
 import * as _ from "lodash";
-import { Component, h, render } from "preact";
+import { Component, h } from "preact";
 import { items as MENU_ITEMS } from "./data/menu.json";
 
 interface IMenuItem {
@@ -12,7 +12,13 @@ interface IMenuItem {
 
 interface IMenuProps {
     initialMenu: string;
-    handleMenuEvent: (e: string) => void;
+
+    /**
+     * Handles the event by 'id'
+     *
+     * @returns true if event was handled, false if no handling occured
+     */
+    handleMenuEvent: (e: string) => boolean;
 }
 
 interface IMenuState {
@@ -66,15 +72,17 @@ class Menu extends Component<IMenuProps, IMenuState> {
             case "escape":
             case "esc":
                 ev.preventDefault();
-                const idx = _this.state.selectedMenu.lastIndexOf(":");
-                if (idx > 0) {
-                    _this.setState({
-                        selectedMenu: _this.state.selectedMenu.substr(0, idx),
-                    });
-                } else {
-                    _this.setState({
-                        selectedMenu: "top",
-                    });
+                if (!_this.props.handleMenuEvent("escape")) {
+                    const idx = _this.state.selectedMenu.lastIndexOf(":");
+                    if (idx > 0) {
+                        _this.setState({
+                            selectedMenu: _this.state.selectedMenu.substr(0, idx),
+                        });
+                    } else {
+                        _this.setState({
+                            selectedMenu: "top",
+                        });
+                    }
                 }
                 break;
             default:
@@ -86,9 +94,11 @@ class Menu extends Component<IMenuProps, IMenuState> {
                     if (_this.MENU_PARSED[key] != null &&
                         _this.MENU_PARSED[key].children != null &&
                         _this.MENU_PARSED[key].children.length > 0) {
+                        //
                         _this.setState({
                             selectedMenu: key,
                         });
+                        // _this.props.handleMenuEvent("Escape");
                         break;
                     }
 
@@ -141,11 +151,11 @@ class Menu extends Component<IMenuProps, IMenuState> {
         const breadcrumbs = [];
         if (state.selectedMenu !== "top") {
             const activeItem = this.getActiveMenuItem(state);
-            breadcrumbs.push(<a href="#" data-id={activeItem.id} onClick={(e) => this.handleBreadcrumbClick(e)}>{activeItem.text}</a>);
+            breadcrumbs.push(<a href="#" data-id={activeItem.key} onClick={(e) => this.handleBreadcrumbClick(e)}>{activeItem.text}</a>);
 
             let parent = activeItem.parent;
             while (parent != null) {
-                breadcrumbs.push(<a data-id={parent.id} onClick={(e) => this.handleBreadcrumbClick(e)}>{parent.text}</a>);
+                breadcrumbs.push(<a data-id={parent.key} onClick={(e) => this.handleBreadcrumbClick(e)}>{parent.text}</a>);
                 parent = parent.parent;
             }
         }

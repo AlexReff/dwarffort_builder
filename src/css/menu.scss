@@ -26,6 +26,8 @@
 
             &:first-child {
                 margin-left: 0;
+                position: relative;
+                top: -1px;
 
                 &:before {
                     display: none;

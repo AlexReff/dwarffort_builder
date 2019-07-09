@@ -2,7 +2,6 @@ const path = require('path');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
 const MiniCssExtractPlugin = require("mini-css-extract-plugin");
 const CopyPlugin = require('copy-webpack-plugin');
-//const BabelLodashPlugin = require('babel-plugin-lodash');
 
 module.exports = (env, argv) => {
     const isDev = argv.mode !== 'production';
@@ -40,7 +39,7 @@ module.exports = (env, argv) => {
                     ]
                 },
                 {
-                    test: /\.tsx$/,
+                    test: /\.tsx?$/,
                     include: path.resolve(__dirname, 'src'),
                     use: [
                         { 
@@ -49,11 +48,9 @@ module.exports = (env, argv) => {
                             {
                                 presets: ['@babel/preset-env'],
                                 plugins: ["@babel/plugin-proposal-class-properties"]
-                                //plugins: isDev ? ["transform-react-jsx-source"] : []
                             }
                         },
                         'awesome-typescript-loader',
-                        //'babel-loader'
                     ]
                 },
             ]
@@ -87,7 +84,6 @@ module.exports = (env, argv) => {
             new CopyPlugin([
                 { from: 'assets', to: 'assets' }
             ])
-            //new BabelLodashPlugin()
         ],
         resolve: {
             extensions: ['.ts', '.tsx', '.js']
