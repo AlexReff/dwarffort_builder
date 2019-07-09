@@ -3,15 +3,53 @@
         {
             "text": "Building",
             "key": "b",
-            "id": "building"
+            "id": "building",
+            "children": []
         },
         {
             "text": "Designations",
             "key": "d",
-            "id": "designate"
+            "id": "designate",
+            "children": [
+                {
+                    "text": "Mine/Floor",
+                    "key": "d",
+                    "id": "mine"
+                },
+                {
+                    "text": "Wall",
+                    "key": "w",
+                    "id": "wall"
+                },
+                {
+                    "text": "Channel",
+                    "key": "h",
+                    "id": "channel"
+                },
+                {
+                    "text": "Up Stair",
+                    "key": "u",
+                    "id": "upstair"
+                },
+                {
+                    "text": "Down Stair",
+                    "key": "j",
+                    "id": "downstair"
+                },
+                {
+                    "text": "U/D Stair",
+                    "key": "i",
+                    "id": "udstair"
+                },
+                {
+                    "text": "Up Ramp",
+                    "key": "r",
+                    "id": "upramp"
+                }
+            ]
         },
         {
-            "text": "Stockpiles",
+            "text": "Stockpile",
             "key": "p",
             "id": "stockpile"
         }

@@ -1,19 +1,17 @@
-// <reference path="../node_modules/pixi.js/pixi.js.d.ts" />
-//// <reference path="../node_modules/@types/gsap/index.d.ts" />
-
-import * as _ from 'lodash';
-import { Path, Point, view, setup, Size, Color, Raster, Tool, Rectangle, PaperScope, Group, SymbolDefinition, SymbolItem, ToolEvent, Shape } from 'paper';
-import { h, render, Component } from 'preact';
+import * as _ from "lodash";
+import { Color, Group, HitResult, Item, PaperScope, Path, Point, Raster, Rectangle, setup, Shape, Size, SymbolDefinition, SymbolItem, Tool, ToolEvent, view } from "paper";
+import { Component, h, render } from "preact";
 import { items as MENU_ITEMS } from "./data/menu.json";
-// import { TweenMax } from 'gsap';
 
-require('./css/index.scss');
+import { Menu } from "./menu";
+
+require("./css/index.scss");
 
 const MAX_VELOCITY: number = 50;
 const TILE_SIZE: number = 16;
 
-let spriteMap = {
-    'ground': [
+const spriteMap = {
+    ground: [
         1,
         161,
         232,
@@ -30,15 +28,15 @@ let spriteMap = {
         // 177,
         // 178,
     ],
-    'wall': [
+    mineral: [
+        132,
+        133,
+    ],
+    wall: [
         81,
         82,
         83,
     ],
-    'mineral': [
-        132,
-        133,
-    ]
 };
 
 /*
@@ -70,20 +68,24 @@ class CanvasTile {
     }
 }
 
-class FortressDesigner extends Component<{}, {
-    rightMouseDown: boolean
-}> {
+interface IFortressDesignerState {
+    rightMouseDown: boolean;
+    currentMenu: string;
+}
+
+class FortressDesigner extends Component<{}, IFortressDesignerState> {
     private gridElement: HTMLElement;
-    // private innerGridElement: HTMLElement;
     private canvasElement: HTMLCanvasElement;
+
     private tool: Tool;
     private group: Group;
+    private tileGroup: Group;
     private cursor: Shape.Rectangle;
 
-    private TileSymbols: Array<SymbolDefinition> = new Array();
-    private ActiveTiles: Array<SymbolItem> = new Array();
+    private TileSymbols: SymbolDefinition[] = new Array();
+    private ActiveTiles: SymbolItem[] = new Array();
     // private TileGrid: Map<number, Map<number, Raster>> = new Map(); //active tile grid
-    private TilePool: Array<Array<SymbolItem>> = new Array(); //tile rasters to pull from instead of cloning new ones
+    private TilePool: SymbolItem[][] = new Array(); // tile rasters to pull from instead of cloning new ones
 
     private tileWidth: number;
     private tileHeight: number;
@@ -92,7 +94,6 @@ class FortressDesigner extends Component<{}, {
 
     private offsetX: number;
     private offsetY: number;
-    // private zoomLevel: number;
 
     constructor() {
         super();
@@ -101,23 +102,17 @@ class FortressDesigner extends Component<{}, {
         // this.zoomLevel = 1;
         // this.totalRowSize = this.totalColSize = 48 * 1;
         this.setState({
+            currentMenu: "",
             rightMouseDown: false,
         });
     }
 
     componentDidMount() {
-        //draw a grid of 'tiles'
-        //add :hover effects to each
-        //define click behaviors
-        //add submenu selectable things
-
         this.initBase();
 
-        let _this = this;
-
-        //draw the initial grid of tiles
-        let initialGridWidth = _.floor(this.gridElement.offsetWidth / 16) + 1;
-        let initialGridHeight = _.floor(this.gridElement.offsetHeight / 16) + 1;
+        // draw the initial grid of tiles
+        const initialGridWidth = _.floor(this.gridElement.offsetWidth / 16) + 1;
+        const initialGridHeight = _.floor(this.gridElement.offsetHeight / 16) + 1;
 
         for (let y = 0; y < initialGridHeight; y++) {
             for (let x = 0; x < initialGridWidth; x++) {
@@ -125,35 +120,13 @@ class FortressDesigner extends Component<{}, {
                 if (_.random(0, 100, false) > 95) {
                     targetId = 130;
                 }
-                let thisTile = this.getTileInstance(targetId);
+                const thisTile = this.getTileInstance(targetId);
                 thisTile.position = new Point(x * this.tileWidth, y * this.tileHeight);
-                this.group.addChild(thisTile);
+                this.tileGroup.addChild(thisTile);
                 this.ActiveTiles.push(thisTile);
-
-                //TODO: create the 'highlight' cursor raster/item + move it's position with this event
-                //      attach to the entire canvas mouseout (or group?) instead of individual items
-                thisTile.onMouseEnter = function (event: any) {
-                    // this.fillColor = 'red';
-                    _this.mouseHighlightPosition = new Point(event.currentTarget.position.x, event.currentTarget.position.y);
-                    //console.log(event);
-                }
-                thisTile.onMouseLeave = function (event) {
-                    // this.fillColor = 'red';
-                    //_this.mouseHighlightPosition = new Point(event.currentTarget.position.x, event.currentTarget.position.y);
-                    console.log(event);
-                }
             }
         }
 
-        view.onFrame = function (event) {
-            //
-        }
-
-        view.onResize = function (event) {
-            //console.log("view resized");
-        }
-
-        window.addEventListener('resize', this.onWindowResize.bind(this));
     }
 
     onWindowResize() {
@@ -166,13 +139,22 @@ class FortressDesigner extends Component<{}, {
     }
 
     initBase() {
-        let _this = this;
+        // let _this = this;
+
+        this.initPaper();
+
+        // document.addEventListener("keydown", this.keyPressHandler.bind(this));
+        window.addEventListener("resize", this.onWindowResize.bind(this));
+    }
+
+    initPaper() {
+        const _this = this;
 
         this.gridElement = document.getElementById("grid");
         this.canvasElement = document.getElementById("canvas") as HTMLCanvasElement;
 
-        //disable right-click canvas context menu
-        this.canvasElement.oncontextmenu = function (e) {
+        // disable right-click canvas context menu
+        this.canvasElement.oncontextmenu = (e) => {
             e.preventDefault();
         };
 
@@ -181,27 +163,18 @@ class FortressDesigner extends Component<{}, {
 
         setup(this.canvasElement);
 
-        //create the base raster from the spritesheet
-        var raster = new Raster("sprites");
+        // create the base raster from the spritesheet
+        const raster = new Raster("sprites");
 
         this.tileWidth = raster.size.width / 16;
         this.tileHeight = raster.size.height / 16;
 
-        //slice the spritesheet into tiles
+        // slice the spritesheet into tiles
         for (let y = 0; y < 16; y++) {
             for (let x = 0; x < 16; x++) {
-                let subRect = new Rectangle(x * this.tileWidth, y * this.tileHeight, this.tileWidth, this.tileHeight);
-                let subRaster = raster.getSubRaster(subRect);
+                const subRect = new Rectangle(x * this.tileWidth, y * this.tileHeight, this.tileWidth, this.tileHeight);
+                const subRaster = raster.getSubRaster(subRect);
                 this.TileSymbols.push(new SymbolDefinition(subRaster));
-                // this.TileSymbols[this.TileSymbols.length - 1].item.onMouseEnter = function(event: any) {
-                //     // this.fillColor = 'red';
-                //     //_this.mouseHighlightPosition = event.currentTarget.position
-                //     console.log(event);
-                // }
-                // this.TileSymbols[this.TileSymbols.length - 1].item.onMouseLeave = function(event) {
-                //     // this.fillColor = 'red';
-                //     console.log(event);
-                // }
                 subRaster.remove();
             }
         }
@@ -210,30 +183,39 @@ class FortressDesigner extends Component<{}, {
 
         this.cursor = new Shape.Rectangle(new Point(-100,-100), new Size(this.tileWidth, this.tileHeight));
         this.cursor.fillColor = new Color(0, 0);
-        this.cursor.strokeColor = new Color(.2, .5, .1);
+        this.cursor.strokeColor = new Color(1, 1, 0, 1);
+        this.cursor.strokeWidth = 1;
 
         this.offsetX = this.tileWidth / 2;
         this.offsetY = this.tileHeight / 2;
 
-        //tool interaction config
+        // tool interaction config
         this.tool = new Tool();
 
-        this.tool.onMouseDown = function (event) {
-            //event.event.button | 1: left, 2: right
-            if (event.event.button === 2) {
-                // _this.rightMouseDown = true;
-                _this.setState({
-                    rightMouseDown: true,
-                });
+        this.tool.onMouseDown = (event) => {
+            switch (event.event.button) {
+                case 0: // left mouse button
+                    // let targetTile: HitResult = _this.group.hitTest(event.point);
+                    // if (typeof targetTile !== "undefined") {
+                    //     _this.highlightTile(targetTile.item);
+                    // }
+                    break;
+                case 2: // right mouse button
+                    if (!_this.state.rightMouseDown) {
+                        _this.setState({
+                            rightMouseDown: true,
+                        });
+                        _this.tileGroup.visible = false;
+                    }
+                    // for(var i = 0; i < _this.ActiveTiles.length; i++) {
+                    //     _this.ActiveTiles[i].remove();
+                    // }
+                    break;
             }
+        };
 
-            // path = new Path();
-            // path.strokeColor = 'black';
-            // path.add(event.point);
-        }
-
-        this.tool.onMouseUp = function (event) {
-            //event.event.button | 1: left, 2: right
+        this.tool.onMouseUp = (event) => {
+            // event.event.button | 1: left, 2: right
             if (event.event.button === 2) {
                 event.event.stopPropagation();
                 // _this.rightMouseDown = false;
@@ -241,27 +223,68 @@ class FortressDesigner extends Component<{}, {
                     rightMouseDown: false,
                 });
 
-                //TODO: recycle off-screen tiles and draw new tiles as needed
-            }
-        }
+                _this.tileGroup.visible = true;
 
-        this.tool.onMouseDrag = function (event: ToolEvent) {
+                // TODO: recycle off-screen tiles and draw new tiles as needed
+            }
+        };
+
+        // let debouncedMouseMove = _.throttle(function(event) {
+        //     let targetTile: HitResult = _this.group.hitTest(event.point);
+        //     if (typeof targetTile !== "undefined" && targetTile !== null) {
+        //         _this.highlightTile(targetTile.item);
+        //     }
+        // }, 100, {
+        //     leading: true,
+        //     trailing: true,
+        // });
+
+        // this.tool.onMouseMove = debouncedMouseMove;
+
+        // this.tool.onMouseMove = function (event) {
+        //     let targetTile: HitResult = _this.group.hitTest(event.point);
+        //     if (typeof targetTile !== "undefined" && targetTile !== null && _this.cursor.position != targetTile.item.position) {
+        //         _this.highlightTile(targetTile.item);
+        //     }
+        // }
+
+        this.tool.onMouseDrag = (event: ToolEvent) => {
             if (_this.state.rightMouseDown) {
                 _this.group.position = _this.group.position.add(new Point(event.delta.x, event.delta.y));
             }
-        }
+        };
 
-        //create a group to allow for moving/modifying the entire grid
+        // view.onFrame = function (event) {
+        //     //
+        // }
+
+        // view.onResize = function (event) {
+        //     //console.log("view resized");
+        // }
+
+        // create a group to allow for moving/modifying the entire grid
+        this.tileGroup = new Group({
+            applyMatrix: false,
+        });
+
         this.group = new Group({
             applyMatrix: false,
-            position: new Point(this.offsetX, this.offsetY),
-            children: [this.cursor, this.tool]
+            children: [this.tileGroup, this.cursor],
+            position: new Point(this.offsetX, this.offsetY)
         });
+
+        this.cursor.bringToFront();
     }
 
+    // keyPressHandler(event: KeyboardEvent) {
+    //     switch (event.key) {
+    //         // need to get current menu hotkeys first
+    //     }
+    // }
+
     getTileInstance(id: number) {
-        //return an instance of the specified ID
-        //if we have one sitting in the pool, pop it
+        // return an instance of the specified ID
+        // if we have one sitting in the pool, pop it
         if (id < 0 || id >= this.TileSymbols.length) {
             return;
         }
@@ -278,6 +301,10 @@ class FortressDesigner extends Component<{}, {
         return this.TileSymbols[id].place();
     }
 
+    highlightTile(tile: Item) {
+        this.cursor.position = tile.position;
+    }
+
     // onEnd(e: MouseEvent | TouchEvent) {
     //     e.preventDefault();
     //     this.dragging = false;
@@ -287,7 +314,7 @@ class FortressDesigner extends Component<{}, {
 
     //     if (this.offsetX > 0 || this.offsetY > 0 ||
     //         maxWidthOffset < 0 || maxHeightOffset < 0 ||
-    //         this.offsetX < -1 * Math.abs(maxWidthOffset) || 
+    //         this.offsetX < -1 * Math.abs(maxWidthOffset) ||
     //         this.offsetY < -1 * Math.abs(maxHeightOffset)) {
     //         let v = { x: this.offsetX, y: this.offsetY };
     //         if (this.tween) this.tween.kill();
@@ -296,8 +323,8 @@ class FortressDesigner extends Component<{}, {
     //         let thisY = maxHeightOffset > 0 ? -1 * maxHeightOffset : center.y;
     //         this.tween = TweenMax.to(v, 0.4,
     //             {
-    //                 // x: Math.max(Math.min(0, this.offsetX), -1 * maxWidthOffset), 
-    //                 // y: Math.max(Math.min(0, this.offsetY), -1 * maxHeightOffset), 
+    //                 // x: Math.max(Math.min(0, this.offsetX), -1 * maxWidthOffset),
+    //                 // y: Math.max(Math.min(0, this.offsetY), -1 * maxHeightOffset),
     //                 x: thisX, // _.clamp(this.offsetX, -1 * maxWidthOffset, 0),
     //                 y: thisY, // _.clamp(this.offsetY, -1 * maxHeightOffset, 0),
     //                 onUpdate: () => {
@@ -305,12 +332,6 @@ class FortressDesigner extends Component<{}, {
     //                 }
     //             });
     //     }
-    // }
-
-
-    // updatePosition() {
-    //     this.innerGridElement.setAttribute("style", `transform: translate3d(${this.offsetX}px, ${this.offsetY}px, 0) scale(${this.zoomLevel});`);
-    //     // this.innerGridElement.setAttribute("style", `left: ${this.offsetX}px; top: ${this.offsetY}px; transform: scale(${this.zoomLevel});`);
     // }
 
     // onMove(e: MouseEvent | TouchEvent) {
@@ -339,6 +360,23 @@ class FortressDesigner extends Component<{}, {
     //     }
     // }
 
+    handleMenuEvent = (e: string) => {
+        if (e == null || e.length === 0) {
+            return;
+        }
+
+        switch (e) {
+            case "building":
+                break;
+            case "mine":
+                break;
+            case "wall":
+                break;
+            case "stockpile":
+                break;
+        }
+    }
+
     render(props, state) {
         return (
             <div class="wrapper">
@@ -358,24 +396,7 @@ class FortressDesigner extends Component<{}, {
                     <div id="inner-grid"></div>
                 </div> */}
                 <div id="grid" class={state.rightMouseDown ? "dragging" : null}><canvas id="canvas" data-paper-hidpi="off"></canvas></div>
-                <div id="menu">
-                    <div class="menu-items">
-                        {MENU_ITEMS.map((item) => {
-                            return (
-                                <div class="menu-item">
-                                    {item.key}: {item.text}
-                                </div>
-                            );
-                        })}
-                    </div>
-                    <div class="menu-bottom">
-                        {/* support for this needs to be added to the grid positioning calc 
-                        <a onClick={() => this.setZoom(1)}>1</a>
-                        <a onClick={() => this.setZoom(2)}>2</a>
-                        <a onClick={() => this.setZoom(3)}>3</a>
-                        */}
-                    </div>
-                </div>
+                <Menu initialMenu="top" handleMenuEvent={this.handleMenuEvent} />
             </div>
         );
     }

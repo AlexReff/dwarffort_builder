@@ -1,0 +1,11 @@
+{
+    "extends": "tslint:recommended",
+    "rules": {
+        "max-line-length": false,
+        "typedef": false,
+        "comment-format": false,
+        "no-var-requires": false,
+        "max-classes-per-file": false,
+        "member-access": false
+    }
+}

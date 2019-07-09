@@ -5,8 +5,47 @@
     display: flex;
     flex-direction: column;
 
-    .menu-items {
+    .menu-breadcrumbs {
+        margin-bottom: 10px;
 
+        a, a:active, a:hover, a:visited, a:focus {
+            color: #CCC;
+            text-decoration: none;
+        }
+
+        a {
+            margin-left: 20px;
+            display: inline-block;
+            position: relative;
+
+            &:before {
+                content: "/";
+                position: absolute;
+                left: -15px;
+            }
+
+            &:first-child {
+                margin-left: 0;
+
+                &:before {
+                    display: none;
+                }
+            }
+
+            &:last-child {
+                color: #FFF;
+            }
+        }
+    }
+
+    .menu-items {
+        .submenu {
+            display: none;
+
+            &.active {
+                display: block;
+            }
+        }
     }
 
     .menu-bottom {

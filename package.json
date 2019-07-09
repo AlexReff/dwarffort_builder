@@ -9,7 +9,8 @@
         "lodash": "^4.17.11",
         "paper": "^0.12.3",
         "pixi.js": "^5.0.4",
-        "preact": "^8.4.2"
+        "preact": "^8.4.2",
+        "rot-js": "^2.1.1"
     },
     "devDependencies": {
         "@babel/cli": "^7.4.4",
