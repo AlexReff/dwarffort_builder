@@ -64,7 +64,7 @@ class Menu extends Component<IMenuProps, IMenuState> {
     }
 
     keyPressHandler = (ev: KeyboardEvent) => {
-        let _this = this;
+        const _this = this;
 
         switch (ev.key) {
             case "Escape":

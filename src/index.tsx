@@ -1,32 +1,11 @@
 import * as _ from "lodash";
 import { Component, h, render } from "preact";
 
+import { Constants } from "./constants";
 import { Game } from "./game";
 import { Menu } from "./menu";
 
 require("./css/index.scss");
-
-const MAX_VELOCITY: number = 50;
-const TILE_SIZE: number = 16;
-
-const spriteMap = {
-    ground: [
-        1,
-        161,
-        232,
-        237,
-        239,
-    ],
-    mineral: [
-        132,
-        133,
-    ],
-    wall: [
-        81,
-        82,
-        83,
-    ],
-};
 
 /*
 --Draw a 2d grid on the canvas
@@ -66,22 +45,49 @@ class FortressDesigner extends Component<{}, IFortressDesignerState> {
     }
 
     componentDidMount() {
-        this.initGame();
-    }
+        this.gridElement = document.getElementById("grid");
 
-    initGame() {
         this.tileSheetImage = new Image(); // document.createElement("img");
         this.tileSheetImage.crossOrigin = "Anonymous";
         this.tileSheetImage.onload = () => {
-            this.game = new Game(this.tileSheetImage);
-            document.getElementById("grid").append(this.game.getDisplay().getContainer());
+            this.initGame();
         };
-        this.tileSheetImage.src = "/assets/Phoebus_16x16.png";
+        this.tileSheetImage.src = Constants.TILESHEET_URL;
+    }
+
+    initGame() {
+        // const _this = this;
+        this.game = new Game(this.tileSheetImage, this.gridElement);
+
+        window.addEventListener("keydown", this.handleKeyPress);
     }
 
     componentWillUnmount() {
         // stop when not renderable
         // clearInterval(this.timer);
+    }
+
+    /**
+     * Handles all keyboard inputs that are not handled by {@link this.handleMenuEvent}
+     */
+    handleKeyPress = (e: KeyboardEvent) => {
+        // menu events are handled in handleMenuEvent
+        switch (e.key) {
+            case "ArrowUp":
+                this.game.moveCursor(0);
+                break;
+            case "ArrowDown":
+                this.game.moveCursor(4);
+                break;
+            case "ArrowLeft":
+                this.game.moveCursor(6);
+                break;
+            case "ArrowRight":
+                this.game.moveCursor(2);
+                break;
+            default:
+                break;
+        }
     }
 
     //true -> event handled by this code, false -> event unhandled
@@ -129,8 +135,6 @@ class FortressDesigner extends Component<{}, IFortressDesignerState> {
 }
 
 render(<FortressDesigner />, document.getElementById("body"));
-
-
 
 // onEnd(e: MouseEvent | TouchEvent) {
 //     e.preventDefault();

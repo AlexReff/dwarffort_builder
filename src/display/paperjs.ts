@@ -1,3 +1,4 @@
+import * as _ from "lodash";
 import { Color, Group, Item, Point, Raster, Rectangle, setup, Shape, Size, SymbolDefinition, SymbolItem, Tool, ToolEvent, view } from "paper";
 
 class PaperJs {
