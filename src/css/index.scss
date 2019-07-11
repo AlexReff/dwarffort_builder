@@ -10,6 +10,11 @@
     src: url('./assets/consolas.ttf');
 }
 
+@font-face {
+    font-family: mayday;
+    src: url('./assets/fonts/DF_Mayday_16x16.ttf');
+}
+
 body {
     padding: 0;
     margin: 0;
@@ -47,6 +52,33 @@ body {
 
 canvas {
     display: block;
+}
+
+#debug {
+    position: fixed;
+    top: $header-height-px;
+    left: 0;
+    width: calc(100% - #{$menu-width}px);
+    height: calc(100vh - #{$header-height * 2}px);
+    background: #000;
+    display: none;
+    overflow-y: scroll;
+    z-index: 999;
+
+    &.active {
+        display: block;
+    }
+
+    .chars {
+        padding: 2px;
+        font-size: 16px;
+
+        > div {
+            width: 20%;
+            display: inline-block;
+            margin-bottom: 2px;
+        }
+    }
 }
 
 @import 'header', 'menu', 'grid', 'footer';

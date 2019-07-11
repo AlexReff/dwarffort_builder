@@ -5,6 +5,8 @@ import { IMenuItem } from "./menu.js";
 export { Direction };
 
 export class Constants {
+    static readonly DEBUG_MODE_ENABLED = true;
+
     static readonly TILE_WIDTH = 16;
     static readonly TILE_HEIGHT = 16;
     static readonly TILESHEET_URL = "/assets/Phoebus_cleaned.png"; // "/assets/Phoebus_16x16.png";

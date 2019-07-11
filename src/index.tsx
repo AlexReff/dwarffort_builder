@@ -30,6 +30,9 @@ interface IFortressDesignerState {
     // rightMouseDown: boolean;
     currentMenu: string;
     highlightedMenuItem: string;
+    debug: boolean;
+    gridColumnLayout: string;
+    gridRowLayout: string;
 }
 
 class FortressDesigner extends Component<{}, IFortressDesignerState> {
@@ -44,6 +47,7 @@ class FortressDesigner extends Component<{}, IFortressDesignerState> {
             currentMenu: "top",
             // rightMouseDown: false,
             highlightedMenuItem: null,
+            debug: false,
         });
     }
 
@@ -64,13 +68,19 @@ class FortressDesigner extends Component<{}, IFortressDesignerState> {
         if (wOff !== 0) {
             //adjust size
             const newWidth: string = "1fr " + (Constants.MENU_WIDTH_INITIAL + wOff).toString() + "px";
-            this.wrapper.style.gridTemplateColumns = newWidth;
+            this.setState({
+                gridColumnLayout: newWidth,
+            });
+            // this.wrapper.style.gridTemplateColumns = newWidth;
         }
 
         const hOff = this.gridElement.offsetHeight % 16;
         if (hOff !== 0) {
             const newHeight: string = Constants.HEADER_HEIGHT_INITIAL.toString() + "px 1fr " + (Constants.HEADER_HEIGHT_INITIAL + hOff).toString() + "px";
-            this.wrapper.style.gridTemplateRows = newHeight;
+            this.setState({
+                gridRowLayout: newHeight,
+            });
+            // this.wrapper.style.gridTemplateRows = newHeight;
         }
     }
 
@@ -94,6 +104,12 @@ class FortressDesigner extends Component<{}, IFortressDesignerState> {
         // console.log(e.key, e.keyCode);
 
         switch (e.keyCode) {
+            case 192: //` tilde
+                //toggle debug display
+                this.setState({
+                    debug: !this.state.debug,
+                });
+                break;
             case 27: //"Escape":
                 this.handleMenuEvent("escape");
                 break;
@@ -139,6 +155,8 @@ class FortressDesigner extends Component<{}, IFortressDesignerState> {
                 if (hotkeyTarget) {
                     e.preventDefault();
                     this.handleMenuEvent(Constants.MENU_DICTIONARY[key].id);
+                } else {
+                    console.log("unhandled keypress: ", e.keyCode, e.key);
                 }
                 break;
         }
@@ -242,30 +260,56 @@ class FortressDesigner extends Component<{}, IFortressDesignerState> {
         return null;
     }
 
-    render(props, state) {
+    renderFontSheet() {
+        const stack = [];
+        const stf = [];
+        for (let i = 0; i < 260; i++) {
+            stf.push(<div>{i + ": " + String.fromCharCode(i)}</div>);
+        }
+        stack.push((
+            <div class="chars">{stf}</div>
+        ));
+        return stack;
+    }
+
+    getWrapperStyle() {
+        return {
+            gridTemplateColumns: this.state.gridColumnLayout,
+            gridTemplateRows: this.state.gridRowLayout,
+        };
+    }
+
+    render(props, state: IFortressDesignerState) {
         return (
-            <div id="wrapper">
-                <div id="header">
-                    <div class="left"><a class="home-link" href="https://reff.dev/">reff.dev</a></div>
-                    <div class="center">
-                        <a href="/" class="title">Fortress Designer</a>
+            <div id="page">
+                { Constants.DEBUG_MODE_ENABLED ?
+                    <div id="debug" class={state.debug ? "active" : null}>
+                        {this.renderFontSheet()}
                     </div>
-                    <div class="right">
-                        {/* <div class="cursors">
-                            <a><i class="fas fa-mouse-pointer"></i></a>
-                            <a><i class="far fa-hand-pointer"></i></a>
-                        </div> */}
+                : null }
+                <div id="wrapper" style={this.getWrapperStyle()}>
+                    <div id="header">
+                        <div class="left"><a class="home-link" href="https://reff.dev/">reff.dev</a></div>
+                        <div class="center">
+                            <a href="/" class="title">Fortress Designer</a>
+                        </div>
+                        <div class="right">
+                            {/* <div class="cursors">
+                                <a><i class="fas fa-mouse-pointer"></i></a>
+                                <a><i class="far fa-hand-pointer"></i></a>
+                            </div> */}
+                        </div>
                     </div>
+                    <div id="grid" class={null/* state.rightMouseDown ? "dragging" : null */}></div>
+                    <Menu highlightedItem={state.highlightedMenuItem}
+                        selectedMenu={state.currentMenu}
+                        handleMenuEvent={this.handleMenuEvent} />
+                    <footer id="footer">
+                        <div class="inner">
+                            <div class="data">{this.renderFooterData()}</div>
+                        </div>
+                    </footer>
                 </div>
-                <div id="grid" class={null/* state.rightMouseDown ? "dragging" : null */}></div>
-                <Menu highlightedItem={state.highlightedMenuItem}
-                    selectedMenu={state.currentMenu}
-                    handleMenuEvent={this.handleMenuEvent} />
-                <footer id="footer">
-                    <div class="inner">
-                        <div class="data">{this.renderFooterData()}</div>
-                    </div>
-                </footer>
             </div>
         );
     }
