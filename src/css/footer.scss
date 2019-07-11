@@ -1,0 +1,20 @@
+@import './variables';
+
+#footer {
+    @include font-play;
+    position: relative;
+
+    .inner {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        // width: 100%;
+        // height: 32px;
+    }
+
+    .copy {
+        padding: 4px;
+        font-size: 16px;
+    }
+}

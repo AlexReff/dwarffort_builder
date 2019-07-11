@@ -1,18 +1,13 @@
-$frame-border-color: #877D73;
-$header-height: 32px;
-$menu-width: 245px;
+@import './variables';
 
 @font-face {
     font-family: px437;
     src: url('./assets/Px437_IBM_BIOS.ttf');
 }
 
-@mixin font-play {
-    font-family: 'Play', sans-serif;
-}
-
-@mixin font-nunito {
-    font-family: 'Nunito Sans', sans-serif;
+@font-face {
+    font-family: Consolas;
+    src: url('./assets/font.ttf');
 }
 
 body {
@@ -20,26 +15,33 @@ body {
     margin: 0;
     background: #000;
     color: #FFF;
-    font-family: px437;
+    @include font-px;
 }
 
-.wrapper {
+.px {
+    @include font-px;
+}
+
+#wrapper {
     width: 100%;
     height: 100vh;
     display: grid;
-    grid-template-areas: "h h" "c m";
+    grid-template-areas: "h h" "g m" "f f";
     
-    grid-template-columns: 1fr $menu-width;
-    grid-template-rows: $header-height 1fr;
+    grid-template-columns: 1fr $menu-width-px;
+    grid-template-rows: $header-height-px 1fr $header-height-px;
     
     #header {
         grid-area: h;
     }
     #grid {
-        grid-area: c;
+        grid-area: g;
     }
     #menu {
         grid-area: m;
+    }
+    #footer {
+        grid-area: f;
     }
 }
 
@@ -47,4 +49,4 @@ canvas {
     display: block;
 }
 
-@import 'header', 'menu', 'grid';
+@import 'header', 'menu', 'grid', 'footer';

@@ -1,6 +1,6 @@
 import * as _ from "lodash";
 import { Component, h } from "preact";
-import { items as MENU_ITEMS } from "./data/menu.json";
+import { items as MENU_ITEMS } from "../data/menu.json";
 
 interface IMenuItem {
     "text": string;
@@ -12,6 +12,7 @@ interface IMenuItem {
 
 interface IMenuProps {
     initialMenu: string;
+    highlightedItem: string;
 
     /**
      * Handles the event by 'id'
@@ -27,11 +28,13 @@ interface IMenuState {
 
 class Menu extends Component<IMenuProps, IMenuState> {
     private MENU_PARSED: Map<string, IMenuItem>;
+    private MENU_KEYS: { };
 
     constructor(props: IMenuProps) {
         super();
 
         this.MENU_PARSED = new Map();
+        this.MENU_KEYS = new Array();
         this.parseMenuItemRecursive(MENU_ITEMS);
 
         this.setState({
@@ -43,7 +46,9 @@ class Menu extends Component<IMenuProps, IMenuState> {
         for (const item of items) {
             const copy = item;
             copy.parent = parent;
-            this.MENU_PARSED[(parent != null ? parent.key + ":" : "") + copy.key] = copy;
+            const key = (parent != null ? parent.key + ":" : "") + copy.key;
+            this.MENU_PARSED[key] = copy;
+            this.MENU_KEYS[item.id] = key;
             if (copy.children != null && copy.children.length) {
                 this.parseMenuItemRecursive(copy.children, copy);
             }
@@ -63,50 +68,57 @@ class Menu extends Component<IMenuProps, IMenuState> {
         document.removeEventListener("keydown", this.keyPressHandler, true);
     }
 
-    keyPressHandler = (ev: KeyboardEvent) => {
-        const _this = this;
+    handleMenuSelection = (key: string) => {
+        //if the menu item represents a sub-menu, change the active menu
+        if (key === "top") {
+            this.setState({
+                selectedMenu: key,
+            });
+            return;
+        }
 
+        if (this.MENU_PARSED[key] != null &&
+            this.MENU_PARSED[key].children != null &&
+            this.MENU_PARSED[key].children.length > 0) {
+            this.setState({
+                selectedMenu: key,
+            });
+            return;
+        }
+
+        //otherwise, bubble up the event
+        this.props.handleMenuEvent(this.MENU_PARSED[key].id);
+    }
+
+    keyPressHandler = (ev: KeyboardEvent) => {
         switch (ev.key) {
             case "Escape":
             case "Esc":
             case "escape":
             case "esc":
-                ev.preventDefault();
-                if (!_this.props.handleMenuEvent("escape")) {
-                    const idx = _this.state.selectedMenu.lastIndexOf(":");
+                ev.stopPropagation();
+                if (!this.props.handleMenuEvent("escape")) {
+                    const idx = this.state.selectedMenu.lastIndexOf(":");
                     if (idx > 0) {
-                        _this.setState({
-                            selectedMenu: _this.state.selectedMenu.substr(0, idx),
-                        });
+                        this.handleMenuSelection(this.state.selectedMenu.substr(0, idx));
                     } else {
-                        _this.setState({
-                            selectedMenu: "top",
-                        });
+                        this.handleMenuSelection("top");
                     }
                 }
                 break;
             default:
-                const key = _this.state.selectedMenu !== "top" ? _this.state.selectedMenu + ":" + ev.key : ev.key;
-                const hotkeyTarget = _this.MENU_PARSED[key];
+                const key = this.state.selectedMenu !== "top" ? this.state.selectedMenu + ":" + ev.key : ev.key;
+                const hotkeyTarget = this.MENU_PARSED[key];
                 if (hotkeyTarget) {
                     ev.preventDefault();
-                    //if the menu item represents a sub-menu, change the active menu
-                    if (_this.MENU_PARSED[key] != null &&
-                        _this.MENU_PARSED[key].children != null &&
-                        _this.MENU_PARSED[key].children.length > 0) {
-                        //
-                        _this.setState({
-                            selectedMenu: key,
-                        });
-                        // _this.props.handleMenuEvent("Escape");
-                        break;
-                    }
-
-                    //otherwise, bubble up the event
-                    _this.props.handleMenuEvent(_this.MENU_PARSED[key].id);
+                    this.handleMenuSelection(key);
                 }
                 break;
         }
+    }
+
+    menuItemClickHandler = (e) => {
+        this.handleMenuSelection(e.currentTarget.id);
     }
 
     //render each individual menu with separate keys
@@ -128,7 +140,10 @@ class Menu extends Component<IMenuProps, IMenuState> {
 
         for (const i of items) {
             stack.push((
-                <div id={i.key}>{i.key}: {i.text}</div>
+                <a onClick={(e) => this.menuItemClickHandler(e)}
+                   title={i.text}
+                   class={this.props.highlightedItem != null && this.props.highlightedItem === i.id ? "menu-item active" : "menu-item"}
+                   id={prefix + i.key}>{i.key}: {i.text}</a>
             ));
             if (i.children != null && i.children.length > 0) {
                 childStack.push(this.getChildMenu(i.children, activeMenu, prefix + i.key, prefix + i.key));

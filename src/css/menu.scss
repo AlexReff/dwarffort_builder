@@ -1,7 +1,10 @@
+@import './variables';
+
 #menu {
+    @include font-consolas;
     border-left: 8px solid $frame-border-color;
     padding: 10px;
-    font-size: 12px;
+    font-size: 16px;
     display: flex;
     flex-direction: column;
 
@@ -9,38 +12,46 @@
         margin-bottom: 10px;
 
         a, a:active, a:hover, a:visited, a:focus {
-            color: #CCC;
+            color: inherit;
             text-decoration: none;
         }
 
         a {
+            @include whiteLinkHighlight;
             margin-left: 20px;
             display: inline-block;
             position: relative;
 
-            &:before {
+            &:after {
+                @include font-consolas;
                 content: "/";
                 position: absolute;
-                left: -15px;
+                right: -10px;
             }
 
             &:first-child {
+                @include font-px;
                 margin-left: 0;
-                position: relative;
-                top: -1px;
 
-                &:before {
-                    display: none;
+                &:after {
+                    position: relative;
+                    top: -1px;
                 }
             }
 
             &:last-child {
                 color: #FFF;
+
+                &:after {
+                    display: none;
+                }
             }
         }
     }
 
     .menu-items {
+        font-size: 16px;
+        
         .submenu {
             display: none;
 
@@ -48,13 +59,16 @@
                 display: block;
             }
         }
+
+        .menu-item {
+            @include whiteLinkHighlight;
+            display: block;
+            margin-bottom: 4px;
+            cursor: pointer;
+        }
     }
 
     .menu-bottom {
         margin-top: auto;
-    }
-
-    .menu-item {
-        margin-bottom: 2px;
     }
 }

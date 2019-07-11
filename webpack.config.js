@@ -5,7 +5,7 @@ const CopyPlugin = require('copy-webpack-plugin');
 
 module.exports = (env, argv) => {
     const isDev = argv.mode !== 'production';
-    
+
     return {
         devtool: isDev ? "source-map" : false,
         entry: './src/index.tsx',
@@ -18,7 +18,7 @@ module.exports = (env, argv) => {
             rules: [
                 {
                     test: /\.s(a|c)ss$/,
-                    include: path.resolve(__dirname, 'src'),
+                    include: path.resolve(__dirname, 'src/css'),
                     use: [
                         MiniCssExtractPlugin.loader,
                         {
@@ -39,12 +39,12 @@ module.exports = (env, argv) => {
                     ]
                 },
                 {
-                    test: /\.tsx?$/,
+                    test: /\.(t|j)sx?$/,
                     include: path.resolve(__dirname, 'src'),
                     use: [
-                        { 
+                        {
                             loader: 'babel-loader',
-                            options: 
+                            options:
                             {
                                 presets: ['@babel/preset-env'],
                                 plugins: ["@babel/plugin-proposal-class-properties"]
@@ -86,7 +86,7 @@ module.exports = (env, argv) => {
             ])
         ],
         resolve: {
-            extensions: ['.ts', '.tsx', '.js']
+            extensions: ['.ts', '.tsx', '.js', '.scss']
         }
     };
 };

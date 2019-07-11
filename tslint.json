@@ -1,6 +1,7 @@
 {
     "extends": "tslint:recommended",
     "rules": {
+        "indent": [true, "spaces", 4],
         "max-line-length": false,
         "typedef": false,
         "comment-format": false,

@@ -1,0 +1,38 @@
+$frame-border-color: #877D73;
+$header-height: 32;
+$header-height-px: #{$header-height}px;
+$menu-width: 260;
+$menu-width-px: #{$menu-width}px;
+
+:export {
+    menuWidth: $menu-width;
+    headerHeight: $header-height;
+}
+
+@mixin font-play {
+    font-family: 'Play', sans-serif;
+}
+
+@mixin font-nunito {
+    font-family: 'Nunito Sans', sans-serif;
+}
+
+@mixin font-px {
+    font-family: px437;
+}
+
+@mixin font-start {
+    font-family: 'Press Start 2P', cursive;
+}
+
+@mixin font-consolas {
+    font-family: 'Consolas', sans-serif;
+}
+
+@mixin whiteLinkHighlight {
+    color: #CCC;
+
+    &.active, &:hover {
+        color: #FFF;
+    }
+}

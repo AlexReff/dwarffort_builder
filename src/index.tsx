@@ -1,9 +1,9 @@
 import * as _ from "lodash";
 import { Component, h, render } from "preact";
 
-import { Constants } from "./constants";
-import { Game } from "./game";
-import { Menu } from "./menu";
+import { Constants, Direction } from "./components/constants";
+import { Game } from "./components/game";
+import { Menu } from "./components/menu";
 
 require("./css/index.scss");
 
@@ -29,10 +29,12 @@ Add google analytics + simple text ads before public release?
 interface IFortressDesignerState {
     rightMouseDown: boolean;
     currentMenu: string;
+    highlightedMenuItem: string;
 }
 
 class FortressDesigner extends Component<{}, IFortressDesignerState> {
     private gridElement: HTMLElement;
+    private wrapper: HTMLElement;
     private game: Game;
     private tileSheetImage: HTMLImageElement;
 
@@ -46,6 +48,7 @@ class FortressDesigner extends Component<{}, IFortressDesignerState> {
 
     componentDidMount() {
         this.gridElement = document.getElementById("grid");
+        this.wrapper = document.getElementById("wrapper");
 
         this.tileSheetImage = new Image(); // document.createElement("img");
         this.tileSheetImage.crossOrigin = "Anonymous";
@@ -53,6 +56,21 @@ class FortressDesigner extends Component<{}, IFortressDesignerState> {
             this.initGame();
         };
         this.tileSheetImage.src = Constants.TILESHEET_URL;
+
+        //update the grid's width in css to divisible by grid
+        const wOff = this.gridElement.offsetWidth % 16;
+        // debugger;
+        if (wOff !== 0) {
+            //adjust size
+            const newWidth: string = "1fr " + (Constants.MENU_WIDTH_INITIAL + wOff).toString() + "px";
+            this.wrapper.style.gridTemplateColumns = newWidth;
+        }
+
+        const hOff = this.gridElement.offsetHeight % 16;
+        if (hOff !== 0) {
+            const newHeight: string = Constants.HEADER_HEIGHT_INITIAL.toString() + "px 1fr " + (Constants.HEADER_HEIGHT_INITIAL + hOff).toString() + "px";
+            this.wrapper.style.gridTemplateRows = newHeight;
+        }
     }
 
     initGame() {
@@ -72,18 +90,47 @@ class FortressDesigner extends Component<{}, IFortressDesignerState> {
      */
     handleKeyPress = (e: KeyboardEvent) => {
         // menu events are handled in handleMenuEvent
-        switch (e.key) {
-            case "ArrowUp":
-                this.game.moveCursor(0);
+        // console.log(e.key, e.keyCode);
+
+        switch (e.keyCode) {
+            case 27: //"Escape":
+                //DO NOT USE! Only handleMenuEvent("escape") fires
                 break;
-            case "ArrowDown":
-                this.game.moveCursor(4);
+            case 38: //"ArrowUp":
+            case 104: //numpad 8
+                //move north
+                this.game.moveCursor(Direction.N);
                 break;
-            case "ArrowLeft":
-                this.game.moveCursor(6);
+            case 105: //numpad 9
+                //move ne
+                this.game.moveCursor(Direction.NE);
                 break;
-            case "ArrowRight":
-                this.game.moveCursor(2);
+            case 39: //"ArrowRight":
+            case 102: //numpad 6
+                //move east
+                this.game.moveCursor(Direction.E);
+                break;
+            case 99: //numpad 3
+                //move se
+                this.game.moveCursor(Direction.SE);
+                break;
+            case 40: //"ArrowDown":
+            case 98: //numpad 2
+                //move south
+                this.game.moveCursor(Direction.S);
+                break;
+            case 97: //numpad 1
+                //move sw
+                this.game.moveCursor(Direction.SW);
+                break;
+            case 37: //"ArrowLeft":
+            case 100: //numpad 4
+                //move west
+                this.game.moveCursor(Direction.W);
+                break;
+            case 103: //numpad 7
+                //move nw
+                this.game.moveCursor(Direction.NW);
                 break;
             default:
                 break;
@@ -98,23 +145,63 @@ class FortressDesigner extends Component<{}, IFortressDesignerState> {
 
         switch (e) {
             case "escape":
-                break;
-            case "building":
+                //called immediately, return true to prevent menu handling
+                this.setState({
+                    highlightedMenuItem: null, //do not return true if we hit this
+                });
                 break;
             case "mine":
+                this.setState({
+                    highlightedMenuItem: e,
+                });
                 break;
             case "wall":
+                this.setState({
+                    highlightedMenuItem: e,
+                });
                 break;
             case "stockpile":
+                this.setState({
+                    highlightedMenuItem: e,
+                });
+                break;
+            case "channel":
+                this.setState({
+                    highlightedMenuItem: e,
+                });
+                break;
+            case "upstair":
+                this.setState({
+                    highlightedMenuItem: e,
+                });
+                break;
+            case "downstair":
+                this.setState({
+                    highlightedMenuItem: e,
+                });
+                break;
+            case "udstair":
+                this.setState({
+                    highlightedMenuItem: e,
+                });
+                break;
+            case "upramp":
+                this.setState({
+                    highlightedMenuItem: e,
+                });
                 break;
         }
 
         return false;
     }
 
+    renderFooterData() {
+        return null;
+    }
+
     render(props, state) {
         return (
-            <div class="wrapper">
+            <div id="wrapper">
                 <div id="header">
                     <div class="left"><a class="home-link" href="https://reff.dev/">reff.dev</a></div>
                     <div class="center">
@@ -127,8 +214,14 @@ class FortressDesigner extends Component<{}, IFortressDesignerState> {
                         </div> */}
                     </div>
                 </div>
-                <div id="grid" class={state.rightMouseDown ? "dragging" : null}></div>
-                <Menu initialMenu="top" handleMenuEvent={this.handleMenuEvent} />
+                <div id="grid" class={null/* state.rightMouseDown ? "dragging" : null */}></div>
+                <Menu highlightedItem={this.state.highlightedMenuItem} initialMenu="top" handleMenuEvent={this.handleMenuEvent} />
+                <footer id="footer">
+                    <div class="inner">
+                        <div class="data">{this.renderFooterData()}</div>
+                        <div class="copy">&copy; {new Date().getFullYear()} Alex Reff <span class="px">☺</span></div>
+                    </div>
+                </footer>
             </div>
         );
     }
