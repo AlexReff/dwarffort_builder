@@ -1,7 +1,7 @@
 $frame-border-color: #877D73;
 $header-height: 32;
 $header-height-px: #{$header-height}px;
-$menu-width: 260;
+$menu-width: 230;
 $menu-width-px: #{$menu-width}px;
 
 :export {
@@ -30,7 +30,7 @@ $menu-width-px: #{$menu-width}px;
 }
 
 @mixin whiteLinkHighlight {
-    color: #CCC;
+    color: #BBB1A7;
 
     &.active, &:hover {
         color: #FFF;

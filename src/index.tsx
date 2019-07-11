@@ -27,7 +27,7 @@ Add google analytics + simple text ads before public release?
 */
 
 interface IFortressDesignerState {
-    rightMouseDown: boolean;
+    // rightMouseDown: boolean;
     currentMenu: string;
     highlightedMenuItem: string;
 }
@@ -40,10 +40,11 @@ class FortressDesigner extends Component<{}, IFortressDesignerState> {
 
     constructor() {
         super();
-        // this.setState({
-        //     currentMenu: "",
-        //     rightMouseDown: false,
-        // });
+        this.setState({
+            currentMenu: "top",
+            // rightMouseDown: false,
+            highlightedMenuItem: null,
+        });
     }
 
     componentDidMount() {
@@ -94,7 +95,7 @@ class FortressDesigner extends Component<{}, IFortressDesignerState> {
 
         switch (e.keyCode) {
             case 27: //"Escape":
-                //DO NOT USE! Only handleMenuEvent("escape") fires
+                this.handleMenuEvent("escape");
                 break;
             case 38: //"ArrowUp":
             case 104: //numpad 8
@@ -133,21 +134,62 @@ class FortressDesigner extends Component<{}, IFortressDesignerState> {
                 this.game.moveCursor(Direction.NW);
                 break;
             default:
+                const key = this.state.currentMenu !== "top" ? this.state.currentMenu + ":" + e.key : e.key;
+                const hotkeyTarget = Constants.MENU_DICTIONARY[key];
+                if (hotkeyTarget) {
+                    e.preventDefault();
+                    this.handleMenuEvent(Constants.MENU_DICTIONARY[key].id);
+                }
                 break;
         }
     }
 
-    //true -> event handled by this code, false -> event unhandled
     handleMenuEvent = (e: string) => {
         if (e == null || e.length === 0) {
-            return false;
+            return;
+        }
+
+        if (e === "top") {
+            this.setState({
+                highlightedMenuItem: null,
+                currentMenu: "top",
+            });
+            return;
+        }
+
+        if (Constants.MENU_SUBMENUS[e] != null) {
+            this.setState({
+                highlightedMenuItem: null,
+                currentMenu: Constants.MENU_SUBMENUS[e],
+            });
+            return;
         }
 
         switch (e) {
             case "escape":
-                //called immediately, return true to prevent menu handling
+                //menu handling
+                //go up one menu level
+                let newMenu = "";
+                const idx = this.state.currentMenu.lastIndexOf(":");
+                if (idx > 0) {
+                    newMenu = this.state.currentMenu.substr(0, idx);
+                } else {
+                    newMenu = "top";
+                }
                 this.setState({
-                    highlightedMenuItem: null, //do not return true if we hit this
+                    highlightedMenuItem: null,
+                    currentMenu: newMenu,
+                });
+                break;
+            case "designate":
+                // this.setState({
+                //     highlightedMenuItem: null,
+                //     currentMenu: "d",
+                // });
+                break;
+            case "building":
+                this.setState({
+                    highlightedMenuItem: e,
                 });
                 break;
             case "mine":
@@ -190,9 +232,10 @@ class FortressDesigner extends Component<{}, IFortressDesignerState> {
                     highlightedMenuItem: e,
                 });
                 break;
+            default:
+                console.log("uncaught menu event: ", e);
+                break;
         }
-
-        return false;
     }
 
     renderFooterData() {
@@ -215,11 +258,12 @@ class FortressDesigner extends Component<{}, IFortressDesignerState> {
                     </div>
                 </div>
                 <div id="grid" class={null/* state.rightMouseDown ? "dragging" : null */}></div>
-                <Menu highlightedItem={this.state.highlightedMenuItem} initialMenu="top" handleMenuEvent={this.handleMenuEvent} />
+                <Menu highlightedItem={state.highlightedMenuItem}
+                    selectedMenu={state.currentMenu}
+                    handleMenuEvent={this.handleMenuEvent} />
                 <footer id="footer">
                     <div class="inner">
                         <div class="data">{this.renderFooterData()}</div>
-                        <div class="copy">&copy; {new Date().getFullYear()} Alex Reff <span class="px">☺</span></div>
                     </div>
                 </footer>
             </div>

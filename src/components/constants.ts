@@ -1,5 +1,7 @@
 const styles = require(".././css/_variables.scss");
+import { items } from "../data/menu.json";
 import { Direction } from "./enums";
+import { IMenuItem } from "./menu.js";
 export { Direction };
 
 export class Constants {
@@ -109,22 +111,26 @@ export class Constants {
         return val;
     })();
 
-    // static readonly spriteMap = {
-    //     ground: [
-    //         1,
-    //         161,
-    //         232,
-    //         237,
-    //         239,
-    //     ],
-    //     mineral: [
-    //         132,
-    //         133,
-    //     ],
-    //     wall: [
-    //         81,
-    //         82,
-    //         83,
-    //     ],
-    // };
+    static readonly MENU_ITEMS = items as IMenuItem[];
+
+    static readonly MENU_SUBMENUS: Map<string, string> = new Map();
+
+    static readonly MENU_DICTIONARY: Map<string, IMenuItem> = (() => {
+        const MENU_PARSED: Map<string, IMenuItem> = new Map();
+        const parseMenuItemRecursive = (menuItems: IMenuItem[], parent?: IMenuItem) => {
+            for (const item of menuItems) {
+                item.parent = parent;
+                const key = (parent != null ? parent.key + ":" : "") + item.key;
+                MENU_PARSED[key] = item;
+                if (item.children != null && item.children.length) {
+                    Constants.MENU_SUBMENUS[item.id] = key;
+                    parseMenuItemRecursive(item.children, item);
+                }
+            }
+        };
+
+        parseMenuItemRecursive(Constants.MENU_ITEMS);
+
+        return MENU_PARSED;
+    })();
 }
