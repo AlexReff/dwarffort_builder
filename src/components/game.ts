@@ -3,15 +3,16 @@ import { default as OpenSimplexNoise } from "open-simplex-noise";
 import { Display } from "rot-js";
 
 import { Constants, Direction } from "./constants";
-import { Tile, TileItem } from "./Tile";
+import { Cursor } from "./cursor";
+import { Tile, TileType } from "./Tile";
 
 class Game {
     private display: Display;
     private tileSheetImage: HTMLImageElement;
-    private cursorPosition: [number, number];
-    private cursorCharacter: string;
     private noiseMap: number[][];
     private gridSize: [number, number]; //[width, height]
+
+    private cursor: Cursor;
 
     private gameGrid: Tile[][];
     private dirtyTiles: Array<[number, number]>;
@@ -24,6 +25,13 @@ class Game {
             Math.floor(container.offsetHeight / Constants.TILE_HEIGHT),
         ];
 
+        const center: [number, number] = [
+            Math.ceil(this.gridSize[0] / 2.0),
+            Math.ceil(this.gridSize[1] / 2.0),
+        ];
+
+        this.cursor = new Cursor(center);
+
         this.display = new Display({
             width: this.gridSize[0],
             height: this.gridSize[1],
@@ -32,7 +40,7 @@ class Game {
             tileHeight: Constants.TILE_HEIGHT,
             tileSet: this.tileSheetImage,
             tileMap: Constants.TILE_MAP,
-            tileColorize: false,
+            tileColorize: true,
             bg: "transparent",
         });
 
@@ -50,89 +58,89 @@ class Game {
             const thisRow = [];
             for (let y = 0; y < this.gridSize[1]; y++) {
                 //handle logic for populating initial grid
-                if (this.noiseMap[x][y] >= 85) {
-                    thisRow.push(new Tile(TileItem.EmptyDecorated));
+                if (this.noiseMap[x][y] <= Constants.GRID_TILE_DECORATED_PERCENT) {
+                    thisRow.push(Tile.EmptyDecorated());
                 } else {
-                    thisRow.push(Tile.Empty);
+                    thisRow.push(Tile.Empty());
                 }
             }
             this.gameGrid.push(thisRow);
         }
-
-        this.cursorPosition = [0, 0];
-        this.cursorCharacter = ".";
 
         this.dirtyTiles = new Array();
 
         this.render();
     }
 
-    public moveCursor(direction: Direction) {
+    public moveCursor(direction: Direction, shiftPressed?: boolean) {
+        const pos = this.cursor.getPosition();
+        const distance = shiftPressed ? 10 : 1;
         switch (direction) {
             case Direction.N:
-                if (this.cursorPosition[1] > 0) {
-                    this.dirtyTiles.push([this.cursorPosition[0], this.cursorPosition[1]]);
-                    this.cursorPosition[1] = Math.max(0, this.cursorPosition[1] - 1);
-                    this.dirtyTiles.push([this.cursorPosition[0], this.cursorPosition[1]]);
+                if (pos[1] > 0) {
+                    this.dirtyTiles.push([pos[0], pos[1]]);
+                    pos[1] = Math.max(0, pos[1] - distance);
+                    this.dirtyTiles.push([pos[0], pos[1]]);
                 }
                 break;
             case Direction.NE:
-                if (this.cursorPosition[1] > 0 || this.cursorPosition[0] < this.gridSize[0] - 1) {
-                    this.dirtyTiles.push([this.cursorPosition[0], this.cursorPosition[1]]);
-                    this.cursorPosition[0] = Math.min(this.gridSize[0] - 1, this.cursorPosition[0] + 1);
-                    this.cursorPosition[1] = Math.max(0, this.cursorPosition[1] - 1);
-                    this.dirtyTiles.push([this.cursorPosition[0], this.cursorPosition[1]]);
+                if (pos[1] > 0 || pos[0] < this.gridSize[0] - 1) {
+                    this.dirtyTiles.push([pos[0], pos[1]]);
+                    pos[0] = Math.min(this.gridSize[0] - 1, pos[0] + distance);
+                    pos[1] = Math.max(0, pos[1] - distance);
+                    this.dirtyTiles.push([pos[0], pos[1]]);
                 }
                 break;
             case Direction.E:
-                if (this.cursorPosition[0] < this.gridSize[0] - 1) {
-                    this.dirtyTiles.push([this.cursorPosition[0], this.cursorPosition[1]]);
-                    this.cursorPosition[0] = Math.min(this.gridSize[0] - 1, this.cursorPosition[0] + 1);
-                    this.dirtyTiles.push([this.cursorPosition[0], this.cursorPosition[1]]);
+                if (pos[0] < this.gridSize[0] - 1) {
+                    this.dirtyTiles.push([pos[0], pos[1]]);
+                    pos[0] = Math.min(this.gridSize[0] - 1, pos[0] + distance);
+                    this.dirtyTiles.push([pos[0], pos[1]]);
                 }
                 break;
             case Direction.SE:
-                if (this.cursorPosition[0] < this.gridSize[0] - 1 || this.cursorPosition[1] < this.gridSize[1] - 1) {
-                    this.dirtyTiles.push([this.cursorPosition[0], this.cursorPosition[1]]);
-                    this.cursorPosition[0] = Math.min(this.gridSize[0] - 1, this.cursorPosition[0] + 1);
-                    this.cursorPosition[1] = Math.min(this.gridSize[1] - 1, this.cursorPosition[1] + 1);
-                    this.dirtyTiles.push([this.cursorPosition[0], this.cursorPosition[1]]);
+                if (pos[0] < this.gridSize[0] - 1 || pos[1] < this.gridSize[1] - 1) {
+                    this.dirtyTiles.push([pos[0], pos[1]]);
+                    pos[0] = Math.min(this.gridSize[0] - 1, pos[0] + distance);
+                    pos[1] = Math.min(this.gridSize[1] - 1, pos[1] + distance);
+                    this.dirtyTiles.push([pos[0], pos[1]]);
                 }
                 break;
             case Direction.S:
-                if (this.cursorPosition[1] < this.gridSize[1] - 1) {
-                    this.dirtyTiles.push([this.cursorPosition[0], this.cursorPosition[1]]);
-                    this.cursorPosition[1] = Math.min(this.gridSize[1] - 1, this.cursorPosition[1] + 1);
-                    this.dirtyTiles.push([this.cursorPosition[0], this.cursorPosition[1]]);
+                if (pos[1] < this.gridSize[1] - 1) {
+                    this.dirtyTiles.push([pos[0], pos[1]]);
+                    pos[1] = Math.min(this.gridSize[1] - 1, pos[1] + distance);
+                    this.dirtyTiles.push([pos[0], pos[1]]);
                 }
                 break;
             case Direction.SW:
-                if (this.cursorPosition[0] > 0 || this.cursorPosition[1] < this.gridSize[1] - 1) {
-                    this.dirtyTiles.push([this.cursorPosition[0], this.cursorPosition[1]]);
-                    this.cursorPosition[0] = Math.max(0, this.cursorPosition[0] - 1);
-                    this.cursorPosition[1] = Math.min(this.gridSize[1] - 1, this.cursorPosition[1] + 1);
-                    this.dirtyTiles.push([this.cursorPosition[0], this.cursorPosition[1]]);
+                if (pos[0] > 0 || pos[1] < this.gridSize[1] - 1) {
+                    this.dirtyTiles.push([pos[0], pos[1]]);
+                    pos[0] = Math.max(0, pos[0] - 1);
+                    pos[1] = Math.min(this.gridSize[1] - 1, pos[1] + distance);
+                    this.dirtyTiles.push([pos[0], pos[1]]);
                 }
                 break;
             case Direction.W:
-                if (this.cursorPosition[0] > 0) {
-                    this.dirtyTiles.push([this.cursorPosition[0], this.cursorPosition[1]]);
-                    this.cursorPosition[0] = Math.max(0, this.cursorPosition[0] - 1);
-                    this.dirtyTiles.push([this.cursorPosition[0], this.cursorPosition[1]]);
+                if (pos[0] > 0) {
+                    this.dirtyTiles.push([pos[0], pos[1]]);
+                    pos[0] = Math.max(0, pos[0] - distance);
+                    this.dirtyTiles.push([pos[0], pos[1]]);
                 }
                 break;
             case Direction.NW:
-                if (this.cursorPosition[0] > 0 || this.cursorPosition[1] > 0) {
-                    this.dirtyTiles.push([this.cursorPosition[0], this.cursorPosition[1]]);
-                    this.cursorPosition[0] = Math.max(0, this.cursorPosition[0] - 1);
-                    this.cursorPosition[1] = Math.max(0, this.cursorPosition[1] - 1);
-                    this.dirtyTiles.push([this.cursorPosition[0], this.cursorPosition[1]]);
+                if (pos[0] > 0 || pos[1] > 0) {
+                    this.dirtyTiles.push([pos[0], pos[1]]);
+                    pos[0] = Math.max(0, pos[0] - distance);
+                    pos[1] = Math.max(0, pos[1] - distance);
+                    this.dirtyTiles.push([pos[0], pos[1]]);
                 }
                 break;
             default:
                 return;
         }
 
+        this.cursor.setPosition(pos);
         this.renderDirty();
     }
 
@@ -154,10 +162,12 @@ class Game {
     private renderPosition(coord: [number, number]) {
         //renders the appropriate thing at the specified coord
         //for now, check if it needs to be the cursor or the gamemap tile
-        if (this.cursorPosition[0] === coord[0] && this.cursorPosition[1] === coord[1]) {
-            this.display.draw(this.cursorPosition[0], this.cursorPosition[1], this.cursorCharacter, "rgba(255,255,0,1)", null);
+        const pos = this.cursor.getPosition();
+        if (pos[0] === coord[0] && pos[1] === coord[1]) {
+            const parms = this.cursor.getDrawData();
+            this.display.draw.apply(this.display, parms);
         } else {
-            this.display.draw(coord[0], coord[1], this.gameGrid[coord[0]][coord[1]].character, this.gameGrid[coord[0]][coord[1]].color, null);
+            this.display.draw(coord[0], coord[1], this.gameGrid[coord[0]][coord[1]].getCharacter(), this.gameGrid[coord[0]][coord[1]].getColor(), "transparent");
         }
     }
 

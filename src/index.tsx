@@ -1,6 +1,7 @@
+//libraries
 import * as _ from "lodash";
 import { Component, h, render } from "preact";
-
+//components
 import { Constants, Direction } from "./components/constants";
 import { Game } from "./components/game";
 import { Menu } from "./components/menu";
@@ -37,9 +38,8 @@ interface IFortressDesignerState {
 
 class FortressDesigner extends Component<{}, IFortressDesignerState> {
     private gridElement: HTMLElement;
-    private wrapper: HTMLElement;
-    private game: Game;
     private tileSheetImage: HTMLImageElement;
+    private game: Game;
 
     constructor() {
         super();
@@ -53,7 +53,6 @@ class FortressDesigner extends Component<{}, IFortressDesignerState> {
 
     componentDidMount() {
         this.gridElement = document.getElementById("grid");
-        this.wrapper = document.getElementById("wrapper");
 
         this.tileSheetImage = new Image(); // document.createElement("img");
         this.tileSheetImage.crossOrigin = "Anonymous";
@@ -71,7 +70,6 @@ class FortressDesigner extends Component<{}, IFortressDesignerState> {
             this.setState({
                 gridColumnLayout: newWidth,
             });
-            // this.wrapper.style.gridTemplateColumns = newWidth;
         }
 
         const hOff = this.gridElement.offsetHeight % 16;
@@ -80,15 +78,14 @@ class FortressDesigner extends Component<{}, IFortressDesignerState> {
             this.setState({
                 gridRowLayout: newHeight,
             });
-            // this.wrapper.style.gridTemplateRows = newHeight;
         }
     }
 
     initGame() {
-        // const _this = this;
         this.game = new Game(this.tileSheetImage, this.gridElement);
 
         window.addEventListener("keydown", this.handleKeyPress);
+        window.addEventListener("keyup", this.handleKeyUp);
     }
 
     componentWillUnmount() {
@@ -96,14 +93,27 @@ class FortressDesigner extends Component<{}, IFortressDesignerState> {
         // clearInterval(this.timer);
     }
 
+    handleKeyUp = (e: KeyboardEvent) => {
+        //
+    }
+
     /**
      * Handles all keyboard inputs that are not handled by {@link this.handleMenuEvent}
      */
     handleKeyPress = (e: KeyboardEvent) => {
-        // menu events are handled in handleMenuEvent
-        // console.log(e.key, e.keyCode);
-
         switch (e.keyCode) {
+            case 13: //Enter key
+                //do stuff
+                if (this.state.highlightedMenuItem && this.state.highlightedMenuItem.length) {
+                    switch (this.state.highlightedMenuItem) { //menu ids
+                        case "mine":
+                            // console.log("begin mine designation");
+                            break;
+                        default:
+                            break;
+                    }
+                }
+                break;
             case 192: //` tilde
                 //toggle debug display
                 this.setState({
@@ -116,38 +126,38 @@ class FortressDesigner extends Component<{}, IFortressDesignerState> {
             case 38: //"ArrowUp":
             case 104: //numpad 8
                 //move north
-                this.game.moveCursor(Direction.N);
+                this.game.moveCursor(Direction.N, e.shiftKey);
                 break;
             case 105: //numpad 9
                 //move ne
-                this.game.moveCursor(Direction.NE);
+                this.game.moveCursor(Direction.NE, e.shiftKey);
                 break;
             case 39: //"ArrowRight":
             case 102: //numpad 6
                 //move east
-                this.game.moveCursor(Direction.E);
+                this.game.moveCursor(Direction.E, e.shiftKey);
                 break;
             case 99: //numpad 3
                 //move se
-                this.game.moveCursor(Direction.SE);
+                this.game.moveCursor(Direction.SE, e.shiftKey);
                 break;
             case 40: //"ArrowDown":
             case 98: //numpad 2
                 //move south
-                this.game.moveCursor(Direction.S);
+                this.game.moveCursor(Direction.S, e.shiftKey);
                 break;
             case 97: //numpad 1
                 //move sw
-                this.game.moveCursor(Direction.SW);
+                this.game.moveCursor(Direction.SW, e.shiftKey);
                 break;
             case 37: //"ArrowLeft":
             case 100: //numpad 4
                 //move west
-                this.game.moveCursor(Direction.W);
+                this.game.moveCursor(Direction.W, e.shiftKey);
                 break;
             case 103: //numpad 7
                 //move nw
-                this.game.moveCursor(Direction.NW);
+                this.game.moveCursor(Direction.NW, e.shiftKey);
                 break;
             default:
                 const key = this.state.currentMenu !== "top" ? this.state.currentMenu + ":" + e.key : e.key;
@@ -198,12 +208,6 @@ class FortressDesigner extends Component<{}, IFortressDesignerState> {
                     highlightedMenuItem: null,
                     currentMenu: newMenu,
                 });
-                break;
-            case "designate":
-                // this.setState({
-                //     highlightedMenuItem: null,
-                //     currentMenu: "d",
-                // });
                 break;
             case "building":
                 this.setState({
@@ -264,10 +268,12 @@ class FortressDesigner extends Component<{}, IFortressDesignerState> {
         const stack = [];
         const stf = [];
         for (let i = 0; i < 260; i++) {
-            stf.push(<div>{i + ": " + String.fromCharCode(i)}</div>);
+            stf.push(
+                <div class="row"><div>{i + ": "}</div><div>{String.fromCharCode(i)}</div></div>,
+            );
         }
         stack.push((
-            <div class="chars">{stf}</div>
+            <table class="chars">{stf}</table>
         ));
         return stack;
     }
@@ -282,11 +288,11 @@ class FortressDesigner extends Component<{}, IFortressDesignerState> {
     render(props, state: IFortressDesignerState) {
         return (
             <div id="page">
-                { Constants.DEBUG_MODE_ENABLED ?
+                {Constants.DEBUG_MODE_ENABLED ?
                     <div id="debug" class={state.debug ? "active" : null}>
                         {this.renderFontSheet()}
                     </div>
-                : null }
+                    : null}
                 <div id="wrapper" style={this.getWrapperStyle()}>
                     <div id="header">
                         <div class="left"><a class="home-link" href="https://reff.dev/">reff.dev</a></div>

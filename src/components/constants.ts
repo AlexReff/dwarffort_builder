@@ -1,7 +1,9 @@
 const styles = require(".././css/_variables.scss");
+
 import { items } from "../data/menu.json";
 import { Direction } from "./enums";
 import { IMenuItem } from "./menu.js";
+
 export { Direction };
 
 export class Constants {
@@ -15,13 +17,41 @@ export class Constants {
     static readonly HEADER_HEIGHT_INITIAL: number = Number(styles.headerHeight);
 
     static readonly GRID_TILE_COLOR_PERCENT: number = 40; // #/100 likelihood of a decorated tile to be colored
+    static readonly GRID_TILE_DECORATED_PERCENT: number = 15; // #/100 likelihood of an empty tile to be decorated
     static readonly GRID_TILE_DECORATED_COLORS: string[] = [
-        // "rgba(0,255,255,1)", //LCYAN
-        // "rgba(0,255,0,1)", //GREEN
+        "rgba(0,255,255,.4)", //LCYAN
+        "rgba(0,255,0,.4)", //GREEN
         // "rgba(255,255,0,1)", //YELLOW
         // "rgba(255,255,255,.1)", //WHITE
         "rgba(255,255,255,.1)", //grey-ish
-        "rgba(255,255,0,.5)", //natural-er yellow
+        "rgba(255,255,0,.4)", //natural-er yellow
+    ];
+
+    static readonly WALL_TILES: Array<{[key: number]: Array<[number, number]>}> = [
+        {0: [[192, 112]]}, //0000 'edge'
+        {1: [[192, 112]]}, //0001 N 'edge'
+        {2: [[192, 112]]}, //0010 E 'edge'
+        {4: [[192, 112]]}, //0100 S 'edge'
+        {8: [[192, 112]]}, //1000 W 'edge'
+        {3: [[208, 48],
+             [208, 64],
+             [192, 128]]}, //0011 NE
+        {5: [[176, 160]]}, //0101 NS
+        {6: [[208, 80],
+             [208, 96],
+             [192, 144]]}, //0110 SE
+        {7: [[192, 192]]}, //0111 NES
+        {9: [[176, 192],
+             [176, 208],
+             [176, 224]]}, //1001 NW
+        {10: [[192, 208]]}, //1010 EW
+        {11: [[192, 160]]}, //1011 NEW
+        {12: [[176, 112],
+              [176, 128],
+              [176, 176]]}, //1100 SW
+        {13: [[176, 144]]}, //1101 NSW
+        {14: [[192, 176]]}, //1110 SEW
+        {15: [[192, 224]]}, //1111 4-way
     ];
 
     static readonly DECORATOR_TILES: Array<{
@@ -96,20 +126,6 @@ export class Constants {
         Constants.DECORATOR_TILES.forEach((tile) => {
             val[tile.char] = tile.coord;
         });
-        // return {
-        //     " ": [0, 0],        //empty
-        //     "@": [16, 0],       //player?
-        //     ".": [128, 112],    //cursor
-        //     "z0": [192, 16],    //decorated empty //3 spades
-        //     "z1": [32, 128],    //decorated empty //3-dot ore
-        //     "z2": [192, 144],   //decorated empty //3-dot ore - do not color
-        //     "z3": [176, 160],  //decorated empty //3-dot ore - do not color
-        //     "z4": [208, 16],    //decorated empty //large spade
-        //     "z5": [160, 32],    //decorated empty //large single ore
-        //     "z6": [176, 128],   //decorated empty //large symmetrical gem/ore - do not color
-        //     "z7": [144, 160],  //decorated empty //medium ore - do not color
-        //     "z8": [160, 160],  //decorated empty //2 medium ore - do not color
-        // };
         return val;
     })();
 
