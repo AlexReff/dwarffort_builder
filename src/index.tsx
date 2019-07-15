@@ -34,10 +34,13 @@ interface IFortressDesignerState {
     debug: boolean;
     gridColumnLayout: string;
     gridRowLayout: string;
+    mouseLeft: number;
+    mouseTop: number;
 }
 
 class FortressDesigner extends Component<{}, IFortressDesignerState> {
     private gridElement: HTMLElement;
+    private headerElement: HTMLElement;
     private tileSheetImage: HTMLImageElement;
     private game: Game;
 
@@ -53,6 +56,7 @@ class FortressDesigner extends Component<{}, IFortressDesignerState> {
 
     componentDidMount() {
         this.gridElement = document.getElementById("grid");
+        this.headerElement = document.getElementById("header");
 
         this.tileSheetImage = new Image(); // document.createElement("img");
         this.tileSheetImage.crossOrigin = "Anonymous";
@@ -84,8 +88,10 @@ class FortressDesigner extends Component<{}, IFortressDesignerState> {
     initGame() {
         this.game = new Game(this.tileSheetImage, this.gridElement);
 
+        this.gridElement.addEventListener("mousemove", this.handleMouseMove);
         window.addEventListener("keydown", this.handleKeyPress);
         window.addEventListener("keyup", this.handleKeyUp);
+        window.addEventListener("resize", this.handleWindowResize);
     }
 
     componentWillUnmount() {
@@ -93,13 +99,21 @@ class FortressDesigner extends Component<{}, IFortressDesignerState> {
         // clearInterval(this.timer);
     }
 
+    handleMouseMove = (e) => {
+        this.setState({
+            mouseLeft: e.clientX,
+            mouseTop: e.clientY,
+        });
+    }
+
+    handleWindowResize = (e: Event) => {
+        // TODO: Handle this
+    }
+
     handleKeyUp = (e: KeyboardEvent) => {
         //
     }
 
-    /**
-     * Handles all keyboard inputs that are not handled by {@link this.handleMenuEvent}
-     */
     handleKeyPress = (e: KeyboardEvent) => {
         switch (e.keyCode) {
             case 13: //Enter key
@@ -285,6 +299,21 @@ class FortressDesigner extends Component<{}, IFortressDesignerState> {
         };
     }
 
+    getTestStyle() {
+        if (this.headerElement) {
+            const bounds = this.game.getCanvasBounds();
+            //TODO: get the 16-multiple position instead of raw cursor position
+            return {
+                position: "absolute",
+                transform: "translate(-50%, -50%)",
+                width: "16px",
+                height: "16px",
+                left: this.state.mouseLeft,
+                top: this.state.mouseTop,
+            };
+        }
+    }
+
     render(props, state: IFortressDesignerState) {
         return (
             <div id="page">
@@ -293,6 +322,7 @@ class FortressDesigner extends Component<{}, IFortressDesignerState> {
                         {this.renderFontSheet()}
                     </div>
                     : null}
+                <div id="test" style={this.getTestStyle()}>&amp;</div>
                 <div id="wrapper" style={this.getWrapperStyle()}>
                     <div id="header">
                         <div class="left"><a class="home-link" href="https://reff.dev/">reff.dev</a></div>
@@ -306,7 +336,7 @@ class FortressDesigner extends Component<{}, IFortressDesignerState> {
                             </div> */}
                         </div>
                     </div>
-                    <div id="grid" class={null/* state.rightMouseDown ? "dragging" : null */}></div>
+                    <div id="grid"></div>
                     <Menu highlightedItem={state.highlightedMenuItem}
                         selectedMenu={state.currentMenu}
                         handleMenuEvent={this.handleMenuEvent} />

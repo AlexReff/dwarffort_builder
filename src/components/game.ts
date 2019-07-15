@@ -72,6 +72,10 @@ class Game {
         this.render();
     }
 
+    public getCanvasBounds() {
+        return this.display.getContainer().getBoundingClientRect();
+    }
+
     public moveCursor(direction: Direction, shiftPressed?: boolean) {
         const pos = this.cursor.getPosition();
         const distance = shiftPressed ? 10 : 1;
