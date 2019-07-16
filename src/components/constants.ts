@@ -16,7 +16,7 @@ export class Constants {
     static readonly MENU_WIDTH_INITIAL: number = Number(styles.menuWidth);
     static readonly HEADER_HEIGHT_INITIAL: number = Number(styles.headerHeight);
 
-    static readonly GRID_TILE_COLOR_PERCENT: number = 40; // #/100 likelihood of a decorated tile to be colored
+    static readonly GRID_TILE_COLOR_PERCENT: number = 50; // #/100 likelihood of a decorated tile to be colored
     static readonly GRID_TILE_DECORATED_PERCENT: number = 15; // #/100 likelihood of an empty tile to be decorated
     static readonly GRID_TILE_DECORATED_COLORS: string[] = [
         "rgba(0,255,255,.4)", //LCYAN
@@ -27,31 +27,45 @@ export class Constants {
         "rgba(255,255,0,.4)", //natural-er yellow
     ];
 
-    static readonly WALL_TILES: Array<{[key: number]: Array<[number, number]>}> = [
-        {0: [[192, 112]]}, //0000 'edge'
-        {1: [[192, 112]]}, //0001 N 'edge'
-        {2: [[192, 112]]}, //0010 E 'edge'
-        {4: [[192, 112]]}, //0100 S 'edge'
-        {8: [[192, 112]]}, //1000 W 'edge'
-        {3: [[208, 48],
-             [208, 64],
-             [192, 128]]}, //0011 NE
-        {5: [[176, 160]]}, //0101 NS
-        {6: [[208, 80],
-             [208, 96],
-             [192, 144]]}, //0110 SE
-        {7: [[192, 192]]}, //0111 NES
-        {9: [[176, 192],
-             [176, 208],
-             [176, 224]]}, //1001 NW
-        {10: [[192, 208]]}, //1010 EW
-        {11: [[192, 160]]}, //1011 NEW
-        {12: [[176, 112],
-              [176, 128],
-              [176, 176]]}, //1100 SW
-        {13: [[176, 144]]}, //1101 NSW
-        {14: [[192, 176]]}, //1110 SEW
-        {15: [[192, 224]]}, //1111 4-way
+    static readonly WALL_TILES: Array<Array<[number, number]>> = [
+        [[112, 192]], //0000 'edge'     //0
+        [[112, 192]], //0001 N 'edge'   //1
+        [[112, 192]], //0010 E 'edge'   //2
+        [                               //3
+            [48, 208],
+            [64, 208],
+            [128, 192],
+        ], //0011 NE
+        [[112, 192]], //0100 S 'edge'   //4
+        [[160, 176]], //0101 NS         //5
+        [                               //6
+            [80, 208],
+            [96, 208],
+            [144, 192],
+        ], //0110 SE
+        [[192, 192]], //0111 NES        //7
+        [[112, 192]], //1000 W 'edge'   //8
+        [                               //9
+            [192, 176],
+            [208, 176],
+            [224, 176],
+        ], //1001 NW
+        [[208, 192]], //1010 EW         //10
+        [[160, 192]], //1011 NEW        //11
+        [                               //12
+            [112, 176],
+            [128, 176],
+            [176, 176],
+        ], //1100 SW
+        [[144, 176]], //1101 NSW        //13
+        [[176, 192]], //1110 SEW        //14
+        [[224, 192]], //1111 4-way      //15
+    ];
+
+    static readonly FLOOR_TILES: Array<[number, number]> = [
+        [0, 176],
+        [16, 176],
+        [32, 176],
     ];
 
     static readonly DECORATOR_TILES: Array<{
@@ -60,72 +74,91 @@ export class Constants {
         coord: [number, number],
         colorize: boolean,
     }> = [
-        {
-            char: "z0",
-            desc: "3 spades",
-            coord: [192, 16],
-            colorize: true,
-        },
-        {
-            char: "z1",
-            desc: "3 ore",
-            coord: [32, 128],
-            colorize: false,
-        },
-        {
-            char: "z2",
-            desc: "3 ore",
-            coord: [192, 144],
-            colorize: false,
-        },
-        {
-            char: "z3",
-            desc: "3 ore",
-            coord: [176, 160],
-            colorize: false,
-        },
-        {
-            char: "z4",
-            desc: "large spade",
-            coord: [208, 16],
-            colorize: true,
-        },
-        {
-            char: "z5",
-            desc: "large single ore",
-            coord: [160, 32],
-            colorize: true,
-        },
-        {
-            char: "z6",
-            desc: "large symmetrical ore",
-            coord: [176, 128],
-            colorize: false,
-        },
-        {
-            char: "z7",
-            desc: "medium ore",
-            coord: [144, 160],
-            colorize: false,
-        },
-        {
-            char: "z8",
-            desc: "2 ore",
-            coord: [160, 160],
-            colorize: false,
-        },
-    ];
+            {
+                char: "z0",
+                desc: "3 spades",
+                coord: [192, 16],
+                colorize: true,
+            },
+            {
+                char: "z1",
+                desc: "3 ore",
+                coord: [32, 128],
+                colorize: false,
+            },
+            {
+                char: "z2",
+                desc: "3 ore",
+                coord: [192, 144],
+                colorize: false,
+            },
+            {
+                char: "z3",
+                desc: "3 ore",
+                coord: [176, 160],
+                colorize: false,
+            },
+            {
+                char: "z4",
+                desc: "large spade",
+                coord: [208, 16],
+                colorize: true,
+            },
+            {
+                char: "z5",
+                desc: "large single ore",
+                coord: [160, 32],
+                colorize: true,
+            },
+            {
+                char: "z6",
+                desc: "large symmetrical ore",
+                coord: [176, 128],
+                colorize: false,
+            },
+            {
+                char: "z7",
+                desc: "medium ore",
+                coord: [144, 160],
+                colorize: false,
+            },
+            {
+                char: "z8",
+                desc: "2 ore",
+                coord: [160, 160],
+                colorize: false,
+            },
+        ];
 
     static readonly TILE_MAP: { [key: string]: [number, number]; } = ((): { [key: string]: [number, number]; } => {
         let val: { [key: string]: [number, number]; } = {};
         val = {
             " ": [0, 0],        //empty
             "@": [16, 0],       //player?
-            ".": [128, 112],    //cursor
+            ".": [128, 80],     //cursor
         };
+
+        //decorator tiles `z${number}`
         Constants.DECORATOR_TILES.forEach((tile) => {
             val[tile.char] = tile.coord;
         });
+
+        //wall tiles `w${number}${optional variant letter}`
+        for (const key of Object.keys(Constants.WALL_TILES)) {
+            if (Constants.WALL_TILES[key].length > 1) {
+                for (let i = 0; i < Constants.WALL_TILES[key].length; i++) {
+                    val["w" + key + String.fromCharCode(i + 97)] = Constants.WALL_TILES[key][i];
+                }
+            } else {
+                val["w" + key] = Constants.WALL_TILES[key][0];
+            }
+        }
+
+        //floor tiles `f${number}`
+        for (let i = 0; i < Constants.FLOOR_TILES.length; i++) {
+            val["f" + i] = Constants.FLOOR_TILES[i];
+        }
+
         return val;
     })();
 

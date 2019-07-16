@@ -3,8 +3,10 @@ import * as _ from "lodash";
 import { Component, h, render } from "preact";
 //components
 import { Constants, Direction } from "./components/constants";
+import { DebugMenu } from "./components/debug";
 import { Game } from "./components/game";
 import { Menu } from "./components/menu";
+import { TileType } from "./components/Tile";
 
 require("./css/index.scss");
 
@@ -36,10 +38,12 @@ interface IFortressDesignerState {
     gridRowLayout: string;
     mouseLeft: number;
     mouseTop: number;
+    mouseOverGrid: boolean;
 }
 
 class FortressDesigner extends Component<{}, IFortressDesignerState> {
     private gridElement: HTMLElement;
+    private canvasElement: HTMLElement;
     private headerElement: HTMLElement;
     private tileSheetImage: HTMLImageElement;
     private game: Game;
@@ -70,7 +74,7 @@ class FortressDesigner extends Component<{}, IFortressDesignerState> {
         // debugger;
         if (wOff !== 0) {
             //adjust size
-            const newWidth: string = "1fr " + (Constants.MENU_WIDTH_INITIAL + wOff).toString() + "px";
+            const newWidth = `1fr ${(Constants.MENU_WIDTH_INITIAL + wOff).toString()}px`;
             this.setState({
                 gridColumnLayout: newWidth,
             });
@@ -78,31 +82,63 @@ class FortressDesigner extends Component<{}, IFortressDesignerState> {
 
         const hOff = this.gridElement.offsetHeight % 16;
         if (hOff !== 0) {
-            const newHeight: string = Constants.HEADER_HEIGHT_INITIAL.toString() + "px 1fr " + (Constants.HEADER_HEIGHT_INITIAL + hOff).toString() + "px";
+            const newHeight = `${Constants.HEADER_HEIGHT_INITIAL.toString()}px 1fr ${(Constants.HEADER_HEIGHT_INITIAL + hOff).toString()}px`;
             this.setState({
                 gridRowLayout: newHeight,
             });
         }
     }
 
-    initGame() {
+    initGame = () => {
         this.game = new Game(this.tileSheetImage, this.gridElement);
+        this.canvasElement = this.game.getCanvas();
 
+        this.gridElement.addEventListener("click", this.handleGridClick);
         this.gridElement.addEventListener("mousemove", this.handleMouseMove);
+        this.gridElement.addEventListener("mouseover", this.handleMouseOver);
+        this.gridElement.addEventListener("mouseleave", this.handleMouseLeave);
         window.addEventListener("keydown", this.handleKeyPress);
         window.addEventListener("keyup", this.handleKeyUp);
         window.addEventListener("resize", this.handleWindowResize);
     }
 
     componentWillUnmount() {
-        // stop when not renderable
-        // clearInterval(this.timer);
+        this.gridElement.removeEventListener("click", this.handleGridClick);
+        this.gridElement.removeEventListener("mousemove", this.handleMouseMove);
+        this.gridElement.removeEventListener("mouseover", this.handleMouseOver);
+        this.gridElement.removeEventListener("mouseleave", this.handleMouseLeave);
+        window.removeEventListener("keydown", this.handleKeyPress);
+        window.removeEventListener("keyup", this.handleKeyUp);
+        window.removeEventListener("resize", this.handleWindowResize);
+    }
+
+    handleGridClick = (e: MouseEvent | TouchEvent) => {
+        e.preventDefault();
+        //const pos = this.getGridPosition(e.clientX, e.clientY);
+        // const bounds = this.canvasElement.getBoundingClientRect();
+        // pos[0] = (pos[0] - bounds.left) / Constants.TILE_WIDTH;
+        // pos[1] = (pos[1] - bounds.top) / Constants.TILE_HEIGHT;
+        const pos = this.game.getMousePosition(e);
+        this.game.moveCursorTo(pos);
+        this.game.setTile(pos, TileType.Wall);
     }
 
     handleMouseMove = (e) => {
         this.setState({
             mouseLeft: e.clientX,
             mouseTop: e.clientY,
+        });
+    }
+
+    handleMouseOver = (e) => {
+        this.setState({
+            mouseOverGrid: true,
+        });
+    }
+
+    handleMouseLeave = (e) => {
+        this.setState({
+            mouseOverGrid: false,
         });
     }
 
@@ -274,42 +310,40 @@ class FortressDesigner extends Component<{}, IFortressDesignerState> {
         }
     }
 
-    renderFooterData() {
+    renderFooterData = () => {
         return null;
     }
 
-    renderFontSheet() {
-        const stack = [];
-        const stf = [];
-        for (let i = 0; i < 260; i++) {
-            stf.push(
-                <div class="row"><div>{i + ": "}</div><div>{String.fromCharCode(i)}</div></div>,
-            );
-        }
-        stack.push((
-            <table class="chars">{stf}</table>
-        ));
-        return stack;
-    }
-
-    getWrapperStyle() {
+    getWrapperStyle = () => {
         return {
             gridTemplateColumns: this.state.gridColumnLayout,
             gridTemplateRows: this.state.gridRowLayout,
         };
     }
 
-    getTestStyle() {
+    getGridPosition = (clientX: number, clientY: number): [number, number] => {
+        //returns top-left coordinate for grid item based on mouse position
+        const bounds = this.canvasElement.getBoundingClientRect();
+        const maxHeight = this.canvasElement.offsetHeight - Constants.TILE_HEIGHT + bounds.top;
+        const maxWidth = this.canvasElement.offsetWidth - Constants.TILE_WIDTH + bounds.left;
+        const leftPos = Math.max(0, Math.min(maxWidth, clientX - (clientX % Constants.TILE_WIDTH)));
+        const topPos = Math.max(0, Math.min(maxHeight, clientY - (clientY % Constants.TILE_HEIGHT)));
+        return [leftPos, topPos];
+    }
+
+    getHighlighterStyle = () => {
         if (this.headerElement) {
-            const bounds = this.game.getCanvasBounds();
-            //TODO: get the 16-multiple position instead of raw cursor position
+            if (!this.state.mouseOverGrid || (this.state.mouseLeft == null || this.state.mouseTop == null)) {
+                return {
+                    display: "none",
+                };
+            }
+            const targetPos = this.getGridPosition(this.state.mouseLeft, this.state.mouseTop);
             return {
-                position: "absolute",
-                transform: "translate(-50%, -50%)",
-                width: "16px",
-                height: "16px",
-                left: this.state.mouseLeft,
-                top: this.state.mouseTop,
+                width: `${Constants.TILE_WIDTH}px`,
+                height: `${Constants.TILE_HEIGHT}px`,
+                left: targetPos[0],
+                top: targetPos[1],
             };
         }
     }
@@ -318,11 +352,9 @@ class FortressDesigner extends Component<{}, IFortressDesignerState> {
         return (
             <div id="page">
                 {Constants.DEBUG_MODE_ENABLED ?
-                    <div id="debug" class={state.debug ? "active" : null}>
-                        {this.renderFontSheet()}
-                    </div>
+                    <DebugMenu isActive={state.debug} />
                     : null}
-                <div id="test" style={this.getTestStyle()}>&amp;</div>
+                <div id="highlighter" style={this.getHighlighterStyle()}></div>
                 <div id="wrapper" style={this.getWrapperStyle()}>
                     <div id="header">
                         <div class="left"><a class="home-link" href="https://reff.dev/">reff.dev</a></div>
