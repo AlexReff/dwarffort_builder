@@ -17,8 +17,18 @@ class Game {
     private gameGrid: Tile[][];
     private dirtyTiles: Array<[number, number]>;
 
+    private animationToggle: boolean;
+    private animationInterval: number;
+    private animatedTiles: { [key: string]: [number, number] }; //currently only the designation markers
+
+    private isDesignating: boolean;
+    private designationStart: [number, number];
+
     constructor(image: HTMLImageElement, container: HTMLElement) {
         this.tileSheetImage = image;
+        this.isDesignating = false;
+        this.designationStart = null;
+        this.animationToggle = false;
 
         this.gridSize = [
             Math.floor(container.offsetWidth / Constants.TILE_WIDTH),
@@ -70,6 +80,9 @@ class Game {
         this.populateAllNeighbors();
 
         this.dirtyTiles = new Array();
+        this.animatedTiles = {};
+
+        this.animationInterval = window.setInterval(() => (this.toggleAnimation()), 250);
 
         this.render();
     }
@@ -80,6 +93,10 @@ class Game {
 
     public getMousePosition = (e: MouseEvent | TouchEvent) => {
         return this.display.eventToPosition(e);
+    }
+
+    public getIsDesignating() {
+        return this.isDesignating;
     }
 
     public moveCursor(direction: Direction, shiftPressed?: boolean) {
@@ -177,7 +194,60 @@ class Game {
         this.dirtyTiles.push(pos);
         this.updateNeighborhood(pos);
         this.renderDirty();
-        console.log(this.gameGrid[pos[0]][pos[1]].getCharacter());
+        // console.log(this.gameGrid[pos[0]][pos[1]].getCharacter());
+    }
+
+    public handleDesignation() {
+        // called when 'enter' is pressed
+        if (this.isDesignating) {
+            this.finishDesignate();
+        } else {
+            this.beginDesignate();
+        }
+    }
+
+    public beginDesignate() {
+        //set the current position to a 'designating' img, store it
+        this.isDesignating = true;
+        this.designationStart = this.cursor.getPosition();
+        this.animatedTiles[`${this.designationStart[0]}:${this.designationStart[1]}`] = [this.designationStart[0], this.designationStart[1]];
+        this.renderPosition(this.designationStart);
+    }
+
+    public finishDesignate() {
+        const start = this.designationStart;
+        const cursorPos = this.cursor.getPosition();
+        delete this.animatedTiles[`${start[0]}:${start[1]}`];
+        delete this.animatedTiles[`${cursorPos[0]}:${cursorPos[1]}`];
+        if (Object.keys(this.animatedTiles).length > 0) {
+            debugger;
+            throw new Error("Everything is horseshit");
+        }
+        this.designationStart = null;
+        this.isDesignating = false;
+        this.renderPosition(start);
+        this.renderPosition(cursorPos);
+    }
+
+    public cancelDesignate() {
+        this.isDesignating = false;
+        delete this.animatedTiles[`${this.designationStart[0]}:${this.designationStart[1]}`];
+        this.designationStart = null;
+    }
+
+    private getDesignateDrawData() {
+        return [
+            this.designationStart[0],
+            this.designationStart[1],
+            ",",
+            "rgba(28, 68, 22, .4)",
+            "transparent",
+        ];
+    }
+
+    private toggleAnimation = () => {
+        this.animationToggle = !this.animationToggle;
+        this.renderAnimated();
     }
 
     /**
@@ -316,30 +386,36 @@ class Game {
      * Renders the correct tile at the given coord
      * @param coord [x, y] grid coordinate to render
      */
-    private renderPosition(coord: [number, number]) {
+    private renderPosition = (coord: [number, number]) => {
         //renders the appropriate thing at the specified coord
         //for now, check if it needs to be the cursor or the gamemap tile
+        // const designate = this.isDesignating && this.designationStart != null && this.designationStart.length === 2;
         const pos = this.cursor.getPosition();
-        if (pos[0] === coord[0] && pos[1] === coord[1]) {
-            // render just cursor
-            const parms = this.cursor.getDrawData();
+        if (this.animationToggle && this.animatedTiles[`${coord[0]}:${coord[1]}`] != null) {
+            const parms = this.getDesignateDrawData();
             this.display.draw.apply(this.display, parms);
-
-            // render cursor over tile
-            // this.display.draw(coord[0],
-            //     coord[1],
-            //     [this.gameGrid[coord[0]][coord[1]].getCharacter(), this.cursor.getCharacter()],
-            //     [this.gameGrid[coord[0]][coord[1]].getColor(), this.cursor.getColor()],
-            //     ["transparent", "transparent"]);
         } else {
-            this.display.draw(coord[0], coord[1], this.gameGrid[coord[0]][coord[1]].getCharacter(), this.gameGrid[coord[0]][coord[1]].getColor(), "transparent");
+            if (pos[0] === coord[0] && pos[1] === coord[1]) {
+                // render just cursor
+                const parms = this.cursor.getDrawData();
+                this.display.draw.apply(this.display, parms);
+
+                // render cursor over tile
+                // this.display.draw(coord[0],
+                //     coord[1],
+                //     [this.gameGrid[coord[0]][coord[1]].getCharacter(), this.cursor.getCharacter()],
+                //     [this.gameGrid[coord[0]][coord[1]].getColor(), this.cursor.getColor()],
+                //     ["transparent", "transparent"]);
+            } else {
+                this.display.draw(coord[0], coord[1], this.gameGrid[coord[0]][coord[1]].getCharacter(), this.gameGrid[coord[0]][coord[1]].getColor(), "transparent");
+            }
         }
     }
 
     /**
      * Re-draws only 'dirty' tiles
      */
-    private renderDirty() {
+    private renderDirty = () => {
         if (this.dirtyTiles == null || this.dirtyTiles.length === 0) {
             return;
         }
@@ -349,6 +425,15 @@ class Game {
         }
         for (const coord of dirty) {
             this.renderPosition(coord);
+        }
+    }
+
+    private renderAnimated = () => {
+        if (this.animatedTiles == null || Object.keys(this.animatedTiles).length === 0) {
+            return;
+        }
+        for (const coord of Object.keys(this.animatedTiles)) {
+            this.renderPosition(this.animatedTiles[coord]);
         }
     }
 }

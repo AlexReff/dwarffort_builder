@@ -17,8 +17,8 @@ class Cursor {
         return this.character;
     }
 
-    public getPosition() {
-        return this.position;
+    public getPosition(): [number, number] {
+        return [this.position[0], this.position[1]];
     }
 
     public getColor() {

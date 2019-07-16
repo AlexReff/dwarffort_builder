@@ -129,6 +129,10 @@ class Tile {
         return this.character !== prevChar;
     }
 
+    private animateIcon() {
+        //
+    }
+
     private initByType(type: TileType) {
         this.tileType = type;
 

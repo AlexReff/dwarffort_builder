@@ -136,6 +136,7 @@ export class Constants {
             " ": [0, 0],        //empty
             "@": [16, 0],       //player?
             ".": [128, 80],     //cursor
+            ",": [176, 32],     //designation
         };
 
         //decorator tiles `z${number}`

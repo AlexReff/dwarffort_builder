@@ -30,7 +30,7 @@ Add google analytics + simple text ads before public release?
 */
 
 interface IFortressDesignerState {
-    // rightMouseDown: boolean;
+    // only things relevant to HTML state
     currentMenu: string;
     highlightedMenuItem: string;
     debug: boolean;
@@ -50,6 +50,7 @@ class FortressDesigner extends Component<{}, IFortressDesignerState> {
 
     constructor() {
         super();
+
         this.setState({
             currentMenu: "top",
             // rightMouseDown: false,
@@ -114,13 +115,10 @@ class FortressDesigner extends Component<{}, IFortressDesignerState> {
 
     handleGridClick = (e: MouseEvent | TouchEvent) => {
         e.preventDefault();
-        //const pos = this.getGridPosition(e.clientX, e.clientY);
-        // const bounds = this.canvasElement.getBoundingClientRect();
-        // pos[0] = (pos[0] - bounds.left) / Constants.TILE_WIDTH;
-        // pos[1] = (pos[1] - bounds.top) / Constants.TILE_HEIGHT;
         const pos = this.game.getMousePosition(e);
         this.game.moveCursorTo(pos);
-        this.game.setTile(pos, TileType.Wall);
+        // DEBUG ONLY
+        // this.game.setTile(pos, TileType.Wall);
     }
 
     handleMouseMove = (e) => {
@@ -153,16 +151,18 @@ class FortressDesigner extends Component<{}, IFortressDesignerState> {
     handleKeyPress = (e: KeyboardEvent) => {
         switch (e.keyCode) {
             case 13: //Enter key
+                this.game.handleDesignation();
+                // this.isDesignating = !this.isDesignating;
                 //do stuff
-                if (this.state.highlightedMenuItem && this.state.highlightedMenuItem.length) {
-                    switch (this.state.highlightedMenuItem) { //menu ids
-                        case "mine":
-                            // console.log("begin mine designation");
-                            break;
-                        default:
-                            break;
-                    }
-                }
+                // if (this.state.highlightedMenuItem && this.state.highlightedMenuItem.length) {
+                //     switch (this.state.highlightedMenuItem) { //menu ids
+                //         case "mine":
+                //             // console.log("begin mine designation");
+                //             break;
+                //         default:
+                //             break;
+                //     }
+                // }
                 break;
             case 192: //` tilde
                 //toggle debug display
@@ -243,10 +243,12 @@ class FortressDesigner extends Component<{}, IFortressDesignerState> {
             return;
         }
 
-        switch (e) {
-            case "escape":
-                //menu handling
-                //go up one menu level
+        if (e === "escape") {
+            //go up one menu level OR stop designating
+            if (this.game.getIsDesignating()) {
+                // stop designation
+                this.game.cancelDesignate();
+            } else {
                 let newMenu = "";
                 const idx = this.state.currentMenu.lastIndexOf(":");
                 if (idx > 0) {
@@ -258,55 +260,11 @@ class FortressDesigner extends Component<{}, IFortressDesignerState> {
                     highlightedMenuItem: null,
                     currentMenu: newMenu,
                 });
-                break;
-            case "building":
-                this.setState({
-                    highlightedMenuItem: e,
-                });
-                break;
-            case "mine":
-                this.setState({
-                    highlightedMenuItem: e,
-                });
-                break;
-            case "wall":
-                this.setState({
-                    highlightedMenuItem: e,
-                });
-                break;
-            case "stockpile":
-                this.setState({
-                    highlightedMenuItem: e,
-                });
-                break;
-            case "channel":
-                this.setState({
-                    highlightedMenuItem: e,
-                });
-                break;
-            case "upstair":
-                this.setState({
-                    highlightedMenuItem: e,
-                });
-                break;
-            case "downstair":
-                this.setState({
-                    highlightedMenuItem: e,
-                });
-                break;
-            case "udstair":
-                this.setState({
-                    highlightedMenuItem: e,
-                });
-                break;
-            case "upramp":
-                this.setState({
-                    highlightedMenuItem: e,
-                });
-                break;
-            default:
-                console.log("uncaught menu event: ", e);
-                break;
+            }
+        } else {
+            this.setState({
+                highlightedMenuItem: e,
+            });
         }
     }
 
