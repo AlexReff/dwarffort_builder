@@ -3,10 +3,14 @@ $header-height: 32;
 $header-height-px: #{$header-height}px;
 $menu-width: 230;
 $menu-width-px: #{$menu-width}px;
+$tile-width: 16;
+$tile-height: 16;
 
 :export {
     menuWidth: $menu-width;
     headerHeight: $header-height;
+    tileWidth: $tile-width;
+    tileHeight: $tile-height;
 }
 
 @mixin font-play {
@@ -27,6 +31,10 @@ $menu-width-px: #{$menu-width}px;
 
 @mixin font-consolas {
     font-family: 'Consolas', sans-serif;
+}
+
+@mixin font-mayday {
+    font-family: mayday, sans-serif;
 }
 
 @mixin whiteLinkHighlight {

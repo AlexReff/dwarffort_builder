@@ -46,6 +46,11 @@
                     "text": "Up Ramp",
                     "key": "r",
                     "id": "upramp"
+                },
+                {
+                    "text": "Remove/Delete",
+                    "key": "x",
+                    "id": "remove"
                 }
             ]
         },

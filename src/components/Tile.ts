@@ -3,33 +3,28 @@ import { Constants, Direction } from "./constants";
 
 enum TileType {
     Empty,
-    EmptyDecorated,
     Wall,
     Floor,
 }
 
 class Tile {
-    public static Floor = (): Tile => {
-        return new Tile(TileType.Floor);
-    }
-    public static Empty = (): Tile => {
-        return new Tile(TileType.Empty);
-    }
-    public static EmptyDecorated = (): Tile => {
-        return new Tile(TileType.EmptyDecorated);
-    }
-    public static Wall = (): Tile => {
-        return new Tile(TileType.Wall);
-    }
+    public static Floor = new Tile(TileType.Floor);
+    public static Empty = new Tile(TileType.Empty);
+    public static Wall = new Tile(TileType.Wall);
 
     private tileType: TileType;
     private character: string;
     private color: string;
     private neighbors: TileType[];
+    private decorated: boolean;
+    private userSet: boolean; // true if the user designates this, false if generated from code
 
-    constructor(tile: TileType) {
+    constructor(tile: TileType, decorate?: boolean) {
         this.neighbors = new Array(4);
-        this.initByType(tile);
+        this.userSet = false;
+        this.tileType = tile;
+        this.decorated = decorate === true;
+        this.init();
     }
 
     public getCharacter() {
@@ -42,6 +37,31 @@ class Tile {
 
     public getType() {
         return this.tileType;
+    }
+
+    public getUserSet() {
+        return this.userSet;
+    }
+
+    public getDrawData(coord: [number, number]) {
+        switch (this.tileType) {
+            case TileType.Wall:
+                return [
+                    coord[0],
+                    coord[1],
+                    [Tile.Floor.getCharacter(), this.getCharacter()],
+                    [Tile.Floor.getColor(), this.getColor()],
+                    ["transparent", "transparent"],
+                ];
+        }
+
+        return [
+            coord[0],
+            coord[1],
+            this.getCharacter(),
+            this.getColor(),
+            "transparent",
+        ];
     }
 
     /**
@@ -62,16 +82,22 @@ class Tile {
         return this.computeCharacter();
     }
 
-    public setType(type: TileType) {
-        if (type === this.tileType) {
-            return;
+    public setType(type: TileType, fromUser?: boolean): boolean {
+        if (fromUser === true) {
+            this.userSet = true;
+        } else if (fromUser === false) {
+            this.userSet = false;
         }
-        this.initByType(type);
+        if (type === this.tileType) {
+            return false;
+        }
+        this.tileType = type;
+        this.init();
+        return true;
     }
 
     private computeCharacter() {
         const prevChar = this.character;
-        //gets the character, stored in this.character
         switch (this.tileType) {
             case TileType.Wall:
                 let flags = 0;
@@ -106,21 +132,15 @@ class Tile {
             case TileType.Floor:
                 //no modifications needed if this is a floor
                 // this.character = `f${_.random(Constants.FLOOR_TILES.length - 1, false)}`;
-                this.character = "f2";
+                this.character = "f1";
                 break;
             case TileType.Empty:
-                this.character = " ";
-                break;
-            case TileType.EmptyDecorated:
-                const target = Constants.DECORATOR_TILES[_.random(Constants.DECORATOR_TILES.length - 1, false)];
-                this.character = target.char;
-                // for (const i of this.neighbors) {
-                //     if (i === TileType.Wall) {
-                //         //swap to floor?
-                //         this.initByType(TileType.Floor);
-                //         return true;
-                //     }
-                // }
+                if (this.decorated) {
+                    const target = Constants.DECORATOR_TILES[_.random(Constants.DECORATOR_TILES.length - 1, false)];
+                    this.character = target.char;
+                } else {
+                    this.character = " ";
+                }
                 break;
             default:
                 break;
@@ -129,13 +149,7 @@ class Tile {
         return this.character !== prevChar;
     }
 
-    private animateIcon() {
-        //
-    }
-
-    private initByType(type: TileType) {
-        this.tileType = type;
-
+    private init() {
         switch (this.tileType) {
             case TileType.Floor:
                 this.color = "transparent";
@@ -143,15 +157,15 @@ class Tile {
             case TileType.Wall:
                 this.color = "transparent";
                 break;
-            case TileType.EmptyDecorated:
-                this.color = "transparent";
-                if (_.random(100, false) <= Constants.GRID_TILE_COLOR_PERCENT) {
-                    this.color = Constants.GRID_TILE_DECORATED_COLORS[_.random(Constants.GRID_TILE_DECORATED_COLORS.length - 1, false)];
-                }
-                break;
             case TileType.Empty:
             default:
                 this.color = "transparent";
+                if (this.decorated) {
+                    if (_.random(100, false) <= Constants.GRID_TILE_COLOR_PERCENT) {
+                        this.color = Constants.GRID_TILE_DECORATED_COLORS[_.random(Constants.GRID_TILE_DECORATED_COLORS.length - 1, false)];
+                    }
+                }
+
                 break;
         }
 

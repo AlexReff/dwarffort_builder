@@ -34,8 +34,8 @@ class Menu extends Component<IMenuProps, {}> {
     menuItemHandler = (key: string) => {
         if (key === "top") {
             this.props.handleMenuEvent("top");
-        } else if (Constants.MENU_DICTIONARY[key] != null) {
-            this.props.handleMenuEvent(Constants.MENU_DICTIONARY[key].id);
+        } else if (Constants.MENU_HOTKEYS[key] != null) {
+            this.props.handleMenuEvent(Constants.MENU_HOTKEYS[key].id);
         }
     }
 
@@ -76,7 +76,7 @@ class Menu extends Component<IMenuProps, {}> {
     renderBreadcrumbs = (props: IMenuProps) => {
         const breadcrumbs = [];
         if (props.selectedMenu !== "top") {
-            const activeItem = Constants.MENU_DICTIONARY[props.selectedMenu];
+            const activeItem = Constants.MENU_HOTKEYS[props.selectedMenu];
             breadcrumbs.push(<a href="#" data-id={activeItem.key} onClick={(e) => this.breadcrumbHandler(e)}>{activeItem.text}</a>);
 
             let parent = activeItem.parent;

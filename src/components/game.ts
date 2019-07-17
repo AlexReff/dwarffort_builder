@@ -2,7 +2,7 @@ import * as _ from "lodash";
 import { default as OpenSimplexNoise } from "open-simplex-noise";
 import { Display } from "rot-js";
 
-import { Constants, Direction, MenuItemId } from "./constants";
+import { Constants, Direction, IGridRange, MenuItemId } from "./constants";
 import { Cursor } from "./cursor";
 import { Designator } from "./designator";
 import { Tile, TileType } from "./Tile";
@@ -20,17 +20,12 @@ class Game {
 
     private animationToggle: boolean;
     private animationInterval: number;
-    private animatedTiles: { [key: string]: [number, number] }; //currently only the designation markers
 
-    private isDesignating: boolean;
     private designator: Designator;
     private designatorTiles: Array<[number, number]>;
-    // private designationStart: [number, number];
 
     constructor(image: HTMLImageElement, container: HTMLElement) {
         this.tileSheetImage = image;
-        this.isDesignating = false;
-        // this.designationStart = null;
         this.animationToggle = false;
 
         this.gridSize = [
@@ -72,11 +67,7 @@ class Game {
             const thisRow = [];
             for (let y = 0; y < this.gridSize[1]; y++) {
                 //handle logic for populating initial grid
-                if (this.noiseMap[x][y] <= Constants.GRID_TILE_DECORATED_PERCENT) {
-                    thisRow.push(Tile.EmptyDecorated());
-                } else {
-                    thisRow.push(Tile.Empty());
-                }
+                thisRow.push(new Tile(TileType.Empty, this.noiseMap[x][y] <= Constants.GRID_TILE_DECORATED_PERCENT));
             }
             this.gameGrid.push(thisRow);
         }
@@ -84,7 +75,6 @@ class Game {
         this.populateAllNeighbors();
 
         this.dirtyTiles = [];
-        this.animatedTiles = {};
         this.designatorTiles = [];
 
         this.animationInterval = window.setInterval(() => (this.toggleAnimation()), 250);
@@ -100,8 +90,12 @@ class Game {
         return this.display.eventToPosition(e);
     }
 
-    public getIsDesignating() {
-        return this.isDesignating;
+    public getTileTypeAtCursor() {
+        return this.getTileAtCursor().getType();
+    }
+
+    public isDesignating() {
+        return this.designator.isDesignating();
     }
 
     public moveCursor(direction: Direction, shiftPressed?: boolean) {
@@ -110,62 +104,46 @@ class Game {
         switch (direction) {
             case Direction.N:
                 if (pos[1] > 0) {
-                    // this.dirtyTiles.push([pos[0], pos[1]]);
                     pos[1] = Math.max(0, pos[1] - distance);
-                    // this.dirtyTiles.push([pos[0], pos[1]]);
                 }
                 break;
             case Direction.NE:
                 if (pos[1] > 0 || pos[0] < this.gridSize[0] - 1) {
-                    // this.dirtyTiles.push([pos[0], pos[1]]);
                     pos[0] = Math.min(this.gridSize[0] - 1, pos[0] + distance);
                     pos[1] = Math.max(0, pos[1] - distance);
-                    // this.dirtyTiles.push([pos[0], pos[1]]);
                 }
                 break;
             case Direction.E:
                 if (pos[0] < this.gridSize[0] - 1) {
-                    // this.dirtyTiles.push([pos[0], pos[1]]);
                     pos[0] = Math.min(this.gridSize[0] - 1, pos[0] + distance);
-                    // this.dirtyTiles.push([pos[0], pos[1]]);
                 }
                 break;
             case Direction.SE:
                 if (pos[0] < this.gridSize[0] - 1 || pos[1] < this.gridSize[1] - 1) {
-                    // this.dirtyTiles.push([pos[0], pos[1]]);
                     pos[0] = Math.min(this.gridSize[0] - 1, pos[0] + distance);
                     pos[1] = Math.min(this.gridSize[1] - 1, pos[1] + distance);
-                    // this.dirtyTiles.push([pos[0], pos[1]]);
                 }
                 break;
             case Direction.S:
                 if (pos[1] < this.gridSize[1] - 1) {
-                    // this.dirtyTiles.push([pos[0], pos[1]]);
                     pos[1] = Math.min(this.gridSize[1] - 1, pos[1] + distance);
-                    // this.dirtyTiles.push([pos[0], pos[1]]);
                 }
                 break;
             case Direction.SW:
                 if (pos[0] > 0 || pos[1] < this.gridSize[1] - 1) {
-                    // this.dirtyTiles.push([pos[0], pos[1]]);
                     pos[0] = Math.max(0, pos[0] - 1);
                     pos[1] = Math.min(this.gridSize[1] - 1, pos[1] + distance);
-                    // this.dirtyTiles.push([pos[0], pos[1]]);
                 }
                 break;
             case Direction.W:
                 if (pos[0] > 0) {
-                    // this.dirtyTiles.push([pos[0], pos[1]]);
                     pos[0] = Math.max(0, pos[0] - distance);
-                    // this.dirtyTiles.push([pos[0], pos[1]]);
                 }
                 break;
             case Direction.NW:
                 if (pos[0] > 0 || pos[1] > 0) {
-                    // this.dirtyTiles.push([pos[0], pos[1]]);
                     pos[0] = Math.max(0, pos[0] - distance);
                     pos[1] = Math.max(0, pos[1] - distance);
-                    // this.dirtyTiles.push([pos[0], pos[1]]);
                 }
                 break;
             default:
@@ -185,21 +163,9 @@ class Game {
             return;
         }
 
-        // if (this.isDesignating) {
-        //     const minX = Math.min(pos[0], targetPos[0]);
-        //     const maxX = Math.max(pos[0], targetPos[0]);
-        //     const minY = Math.min(pos[1], targetPos[1]);
-        //     const maxY = Math.max(pos[1], targetPos[1]);
-        //     for (let x = minX; x <= maxX; x++) {
-        //         for (let y = minY; y <= maxY; y++) {
-        //             this.dirtyTiles.push([x, y]);
-        //         }
-        //     }
-        // }
-
         this.cursor.setPosition(targetPos);
 
-        if (this.isDesignating) {
+        if (this.designator.isDesignating()) {
             while (this.designatorTiles.length > 0) {
                 this.dirtyTiles.push(this.designatorTiles.pop());
             }
@@ -209,29 +175,47 @@ class Game {
                     this.designatorTiles.push([x, y]);
                 }
             }
+
+            this.renderDirty();
+            this.renderDesignated();
         } else {
             this.dirtyTiles.push(pos);
             this.dirtyTiles.push(targetPos);
+            this.renderDirty();
         }
-
-        this.renderDirty();
-        this.renderDesignated();
-        // this.render();
     }
 
-    public setTile(pos: [number, number], type: TileType) {
-        this.gameGrid[pos[0]][pos[1]].setType(type);
-        this.dirtyTiles.push(pos);
-        this.updateNeighborhood(pos);
-        this.renderDirty();
+    /**
+     * Sets a tile to a specific type and return whether or not anything changed
+     * @param pos Coordinate to set
+     * @param type TileType to set
+     * @param userSet If user set or programatically set
+     * @returns {true} if a change occured (tiletype changed)
+     */
+    public setTile(pos: [number, number], type: TileType, userSet?: boolean): boolean {
+        if (this.gameGrid[pos[0]][pos[1]].setType(type, userSet)) {
+            this.dirtyTiles.push(pos);
+            return true;
+        }
+
+        return false;
+    }
+
+    public handleContextMenu(item: MenuItemId) {
+        switch (item) {
+            default:
+                this.handleDesignation(item);
+                break;
+        }
     }
 
     public handleDesignation(highlightedMenuItem?: MenuItemId) {
         // called when 'enter' is pressed
         if (highlightedMenuItem == null) {
+            console.log("Cannot designate - no menu item selected");
             return;
         }
-        if (this.isDesignating) {
+        if (this.designator.isDesignating()) {
             this.finishDesignate(highlightedMenuItem);
         } else {
             this.beginDesignate();
@@ -239,8 +223,6 @@ class Game {
     }
 
     public beginDesignate() {
-        //set the current position to a 'designating' img, store it
-        this.isDesignating = true;
         const pos = this.cursor.getPosition();
         this.designator.startDesignating(pos);
         this.designatorTiles.push([pos[0], pos[1]]);
@@ -249,27 +231,128 @@ class Game {
 
     public finishDesignate(item: MenuItemId) {
         const cursorPos = this.cursor.getPosition();
-
         const range = this.designator.getRange(cursorPos);
-        for (let x = range.startX; x <= range.endX; x++) {
-            for (let y = range.startY; y <= range.endY; y++) {
-                // this.dirtyTiles.push([x, y]);
-            }
-        }
-
-        this.isDesignating = false;
+        this.designateRange(range, item);
+        this.designator.endDesignating();
         this.designatorTiles = [];
         this.render();
-        // this.renderDirty();
-        // this.renderPosition(start);
-        // this.renderPosition(cursorPos);
     }
 
     public cancelDesignate() {
-        this.isDesignating = false;
-        // delete this.animatedTiles[`${this.designationStart[0]}:${this.designationStart[1]}`];
+        this.designator.endDesignating();
         this.designatorTiles = [];
-        // this.designationStart = null;
+        this.render();
+    }
+
+    private getTileAtCursor = () => {
+        const pos = this.cursor.getPosition();
+        return this.gameGrid[pos[0]][pos[1]];
+    }
+
+    private designateRange = (range: IGridRange, item: MenuItemId) => {
+        //if we are mining floors, convert all empty neighbors to walls
+        switch (item) {
+            case MenuItemId.remove:
+                for (let x = range.startX; x <= range.endX; x++) {
+                    for (let y = range.startY; y <= range.endY; y++) {
+                        if (this.setTile([x, y], TileType.Empty, false)) {
+                            this.dirtyTiles.push([x, y]);
+                        }
+                    }
+                }
+                break;
+            case MenuItemId.wall:
+                // Just need to make walls
+                for (let x = range.startX; x <= range.endX; x++) {
+                    for (let y = range.startY; y <= range.endY; y++) {
+                        if (this.setTile([x, y], TileType.Wall, true)) {
+                            this.dirtyTiles.push([x, y]);
+                        }
+                    }
+                }
+                break;
+            case MenuItemId.mine:
+                // make everything highlighted a floor
+                // make all neighbors that are EMPTY into WALLs
+                //make all squares 'floor'
+                for (let x = range.startX; x <= range.endX; x++) {
+                    for (let y = range.startY; y <= range.endY; y++) {
+                        if (this.setTile([x, y], TileType.Floor, true)) {
+                            this.dirtyTiles.push([x, y]);
+                        }
+                    }
+                }
+                //clear all unset neighbors
+                const neighbors = this.getNeighborsOfRange(range);
+                neighbors.forEach((item) => {
+                    const tile = this.gameGrid[item[0]][item[1]];
+                    if (tile.getUserSet()) {
+                        //do not touch this tile
+                    } else {
+                        const thisType = tile.getType();
+                        if (thisType === TileType.Empty) {
+                            tile.setType(TileType.Wall, false);
+                            this.dirtyTiles.push([item[0], item[1]]);
+                        }
+                    }
+                });
+                break;
+            default:
+                return;
+        }
+
+        this.calculateNeighbors();
+        // this.renderDirty();
+    }
+
+    private calculateNeighbors = () => {
+        for (let x = 0; x < this.gameGrid.length; x++) {
+            for (let y = 0; y < this.gameGrid[0].length; y++) {
+                this.updateNeighbors([x, y]);
+            }
+        }
+    }
+
+    private getNeighborsOfRange(range: IGridRange): Array<[number, number]> {
+        //returns a border of positions around a specified range
+        const dict = {};
+        if (range.startY > 0) {
+            //add 'top'
+            const xStart = Math.max(range.startX - 1, 0);
+            const xStop = Math.min(range.endX + 1, this.gameGrid.length - 1);
+            for (let x = xStart; x <= xStop; x++) {
+                dict[`${x}:${range.startY - 1}`] = [x, range.startY - 1];
+            }
+        }
+        if (range.startX > 0) {
+            //add 'left'
+            const yStart = Math.max(range.startY - 1, 0);
+            const yStop = Math.min(range.endY + 1, this.gameGrid.length - 1);
+            for (let y = yStart; y <= yStop; y++) {
+                dict[`${range.startX - 1}:${y}`] = [range.startX - 1, y];
+            }
+        }
+        if (range.endY + 1 < this.gameGrid[0].length) {
+            //add 'bot'
+            const xStart = Math.max(range.startX - 1, 0);
+            const xStop = Math.min(range.endX + 1, this.gameGrid.length - 1);
+            for (let x = xStart; x <= xStop; x++) {
+                dict[`${x}:${range.endY + 1}`] = [x, range.endY + 1];
+            }
+        }
+        if (range.endX + 1 < this.gameGrid.length) {
+            //add 'right'
+            const yStart = Math.max(range.startY - 1, 0);
+            const yStop = Math.min(range.endY + 1, this.gameGrid.length - 1);
+            for (let y = yStart; y <= yStop; y++) {
+                dict[`${range.endX + 1}:${y}`] = [range.endX + 1, y];
+            }
+        }
+        const result = [];
+        for (const key of Object.keys(dict)) {
+            result.push(dict[key]);
+        }
+        return result;
     }
 
     private isTileAnimating = (pos: [number, number]): boolean => {
@@ -277,13 +360,13 @@ class Game {
             return false;
         }
 
-        if (this.animatedTiles[`${pos[0]}:${pos[1]}`] != null) {
-            return true;
-        }
+        // if (this.animatedTiles[`${pos[0]}:${pos[1]}`] != null) {
+        //     return true;
+        // }
 
         // return true if this tile is either in animatedTiles
         // or we are designating and the cursor is not at the designation start
-        if (this.isDesignating) {
+        if (this.designator.isDesignating()) {
             const cursor = this.cursor.getPosition();
             const bounds = this.designator.getRange(cursor);
             return pos[0] >= bounds.startX && pos[1] >= bounds.startY && pos[0] <= bounds.endX && pos[1] <= bounds.endY;
@@ -295,9 +378,9 @@ class Game {
     private toggleAnimation = () => {
         this.animationToggle = !this.animationToggle;
         // this.render();
-        this.renderAnimated();
+        // this.renderAnimated();
+        this.renderDirty();
         this.renderDesignated();
-        // this.renderDirty();
     }
 
     /**
@@ -430,7 +513,7 @@ class Game {
                 this.renderPosition([x, y]);
             }
         }
-        this.dirtyTiles = new Array();
+        this.dirtyTiles = [];
     }
 
     /**
@@ -438,13 +521,12 @@ class Game {
      * @param coord [x, y] grid coordinate to render
      */
     private renderPosition = (coord: [number, number]) => {
-        //renders the appropriate thing at the specified coord
-        //for now, check if it needs to be the cursor or the gamemap tile
-        // const designate = this.isDesignating && this.designationStart != null && this.designationStart.length === 2;
         if (this.isTileAnimating(coord)) {
             // const parms = this.getDesignateDrawData();
             // this.display.draw.apply(this.display, parms);
-            this.display.draw(coord[0], coord[1], ",", "rgba(28, 68, 22, .4)", "transparent");
+            const parms = this.designator.getDrawData(coord);
+            this.display.draw.apply(this.display, parms);
+            // this.display.draw(coord[0], coord[1], ",", "rgba(28, 68, 22, .4)", "transparent");
         } else {
             const pos = this.cursor.getPosition();
             if (pos[0] === coord[0] && pos[1] === coord[1]) {
@@ -459,7 +541,10 @@ class Game {
                 //     [this.gameGrid[coord[0]][coord[1]].getColor(), this.cursor.getColor()],
                 //     ["transparent", "transparent"]);
             } else {
-                this.display.draw(coord[0], coord[1], this.gameGrid[coord[0]][coord[1]].getCharacter(), this.gameGrid[coord[0]][coord[1]].getColor(), "transparent");
+                // this.gameGrid[coord[0]][coord[1]].render(this.display.draw, coord);
+                const parms = this.gameGrid[coord[0]][coord[1]].getDrawData(coord);
+                this.display.draw.apply(this.display, parms);
+                // this.display.draw(coord[0], coord[1], this.gameGrid[coord[0]][coord[1]].getCharacter(), this.gameGrid[coord[0]][coord[1]].getColor(), "transparent");
             }
         }
     }
@@ -480,40 +565,6 @@ class Game {
         }
     }
 
-    private renderAnimated = () => {
-        if (this.animatedTiles == null || Object.keys(this.animatedTiles).length === 0) {
-            return;
-        }
-        for (const coord of Object.keys(this.animatedTiles)) {
-            this.renderPosition(this.animatedTiles[coord]);
-        }
-
-        // if (this.isDesignating) {
-        //     const cursor = this.cursor.getPosition();
-        //     const bounds = this.designator.getRange(cursor);
-        //     for (let x = bounds.startX; x <= bounds.endX; x++) {
-        //         for (let y = bounds.startY; y <= bounds.endY; y++) {
-        //             this.renderPosition([x, y]);
-        //             // this.dirtyTiles.push([x, y]);
-        //         }
-        //     }
-        // }
-
-        // const cursor = this.cursor.getPosition();
-        // if (this.isDesignating && (this.designationStart[0] !== cursor[0] || this.designationStart[1] !== cursor[1])) {
-        //     const startX = Math.min(this.designationStart[0], cursor[0]);
-        //     const endX = Math.max(this.designationStart[0], cursor[0]);
-        //     const startY = Math.min(this.designationStart[1], cursor[1]);
-        //     const endY = Math.max(this.designationStart[1], cursor[1]);
-        //     for (let x = startX; x <= endX; x++) {
-        //         for (let y = startY; y <= endY; y++) {
-        //             this.renderPosition([x, y]);
-        //             this.dirtyTiles.push([x, y]);
-        //         }
-        //     }
-        // }
-    }
-
     private renderDesignated = () => {
         if (this.designatorTiles == null || this.designatorTiles.length === 0) {
             return;
@@ -522,6 +573,40 @@ class Game {
             this.renderPosition(coord);
         }
     }
+
+    // private renderAnimated = () => {
+    //     if (this.animatedTiles == null || Object.keys(this.animatedTiles).length === 0) {
+    //         return;
+    //     }
+    //     for (const coord of Object.keys(this.animatedTiles)) {
+    //         this.renderPosition(this.animatedTiles[coord]);
+    //     }
+
+    //     // if (this.isDesignating) {
+    //     //     const cursor = this.cursor.getPosition();
+    //     //     const bounds = this.designator.getRange(cursor);
+    //     //     for (let x = bounds.startX; x <= bounds.endX; x++) {
+    //     //         for (let y = bounds.startY; y <= bounds.endY; y++) {
+    //     //             this.renderPosition([x, y]);
+    //     //             // this.dirtyTiles.push([x, y]);
+    //     //         }
+    //     //     }
+    //     // }
+
+    //     // const cursor = this.cursor.getPosition();
+    //     // if (this.isDesignating && (this.designationStart[0] !== cursor[0] || this.designationStart[1] !== cursor[1])) {
+    //     //     const startX = Math.min(this.designationStart[0], cursor[0]);
+    //     //     const endX = Math.max(this.designationStart[0], cursor[0]);
+    //     //     const startY = Math.min(this.designationStart[1], cursor[1]);
+    //     //     const endY = Math.max(this.designationStart[1], cursor[1]);
+    //     //     for (let x = startX; x <= endX; x++) {
+    //     //         for (let y = startY; y <= endY; y++) {
+    //     //             this.renderPosition([x, y]);
+    //     //             this.dirtyTiles.push([x, y]);
+    //     //         }
+    //     //     }
+    //     // }
+    // }
 }
 
 export { Game };

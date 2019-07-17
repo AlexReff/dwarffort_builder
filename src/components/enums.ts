@@ -18,6 +18,7 @@ enum MenuItemId {
     udstair = "udstair",
     upramp = "upramp",
     stockpile = "stockpile",
+    remove = "remove",
 }
 
 export { Direction, MenuItemId };

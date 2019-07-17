@@ -6,6 +6,7 @@ import { Constants, Direction, MenuItemId } from "./components/constants";
 import { DebugMenu } from "./components/debug";
 import { Game } from "./components/game";
 import { Menu } from "./components/menu";
+import { TileType } from "./components/Tile";
 
 require("./css/index.scss");
 
@@ -38,6 +39,7 @@ interface IFortressDesignerState {
     mouseLeft: number;
     mouseTop: number;
     mouseOverGrid: boolean;
+    refresh: boolean;
 }
 
 class FortressDesigner extends Component<{}, IFortressDesignerState> {
@@ -52,7 +54,6 @@ class FortressDesigner extends Component<{}, IFortressDesignerState> {
 
         this.setState({
             currentMenu: "top",
-            // rightMouseDown: false,
             highlightedMenuItem: null,
             debug: false,
         });
@@ -100,6 +101,13 @@ class FortressDesigner extends Component<{}, IFortressDesignerState> {
         window.addEventListener("keydown", this.handleKeyPress);
         window.addEventListener("keyup", this.handleKeyUp);
         window.addEventListener("resize", this.handleWindowResize);
+        this.canvasElement.addEventListener("contextmenu", (e) => {
+            e.preventDefault();
+            const pos = this.game.getMousePosition(e);
+            this.game.moveCursorTo(pos);
+            this.game.handleContextMenu(this.state.highlightedMenuItem);
+            return false;
+        });
     }
 
     componentWillUnmount() {
@@ -116,8 +124,9 @@ class FortressDesigner extends Component<{}, IFortressDesignerState> {
         e.preventDefault();
         const pos = this.game.getMousePosition(e);
         this.game.moveCursorTo(pos);
-        // DEBUG ONLY
-        // this.game.setTile(pos, TileType.Wall);
+        this.setState({
+            refresh: true,
+        });
     }
 
     handleMouseMove = (e) => {
@@ -150,75 +159,78 @@ class FortressDesigner extends Component<{}, IFortressDesignerState> {
     handleKeyPress = (e: KeyboardEvent) => {
         switch (e.keyCode) {
             case 13: //Enter key
+                e.preventDefault();
                 this.game.handleDesignation(this.state.highlightedMenuItem);
-                // this.isDesignating = !this.isDesignating;
-                //do stuff
-                // if (this.state.highlightedMenuItem && this.state.highlightedMenuItem.length) {
-                //     switch (this.state.highlightedMenuItem) { //menu ids
-                //         case "mine":
-                //             // console.log("begin mine designation");
-                //             break;
-                //         default:
-                //             break;
-                //     }
-                // }
                 break;
             case 192: //` tilde
                 //toggle debug display
+                e.preventDefault();
                 this.setState({
                     debug: !this.state.debug,
                 });
                 break;
             case 27: //"Escape":
+                e.preventDefault();
                 this.handleMenuEvent("escape");
                 break;
             case 38: //"ArrowUp":
             case 104: //numpad 8
                 //move north
+                e.preventDefault();
                 this.game.moveCursor(Direction.N, e.shiftKey);
                 break;
             case 105: //numpad 9
                 //move ne
+                e.preventDefault();
                 this.game.moveCursor(Direction.NE, e.shiftKey);
                 break;
             case 39: //"ArrowRight":
             case 102: //numpad 6
                 //move east
+                e.preventDefault();
                 this.game.moveCursor(Direction.E, e.shiftKey);
                 break;
             case 99: //numpad 3
                 //move se
+                e.preventDefault();
                 this.game.moveCursor(Direction.SE, e.shiftKey);
                 break;
             case 40: //"ArrowDown":
             case 98: //numpad 2
                 //move south
+                e.preventDefault();
                 this.game.moveCursor(Direction.S, e.shiftKey);
                 break;
             case 97: //numpad 1
                 //move sw
+                e.preventDefault();
                 this.game.moveCursor(Direction.SW, e.shiftKey);
                 break;
             case 37: //"ArrowLeft":
             case 100: //numpad 4
                 //move west
+                e.preventDefault();
                 this.game.moveCursor(Direction.W, e.shiftKey);
                 break;
             case 103: //numpad 7
                 //move nw
+                e.preventDefault();
                 this.game.moveCursor(Direction.NW, e.shiftKey);
                 break;
             default:
                 const key = this.state.currentMenu !== "top" ? this.state.currentMenu + ":" + e.key : e.key;
-                const hotkeyTarget = Constants.MENU_DICTIONARY[key];
+                const hotkeyTarget = Constants.MENU_HOTKEYS[key];
                 if (hotkeyTarget) {
                     e.preventDefault();
-                    this.handleMenuEvent(Constants.MENU_DICTIONARY[key].id);
+                    this.handleMenuEvent(Constants.MENU_HOTKEYS[key].id);
                 } else {
                     console.log("unhandled keypress: ", e.keyCode, e.key);
                 }
                 break;
         }
+        this.setState({
+            refresh: true,
+        });
     }
 
     handleMenuEvent = (e: string) => {
@@ -244,7 +256,7 @@ class FortressDesigner extends Component<{}, IFortressDesignerState> {
 
         if (e === "escape") {
             //go up one menu level OR stop designating
-            if (this.game.getIsDesignating()) {
+            if (this.game.isDesignating()) {
                 // stop designation
                 this.game.cancelDesignate();
             } else {
@@ -262,9 +274,12 @@ class FortressDesigner extends Component<{}, IFortressDesignerState> {
             }
         } else {
             if (e in MenuItemId) {
-                this.setState({
-                    highlightedMenuItem: e as MenuItemId,
-                });
+                if (this.state.highlightedMenuItem !== e) {
+                    this.game.cancelDesignate();
+                    this.setState({
+                        highlightedMenuItem: e as MenuItemId,
+                    });
+                }
             } else {
                 console.log("Unhandled menu event: ", e);
             }
@@ -272,6 +287,21 @@ class FortressDesigner extends Component<{}, IFortressDesignerState> {
     }
 
     renderFooterData = () => {
+        if (this.game == null) {
+            return;
+        }
+        if (this.game.isDesignating()) {
+            return (
+                <div class="status">Designating {Constants.MENU_DICTIONARY[this.state.highlightedMenuItem].text}</div>
+            );
+        } else {
+            const type = this.game.getTileTypeAtCursor();
+            if (type !== TileType.Empty) {
+                return (
+                    <div class="status">{TileType[type]}</div>
+                );
+            }
+        }
         return null;
     }
 

@@ -4,11 +4,18 @@ import { items } from "../data/menu.json";
 import { Direction, MenuItemId } from "./enums";
 import { IMenuItem } from "./menu.js";
 
+interface IGridRange {
+    startX: number;
+    endX: number;
+    startY: number;
+    endY: number;
+}
+
 class Constants {
     static readonly DEBUG_MODE_ENABLED = true;
 
-    static readonly TILE_WIDTH = 16;
-    static readonly TILE_HEIGHT = 16;
+    static readonly TILE_WIDTH = styles.tileWidth;
+    static readonly TILE_HEIGHT = styles.tileHeight;
     static readonly TILESHEET_URL = "/assets/Phoebus_cleaned.png"; // "/assets/Phoebus_16x16.png";
 
     static readonly MENU_WIDTH_INITIAL: number = Number(styles.menuWidth);
@@ -165,10 +172,10 @@ class Constants {
 
     static readonly MENU_SUBMENUS: Map<string, string> = new Map();
 
-    static readonly MENU_DICTIONARY: Map<string, IMenuItem> = (() => {
+    static readonly MENU_HOTKEYS: Map<string, IMenuItem> = (() => {
         const MENU_PARSED: Map<string, IMenuItem> = new Map();
-        const parseMenuItemRecursive = (MenuItemId: IMenuItem[], parent?: IMenuItem) => {
-            for (const item of MenuItemId) {
+        const parseMenuItemRecursive = (menuItems: IMenuItem[], parent?: IMenuItem) => {
+            for (const item of menuItems) {
                 item.parent = parent;
                 const key = (parent != null ? parent.key + ":" : "") + item.key;
                 MENU_PARSED[key] = item;
@@ -183,6 +190,14 @@ class Constants {
 
         return MENU_PARSED;
     })();
+
+    static readonly MENU_DICTIONARY: Map<string, IMenuItem> = (() => {
+        const result: Map<string, IMenuItem> = new Map();
+        for (const i of Object.keys(Constants.MENU_HOTKEYS)) {
+            result[(Constants.MENU_HOTKEYS[i] as IMenuItem).id] = Constants.MENU_HOTKEYS[i];
+        }
+        return result;
+    })();
 }
 
-export { Constants, Direction, MenuItemId };
+export { Constants, Direction, IGridRange, MenuItemId };
