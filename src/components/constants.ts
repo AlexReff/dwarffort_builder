@@ -1,12 +1,10 @@
 const styles = require(".././css/_variables.scss");
 
 import { items } from "../data/menu.json";
-import { Direction } from "./enums";
+import { Direction, MenuItemId } from "./enums";
 import { IMenuItem } from "./menu.js";
 
-export { Direction };
-
-export class Constants {
+class Constants {
     static readonly DEBUG_MODE_ENABLED = true;
 
     static readonly TILE_WIDTH = 16;
@@ -144,7 +142,7 @@ export class Constants {
             val[tile.char] = tile.coord;
         });
 
-        //wall tiles `w${number}${optional variant letter}`
+        //wall tiles `w${number}${optional variant letter (a,b,c,etc)}`
         for (const key of Object.keys(Constants.WALL_TILES)) {
             if (Constants.WALL_TILES[key].length > 1) {
                 for (let i = 0; i < Constants.WALL_TILES[key].length; i++) {
@@ -169,8 +167,8 @@ export class Constants {
 
     static readonly MENU_DICTIONARY: Map<string, IMenuItem> = (() => {
         const MENU_PARSED: Map<string, IMenuItem> = new Map();
-        const parseMenuItemRecursive = (menuItems: IMenuItem[], parent?: IMenuItem) => {
-            for (const item of menuItems) {
+        const parseMenuItemRecursive = (MenuItemId: IMenuItem[], parent?: IMenuItem) => {
+            for (const item of MenuItemId) {
                 item.parent = parent;
                 const key = (parent != null ? parent.key + ":" : "") + item.key;
                 MENU_PARSED[key] = item;
@@ -186,3 +184,5 @@ export class Constants {
         return MENU_PARSED;
     })();
 }
+
+export { Constants, Direction, MenuItemId };

@@ -1,11 +1,11 @@
 import * as _ from "lodash";
 import { Component, h } from "preact";
-import { Constants } from "./constants";
+import { Constants, MenuItemId } from "./constants";
 
 interface IMenuItem {
     "text": string;
     "key": string;
-    "id": string;
+    "id": MenuItemId;
     "children"?: IMenuItem[];
     "parent"?: IMenuItem;
 }
@@ -59,9 +59,9 @@ class Menu extends Component<IMenuProps, {}> {
         for (const i of items) {
             stack.push((
                 <a onClick={(e) => this.menuItemClickHandler(e)}
-                   title={i.text}
-                   class={"menu-item" + (this.props.highlightedItem != null && this.props.highlightedItem === i.id ? " active" : "")}
-                   id={prefix + i.key}>{i.key}: {i.text}</a>
+                    title={i.text}
+                    class={"menu-item" + (this.props.highlightedItem != null && this.props.highlightedItem === i.id ? " active" : "")}
+                    id={prefix + i.key}>{i.key}: {i.text}</a>
             ));
             if (i.children != null && i.children.length > 0) {
                 childStack.push(this.getChildMenu(i.children, prefix + i.key, prefix + i.key));

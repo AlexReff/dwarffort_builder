@@ -2,8 +2,9 @@ import * as _ from "lodash";
 import { default as OpenSimplexNoise } from "open-simplex-noise";
 import { Display } from "rot-js";
 
-import { Constants, Direction } from "./constants";
+import { Constants, Direction, MenuItemId } from "./constants";
 import { Cursor } from "./cursor";
+import { Designator } from "./designator";
 import { Tile, TileType } from "./Tile";
 
 class Game {
@@ -22,12 +23,14 @@ class Game {
     private animatedTiles: { [key: string]: [number, number] }; //currently only the designation markers
 
     private isDesignating: boolean;
-    private designationStart: [number, number];
+    private designator: Designator;
+    private designatorTiles: Array<[number, number]>;
+    // private designationStart: [number, number];
 
     constructor(image: HTMLImageElement, container: HTMLElement) {
         this.tileSheetImage = image;
         this.isDesignating = false;
-        this.designationStart = null;
+        // this.designationStart = null;
         this.animationToggle = false;
 
         this.gridSize = [
@@ -41,6 +44,7 @@ class Game {
         ];
 
         this.cursor = new Cursor(center);
+        this.designator = new Designator();
 
         this.display = new Display({
             width: this.gridSize[0],
@@ -79,8 +83,9 @@ class Game {
 
         this.populateAllNeighbors();
 
-        this.dirtyTiles = new Array();
+        this.dirtyTiles = [];
         this.animatedTiles = {};
+        this.designatorTiles = [];
 
         this.animationInterval = window.setInterval(() => (this.toggleAnimation()), 250);
 
@@ -105,88 +110,113 @@ class Game {
         switch (direction) {
             case Direction.N:
                 if (pos[1] > 0) {
-                    this.dirtyTiles.push([pos[0], pos[1]]);
+                    // this.dirtyTiles.push([pos[0], pos[1]]);
                     pos[1] = Math.max(0, pos[1] - distance);
-                    this.dirtyTiles.push([pos[0], pos[1]]);
+                    // this.dirtyTiles.push([pos[0], pos[1]]);
                 }
                 break;
             case Direction.NE:
                 if (pos[1] > 0 || pos[0] < this.gridSize[0] - 1) {
-                    this.dirtyTiles.push([pos[0], pos[1]]);
+                    // this.dirtyTiles.push([pos[0], pos[1]]);
                     pos[0] = Math.min(this.gridSize[0] - 1, pos[0] + distance);
                     pos[1] = Math.max(0, pos[1] - distance);
-                    this.dirtyTiles.push([pos[0], pos[1]]);
+                    // this.dirtyTiles.push([pos[0], pos[1]]);
                 }
                 break;
             case Direction.E:
                 if (pos[0] < this.gridSize[0] - 1) {
-                    this.dirtyTiles.push([pos[0], pos[1]]);
+                    // this.dirtyTiles.push([pos[0], pos[1]]);
                     pos[0] = Math.min(this.gridSize[0] - 1, pos[0] + distance);
-                    this.dirtyTiles.push([pos[0], pos[1]]);
+                    // this.dirtyTiles.push([pos[0], pos[1]]);
                 }
                 break;
             case Direction.SE:
                 if (pos[0] < this.gridSize[0] - 1 || pos[1] < this.gridSize[1] - 1) {
-                    this.dirtyTiles.push([pos[0], pos[1]]);
+                    // this.dirtyTiles.push([pos[0], pos[1]]);
                     pos[0] = Math.min(this.gridSize[0] - 1, pos[0] + distance);
                     pos[1] = Math.min(this.gridSize[1] - 1, pos[1] + distance);
-                    this.dirtyTiles.push([pos[0], pos[1]]);
+                    // this.dirtyTiles.push([pos[0], pos[1]]);
                 }
                 break;
             case Direction.S:
                 if (pos[1] < this.gridSize[1] - 1) {
-                    this.dirtyTiles.push([pos[0], pos[1]]);
+                    // this.dirtyTiles.push([pos[0], pos[1]]);
                     pos[1] = Math.min(this.gridSize[1] - 1, pos[1] + distance);
-                    this.dirtyTiles.push([pos[0], pos[1]]);
+                    // this.dirtyTiles.push([pos[0], pos[1]]);
                 }
                 break;
             case Direction.SW:
                 if (pos[0] > 0 || pos[1] < this.gridSize[1] - 1) {
-                    this.dirtyTiles.push([pos[0], pos[1]]);
+                    // this.dirtyTiles.push([pos[0], pos[1]]);
                     pos[0] = Math.max(0, pos[0] - 1);
                     pos[1] = Math.min(this.gridSize[1] - 1, pos[1] + distance);
-                    this.dirtyTiles.push([pos[0], pos[1]]);
+                    // this.dirtyTiles.push([pos[0], pos[1]]);
                 }
                 break;
             case Direction.W:
                 if (pos[0] > 0) {
-                    this.dirtyTiles.push([pos[0], pos[1]]);
+                    // this.dirtyTiles.push([pos[0], pos[1]]);
                     pos[0] = Math.max(0, pos[0] - distance);
-                    this.dirtyTiles.push([pos[0], pos[1]]);
+                    // this.dirtyTiles.push([pos[0], pos[1]]);
                 }
                 break;
             case Direction.NW:
                 if (pos[0] > 0 || pos[1] > 0) {
-                    this.dirtyTiles.push([pos[0], pos[1]]);
+                    // this.dirtyTiles.push([pos[0], pos[1]]);
                     pos[0] = Math.max(0, pos[0] - distance);
                     pos[1] = Math.max(0, pos[1] - distance);
-                    this.dirtyTiles.push([pos[0], pos[1]]);
+                    // this.dirtyTiles.push([pos[0], pos[1]]);
                 }
                 break;
             default:
                 return;
         }
 
-        this.cursor.setPosition(pos);
-        this.renderDirty();
+        this.moveCursorTo(pos);
     }
 
     public moveCursorTo(targetPos: [number, number]) {
         const pos = this.cursor.getPosition();
-        //const target = this.
 
-        if ((pos[0] === targetPos[0] && pos[1] === targetPos[1]) ||
-            (targetPos[0] < 0 || targetPos[1] < 0 ||
+        if ((pos[0] === targetPos[0] && pos[1] === targetPos[1]) || //already there
+            (targetPos[0] < 0 || targetPos[1] < 0 ||                //out of bounds
                 targetPos[0] > this.gameGrid.length - 1 ||
                 targetPos[1] > this.gameGrid[0].length - 1)) {
             return;
         }
 
-        this.dirtyTiles.push(pos);
-        this.dirtyTiles.push(targetPos);
+        // if (this.isDesignating) {
+        //     const minX = Math.min(pos[0], targetPos[0]);
+        //     const maxX = Math.max(pos[0], targetPos[0]);
+        //     const minY = Math.min(pos[1], targetPos[1]);
+        //     const maxY = Math.max(pos[1], targetPos[1]);
+        //     for (let x = minX; x <= maxX; x++) {
+        //         for (let y = minY; y <= maxY; y++) {
+        //             this.dirtyTiles.push([x, y]);
+        //         }
+        //     }
+        // }
 
         this.cursor.setPosition(targetPos);
+
+        if (this.isDesignating) {
+            while (this.designatorTiles.length > 0) {
+                this.dirtyTiles.push(this.designatorTiles.pop());
+            }
+            const range = this.designator.getRange(targetPos);
+            for (let x = range.startX; x <= range.endX; x++) {
+                for (let y = range.startY; y <= range.endY; y++) {
+                    this.designatorTiles.push([x, y]);
+                }
+            }
+        } else {
+            this.dirtyTiles.push(pos);
+            this.dirtyTiles.push(targetPos);
+        }
+
         this.renderDirty();
+        this.renderDesignated();
+        // this.render();
     }
 
     public setTile(pos: [number, number], type: TileType) {
@@ -194,13 +224,15 @@ class Game {
         this.dirtyTiles.push(pos);
         this.updateNeighborhood(pos);
         this.renderDirty();
-        // console.log(this.gameGrid[pos[0]][pos[1]].getCharacter());
     }
 
-    public handleDesignation() {
+    public handleDesignation(highlightedMenuItem?: MenuItemId) {
         // called when 'enter' is pressed
+        if (highlightedMenuItem == null) {
+            return;
+        }
         if (this.isDesignating) {
-            this.finishDesignate();
+            this.finishDesignate(highlightedMenuItem);
         } else {
             this.beginDesignate();
         }
@@ -209,45 +241,63 @@ class Game {
     public beginDesignate() {
         //set the current position to a 'designating' img, store it
         this.isDesignating = true;
-        this.designationStart = this.cursor.getPosition();
-        this.animatedTiles[`${this.designationStart[0]}:${this.designationStart[1]}`] = [this.designationStart[0], this.designationStart[1]];
-        this.renderPosition(this.designationStart);
+        const pos = this.cursor.getPosition();
+        this.designator.startDesignating(pos);
+        this.designatorTiles.push([pos[0], pos[1]]);
+        this.renderPosition(pos);
     }
 
-    public finishDesignate() {
-        const start = this.designationStart;
+    public finishDesignate(item: MenuItemId) {
         const cursorPos = this.cursor.getPosition();
-        delete this.animatedTiles[`${start[0]}:${start[1]}`];
-        delete this.animatedTiles[`${cursorPos[0]}:${cursorPos[1]}`];
-        if (Object.keys(this.animatedTiles).length > 0) {
-            debugger;
-            throw new Error("Everything is horseshit");
+
+        const range = this.designator.getRange(cursorPos);
+        for (let x = range.startX; x <= range.endX; x++) {
+            for (let y = range.startY; y <= range.endY; y++) {
+                // this.dirtyTiles.push([x, y]);
+            }
         }
-        this.designationStart = null;
+
         this.isDesignating = false;
-        this.renderPosition(start);
-        this.renderPosition(cursorPos);
+        this.designatorTiles = [];
+        this.render();
+        // this.renderDirty();
+        // this.renderPosition(start);
+        // this.renderPosition(cursorPos);
     }
 
     public cancelDesignate() {
         this.isDesignating = false;
-        delete this.animatedTiles[`${this.designationStart[0]}:${this.designationStart[1]}`];
-        this.designationStart = null;
+        // delete this.animatedTiles[`${this.designationStart[0]}:${this.designationStart[1]}`];
+        this.designatorTiles = [];
+        // this.designationStart = null;
     }
 
-    private getDesignateDrawData() {
-        return [
-            this.designationStart[0],
-            this.designationStart[1],
-            ",",
-            "rgba(28, 68, 22, .4)",
-            "transparent",
-        ];
+    private isTileAnimating = (pos: [number, number]): boolean => {
+        if (!this.animationToggle) {
+            return false;
+        }
+
+        if (this.animatedTiles[`${pos[0]}:${pos[1]}`] != null) {
+            return true;
+        }
+
+        // return true if this tile is either in animatedTiles
+        // or we are designating and the cursor is not at the designation start
+        if (this.isDesignating) {
+            const cursor = this.cursor.getPosition();
+            const bounds = this.designator.getRange(cursor);
+            return pos[0] >= bounds.startX && pos[1] >= bounds.startY && pos[0] <= bounds.endX && pos[1] <= bounds.endY;
+        }
+
+        return false;
     }
 
     private toggleAnimation = () => {
         this.animationToggle = !this.animationToggle;
+        // this.render();
         this.renderAnimated();
+        this.renderDesignated();
+        // this.renderDirty();
     }
 
     /**
@@ -380,6 +430,7 @@ class Game {
                 this.renderPosition([x, y]);
             }
         }
+        this.dirtyTiles = new Array();
     }
 
     /**
@@ -390,11 +441,12 @@ class Game {
         //renders the appropriate thing at the specified coord
         //for now, check if it needs to be the cursor or the gamemap tile
         // const designate = this.isDesignating && this.designationStart != null && this.designationStart.length === 2;
-        const pos = this.cursor.getPosition();
-        if (this.animationToggle && this.animatedTiles[`${coord[0]}:${coord[1]}`] != null) {
-            const parms = this.getDesignateDrawData();
-            this.display.draw.apply(this.display, parms);
+        if (this.isTileAnimating(coord)) {
+            // const parms = this.getDesignateDrawData();
+            // this.display.draw.apply(this.display, parms);
+            this.display.draw(coord[0], coord[1], ",", "rgba(28, 68, 22, .4)", "transparent");
         } else {
+            const pos = this.cursor.getPosition();
             if (pos[0] === coord[0] && pos[1] === coord[1]) {
                 // render just cursor
                 const parms = this.cursor.getDrawData();
@@ -434,6 +486,40 @@ class Game {
         }
         for (const coord of Object.keys(this.animatedTiles)) {
             this.renderPosition(this.animatedTiles[coord]);
+        }
+
+        // if (this.isDesignating) {
+        //     const cursor = this.cursor.getPosition();
+        //     const bounds = this.designator.getRange(cursor);
+        //     for (let x = bounds.startX; x <= bounds.endX; x++) {
+        //         for (let y = bounds.startY; y <= bounds.endY; y++) {
+        //             this.renderPosition([x, y]);
+        //             // this.dirtyTiles.push([x, y]);
+        //         }
+        //     }
+        // }
+
+        // const cursor = this.cursor.getPosition();
+        // if (this.isDesignating && (this.designationStart[0] !== cursor[0] || this.designationStart[1] !== cursor[1])) {
+        //     const startX = Math.min(this.designationStart[0], cursor[0]);
+        //     const endX = Math.max(this.designationStart[0], cursor[0]);
+        //     const startY = Math.min(this.designationStart[1], cursor[1]);
+        //     const endY = Math.max(this.designationStart[1], cursor[1]);
+        //     for (let x = startX; x <= endX; x++) {
+        //         for (let y = startY; y <= endY; y++) {
+        //             this.renderPosition([x, y]);
+        //             this.dirtyTiles.push([x, y]);
+        //         }
+        //     }
+        // }
+    }
+
+    private renderDesignated = () => {
+        if (this.designatorTiles == null || this.designatorTiles.length === 0) {
+            return;
+        }
+        for (const coord of this.designatorTiles) {
+            this.renderPosition(coord);
         }
     }
 }

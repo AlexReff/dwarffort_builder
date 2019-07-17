@@ -2,11 +2,10 @@
 import * as _ from "lodash";
 import { Component, h, render } from "preact";
 //components
-import { Constants, Direction } from "./components/constants";
+import { Constants, Direction, MenuItemId } from "./components/constants";
 import { DebugMenu } from "./components/debug";
 import { Game } from "./components/game";
 import { Menu } from "./components/menu";
-import { TileType } from "./components/Tile";
 
 require("./css/index.scss");
 
@@ -32,7 +31,7 @@ Add google analytics + simple text ads before public release?
 interface IFortressDesignerState {
     // only things relevant to HTML state
     currentMenu: string;
-    highlightedMenuItem: string;
+    highlightedMenuItem: MenuItemId;
     debug: boolean;
     gridColumnLayout: string;
     gridRowLayout: string;
@@ -151,7 +150,7 @@ class FortressDesigner extends Component<{}, IFortressDesignerState> {
     handleKeyPress = (e: KeyboardEvent) => {
         switch (e.keyCode) {
             case 13: //Enter key
-                this.game.handleDesignation();
+                this.game.handleDesignation(this.state.highlightedMenuItem);
                 // this.isDesignating = !this.isDesignating;
                 //do stuff
                 // if (this.state.highlightedMenuItem && this.state.highlightedMenuItem.length) {
@@ -262,9 +261,13 @@ class FortressDesigner extends Component<{}, IFortressDesignerState> {
                 });
             }
         } else {
-            this.setState({
-                highlightedMenuItem: e,
-            });
+            if (e in MenuItemId) {
+                this.setState({
+                    highlightedMenuItem: e as MenuItemId,
+                });
+            } else {
+                console.log("Unhandled menu event: ", e);
+            }
         }
     }
 
