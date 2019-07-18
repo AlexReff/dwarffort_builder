@@ -5,7 +5,7 @@ import { Component, h, render } from "preact";
 import { Constants, Direction, MenuItemId } from "./components/constants";
 import { DebugMenu } from "./components/debug";
 import { Game } from "./components/game";
-import { Menu } from "./components/menu";
+import { IMenuItem, Menu } from "./components/menu";
 import { TileType } from "./components/Tile";
 
 require("./css/index.scss");
@@ -63,7 +63,7 @@ class FortressDesigner extends Component<{}, IFortressDesignerState> {
         this.gridElement = document.getElementById("grid");
         this.headerElement = document.getElementById("header");
 
-        this.tileSheetImage = new Image(); // document.createElement("img");
+        this.tileSheetImage = new Image();
         this.tileSheetImage.crossOrigin = "Anonymous";
         this.tileSheetImage.onload = () => {
             this.initGame();
@@ -71,21 +71,17 @@ class FortressDesigner extends Component<{}, IFortressDesignerState> {
         this.tileSheetImage.src = Constants.TILESHEET_URL;
 
         //update the grid's width in css to divisible by grid
-        const wOff = this.gridElement.offsetWidth % 16;
-        // debugger;
+        const wOff = this.gridElement.offsetWidth % Constants.TILE_WIDTH;
         if (wOff !== 0) {
-            //adjust size
-            const newWidth = `1fr ${(Constants.MENU_WIDTH_INITIAL + wOff).toString()}px`;
             this.setState({
-                gridColumnLayout: newWidth,
+                gridColumnLayout: `1fr ${(Constants.MENU_WIDTH_INITIAL + wOff).toString()}px`,
             });
         }
 
-        const hOff = this.gridElement.offsetHeight % 16;
+        const hOff = this.gridElement.offsetHeight % Constants.TILE_WIDTH;
         if (hOff !== 0) {
-            const newHeight = `${Constants.HEADER_HEIGHT_INITIAL.toString()}px 1fr ${(Constants.HEADER_HEIGHT_INITIAL + hOff).toString()}px`;
             this.setState({
-                gridRowLayout: newHeight,
+                gridRowLayout: `${Constants.HEADER_HEIGHT_INITIAL.toString()}px 1fr ${(Constants.HEADER_HEIGHT_INITIAL + hOff).toString()}px`,
             });
         }
     }
@@ -98,16 +94,11 @@ class FortressDesigner extends Component<{}, IFortressDesignerState> {
         this.gridElement.addEventListener("mousemove", this.handleMouseMove);
         this.gridElement.addEventListener("mouseover", this.handleMouseOver);
         this.gridElement.addEventListener("mouseleave", this.handleMouseLeave);
+        this.gridElement.addEventListener("contextmenu", this.handleContextMenu);
+
         window.addEventListener("keydown", this.handleKeyPress);
         window.addEventListener("keyup", this.handleKeyUp);
         window.addEventListener("resize", this.handleWindowResize);
-        this.canvasElement.addEventListener("contextmenu", (e) => {
-            e.preventDefault();
-            const pos = this.game.getMousePosition(e);
-            this.game.moveCursorTo(pos);
-            this.game.handleContextMenu(this.state.highlightedMenuItem);
-            return false;
-        });
     }
 
     componentWillUnmount() {
@@ -118,6 +109,14 @@ class FortressDesigner extends Component<{}, IFortressDesignerState> {
         window.removeEventListener("keydown", this.handleKeyPress);
         window.removeEventListener("keyup", this.handleKeyUp);
         window.removeEventListener("resize", this.handleWindowResize);
+    }
+
+    handleContextMenu = (e: MouseEvent | TouchEvent) => {
+        e.preventDefault();
+        const pos = this.game.getMousePosition(e);
+        this.game.moveCursorTo(pos);
+        this.game.handleContextMenu(this.state.highlightedMenuItem);
+        return false;
     }
 
     handleGridClick = (e: MouseEvent | TouchEvent) => {
@@ -259,6 +258,10 @@ class FortressDesigner extends Component<{}, IFortressDesignerState> {
             if (this.game.isDesignating()) {
                 // stop designation
                 this.game.cancelDesignate();
+            } else if (this.state.highlightedMenuItem != null && this.state.highlightedMenuItem.length > 0) {
+                this.setState({
+                    highlightedMenuItem: null,
+                });
             } else {
                 let newMenu = "";
                 const idx = this.state.currentMenu.lastIndexOf(":");
@@ -268,7 +271,6 @@ class FortressDesigner extends Component<{}, IFortressDesignerState> {
                     newMenu = "top";
                 }
                 this.setState({
-                    highlightedMenuItem: null,
                     currentMenu: newMenu,
                 });
             }
@@ -305,13 +307,6 @@ class FortressDesigner extends Component<{}, IFortressDesignerState> {
         return null;
     }
 
-    getWrapperStyle = () => {
-        return {
-            gridTemplateColumns: this.state.gridColumnLayout,
-            gridTemplateRows: this.state.gridRowLayout,
-        };
-    }
-
     getGridPosition = (clientX: number, clientY: number): [number, number] => {
         //returns top-left coordinate for grid item based on mouse position
         const bounds = this.canvasElement.getBoundingClientRect();
@@ -339,6 +334,31 @@ class FortressDesigner extends Component<{}, IFortressDesignerState> {
         }
     }
 
+    renderMenuStatus = () => {
+        if (this.game == null) {
+            return null;
+        }
+        //if placing a building, 'placing <>'
+        //if placing a nonbuilding (designate) 'painting <>'
+        //if designating, designating <>
+        if (this.game.isDesignating()) {
+            return (
+                <div>Designating {Constants.MENU_DICTIONARY[this.state.highlightedMenuItem].text}</div>
+            );
+        }
+        if (this.state.highlightedMenuItem != null && this.state.highlightedMenuItem.length > 0) {
+            if (this.state.highlightedMenuItem in Constants.BUILDING_TILE_MAP) {
+                return (
+                    <div>Placing {Constants.MENU_DICTIONARY[this.state.highlightedMenuItem].text}</div>
+                );
+            }
+            return (
+                <div>Designating {Constants.MENU_DICTIONARY[this.state.highlightedMenuItem].text}</div>
+            );
+        }
+        return <div></div>;
+    }
+
     render(props, state: IFortressDesignerState) {
         return (
             <div id="page">
@@ -346,7 +366,7 @@ class FortressDesigner extends Component<{}, IFortressDesignerState> {
                     <DebugMenu isActive={state.debug} />
                     : null}
                 <div id="highlighter" style={this.getHighlighterStyle()}></div>
-                <div id="wrapper" style={this.getWrapperStyle()}>
+                <div id="wrapper" style={{ gridTemplateColumns: state.gridColumnLayout, gridTemplateRows: state.gridRowLayout }}>
                     <div id="header">
                         <div class="left"><a class="home-link" href="https://reff.dev/">reff.dev</a></div>
                         <div class="center">
@@ -362,7 +382,9 @@ class FortressDesigner extends Component<{}, IFortressDesignerState> {
                     <div id="grid"></div>
                     <Menu highlightedItem={state.highlightedMenuItem}
                         selectedMenu={state.currentMenu}
-                        handleMenuEvent={this.handleMenuEvent} />
+                        handleMenuEvent={this.handleMenuEvent}>
+                            {this.renderMenuStatus()}
+                        </Menu>
                     <footer id="footer">
                         <div class="inner">
                             <div class="data">{this.renderFooterData()}</div>

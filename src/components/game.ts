@@ -274,7 +274,6 @@ class Game {
             case MenuItemId.mine:
                 // make everything highlighted a floor
                 // make all neighbors that are EMPTY into WALLs
-                //make all squares 'floor'
                 for (let x = range.startX; x <= range.endX; x++) {
                     for (let y = range.startY; y <= range.endY; y++) {
                         if (this.setTile([x, y], TileType.Floor, true)) {
@@ -302,7 +301,6 @@ class Game {
         }
 
         this.calculateNeighbors();
-        // this.renderDirty();
     }
 
     private calculateNeighbors = () => {

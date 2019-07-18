@@ -5,6 +5,7 @@ enum TileType {
     Empty,
     Wall,
     Floor,
+    Building,
 }
 
 class Tile {
@@ -18,11 +19,14 @@ class Tile {
     private neighbors: TileType[];
     private decorated: boolean;
     private userSet: boolean; // true if the user designates this, false if generated from code
+    private isBuilding: boolean; // true if this tile is part of a building
+    private buildingChar: string; // character for the building at this tile (0-255)
 
     constructor(tile: TileType, decorate?: boolean) {
+        this.tileType = tile;
         this.neighbors = new Array(4);
         this.userSet = false;
-        this.tileType = tile;
+        this.isBuilding = false;
         this.decorated = decorate === true;
         this.init();
     }
@@ -131,8 +135,8 @@ class Tile {
                 return true;
             case TileType.Floor:
                 //no modifications needed if this is a floor
-                // this.character = `f${_.random(Constants.FLOOR_TILES.length - 1, false)}`;
-                this.character = "f1";
+                this.character = `f${_.random(Constants.FLOOR_TILES.length - 1, false)}`;
+                // this.character = "f1";
                 break;
             case TileType.Empty:
                 if (this.decorated) {
@@ -152,7 +156,8 @@ class Tile {
     private init() {
         switch (this.tileType) {
             case TileType.Floor:
-                this.color = "transparent";
+                // this.color = "transparent";
+                this.color = "rgba(50, 50, 50, .2)";
                 break;
             case TileType.Wall:
                 this.color = "transparent";

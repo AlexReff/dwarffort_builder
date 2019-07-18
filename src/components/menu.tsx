@@ -26,9 +26,10 @@ class Menu extends Component<IMenuProps, {}> {
         this.menuItemHandler(e.currentTarget.id);
     }
 
-    breadcrumbHandler = (e: any) => {
+    breadcrumbHandler = (e: Event) => {
         e.preventDefault();
-        return this.menuItemHandler(e.currentTarget.dataset.id);
+        (e.currentTarget as HTMLElement).blur();
+        return this.menuItemHandler((e.currentTarget as HTMLElement).dataset.id);
     }
 
     menuItemHandler = (key: string) => {
@@ -79,11 +80,11 @@ class Menu extends Component<IMenuProps, {}> {
             const activeItem = Constants.MENU_HOTKEYS[props.selectedMenu];
             breadcrumbs.push(<a href="#" data-id={activeItem.key} onClick={(e) => this.breadcrumbHandler(e)}>{activeItem.text}</a>);
 
-            let parent = activeItem.parent;
-            while (parent != null) {
-                breadcrumbs.push(<a data-id={parent.key} onClick={(e) => this.breadcrumbHandler(e)}>{parent.text}</a>);
-                parent = parent.parent;
-            }
+            // let parent = activeItem.parent;
+            // while (parent != null) {
+            //     breadcrumbs.push(<a href="#" data-id={parent.key} onClick={(e) => this.breadcrumbHandler(e)}>{parent.text}</a>);
+            //     parent = parent.parent;
+            // }
         }
 
         breadcrumbs.push(<a href="#" data-id="top" title="Main Menu" onClick={(e) => this.breadcrumbHandler(e)}>☺</a>);
@@ -98,6 +99,9 @@ class Menu extends Component<IMenuProps, {}> {
                 </div>
                 <div class="menu-items">
                     {this.getChildMenu(Constants.MENU_ITEMS, "top")}
+                </div>
+                <div class="menu-status">
+                    {this.props.children}
                 </div>
                 <div class="menu-bottom">
                     <div class="copy">&copy; {new Date().getFullYear()} Alex Reff</div>

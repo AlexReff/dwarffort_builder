@@ -1,5 +1,6 @@
 const styles = require(".././css/_variables.scss");
 
+import * as buildings from "../data/buildings.json";
 import { items } from "../data/menu.json";
 import { Direction, MenuItemId } from "./enums";
 import { IMenuItem } from "./menu.js";
@@ -31,6 +32,8 @@ class Constants {
         "rgba(255,255,255,.1)", //grey-ish
         "rgba(255,255,0,.4)", //natural-er yellow
     ];
+
+    static readonly BUILDING_TILE_MAP = buildings;
 
     static readonly WALL_TILES: Array<Array<[number, number]>> = [
         [[112, 192]], //0000 'edge'     //0
@@ -68,9 +71,12 @@ class Constants {
     ];
 
     static readonly FLOOR_TILES: Array<[number, number]> = [
-        [0, 176],
-        [16, 176],
-        [32, 176],
+        [192, 32],
+        [224, 32],
+        // [0, 96],
+        // [0, 176],
+        // [16, 176],
+        // [32, 176],
     ];
 
     static readonly DECORATOR_TILES: Array<{
@@ -165,6 +171,14 @@ class Constants {
             val["f" + i] = Constants.FLOOR_TILES[i];
         }
 
+        //reference by # directly
+        let count = 0;
+        for (let y = 0; y < 16; y++) {
+            for (let x = 0; x < 16; x++) {
+                val["i" + count++] = [x * Constants.TILE_WIDTH, y * Constants.TILE_HEIGHT];
+            }
+        }
+
         return val;
     })();
 
@@ -177,7 +191,13 @@ class Constants {
         const parseMenuItemRecursive = (menuItems: IMenuItem[], parent?: IMenuItem) => {
             for (const item of menuItems) {
                 item.parent = parent;
-                const key = (parent != null ? parent.key + ":" : "") + item.key;
+                let prefix = ""; // (parent != null ? parent.key + ":" : "");
+                let iterParent = parent;
+                while (iterParent != null) {
+                    prefix = iterParent.key + ":" + prefix;
+                    iterParent = iterParent.parent;
+                }
+                const key = prefix + item.key;
                 MENU_PARSED[key] = item;
                 if (item.children != null && item.children.length) {
                     Constants.MENU_SUBMENUS[item.id] = key;

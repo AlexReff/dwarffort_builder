@@ -1,6 +1,7 @@
 @import './variables';
 
 #menu {
+    @include font-consolas;
     border-left: 8px solid $frame-border-color;
     padding: 10px;
     font-size: 16px;
@@ -17,7 +18,8 @@
 
         a {
             @include whiteLinkHighlight;
-            font-size: 12px;
+            font-size: 16px;
+            font-weight: bold;
             margin-left: 20px;
             display: inline-block;
             position: relative;
@@ -50,7 +52,9 @@
     }
 
     .menu-items {
-        font-size: 12px;
+        @include font-consolas;
+        font-size: 14px;
+        font-weight: bold;
         
         .submenu {
             display: none;
@@ -69,6 +73,7 @@
     }
 
     .menu-bottom {
+        @include font-px;
         margin-top: auto;
         
         .copy {
