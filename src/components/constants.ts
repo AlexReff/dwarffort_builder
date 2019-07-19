@@ -33,6 +33,10 @@ class Constants {
         "rgba(255,255,0,.4)", //natural-er yellow
     ];
 
+    static readonly CURSOR_COLOR = "rgba(157,132,19,1)";
+    static readonly CURSOR_PASSABLE_COLOR = "rgba(0,255,0,1)";
+    static readonly CURSOR_IMPASSABLE_COLOR = "rgba(0,128,0,1)";
+
     static readonly BUILDING_TILE_MAP = buildings;
 
     static readonly WALL_TILES: Array<Array<[number, number]>> = [

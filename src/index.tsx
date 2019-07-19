@@ -6,7 +6,7 @@ import { Constants, Direction, MenuItemId } from "./components/constants";
 import { DebugMenu } from "./components/debug";
 import { Game } from "./components/game";
 import { IMenuItem, Menu } from "./components/menu";
-import { TileType } from "./components/Tile";
+import { Tile, TileType } from "./components/Tile";
 
 require("./css/index.scss");
 
@@ -115,8 +115,19 @@ class FortressDesigner extends Component<{}, IFortressDesignerState> {
         e.preventDefault();
         const pos = this.game.getMousePosition(e);
         this.game.moveCursorTo(pos);
-        this.game.handleContextMenu(this.state.highlightedMenuItem);
+        this.handleEnterRightClick();
         return false;
+    }
+
+    /**
+     * Handles enter key + right clicks
+     */
+    handleEnterRightClick() {
+        if (this.game.handleEnterKey(this.state.highlightedMenuItem)) {
+            this.setState({
+                highlightedMenuItem: null,
+            });
+        }
     }
 
     handleGridClick = (e: MouseEvent | TouchEvent) => {
@@ -156,10 +167,13 @@ class FortressDesigner extends Component<{}, IFortressDesignerState> {
     }
 
     handleKeyPress = (e: KeyboardEvent) => {
+        if (e.getModifierState("Control")) {
+            return; //don't override ctrl+btn browser hotkeys
+        }
         switch (e.keyCode) {
             case 13: //Enter key
                 e.preventDefault();
-                this.game.handleDesignation(this.state.highlightedMenuItem);
+                this.handleEnterRightClick();
                 break;
             case 192: //` tilde
                 //toggle debug display
@@ -223,7 +237,7 @@ class FortressDesigner extends Component<{}, IFortressDesignerState> {
                     e.preventDefault();
                     this.handleMenuEvent(Constants.MENU_HOTKEYS[key].id);
                 } else {
-                    console.log("unhandled keypress: ", e.keyCode, e.key);
+                    // console.log("unhandled keypress: ", e.keyCode, e.key);
                 }
                 break;
         }
@@ -254,15 +268,17 @@ class FortressDesigner extends Component<{}, IFortressDesignerState> {
         }
 
         if (e === "escape") {
-            //go up one menu level OR stop designating
-            if (this.game.isDesignating()) {
-                // stop designation
-                this.game.cancelDesignate();
-            } else if (this.state.highlightedMenuItem != null && this.state.highlightedMenuItem.length > 0) {
+            if (this.game.isBuilding()) {
+                // unselect menu item
                 this.setState({
                     highlightedMenuItem: null,
                 });
+                this.game.stopBuilding();
+            } else if (this.game.isDesignating()) {
+                // stop designation
+                this.game.cancelDesignate();
             } else {
+                // go up one menu level
                 let newMenu = "";
                 const idx = this.state.currentMenu.lastIndexOf(":");
                 if (idx > 0) {
@@ -277,10 +293,14 @@ class FortressDesigner extends Component<{}, IFortressDesignerState> {
         } else {
             if (e in MenuItemId) {
                 if (this.state.highlightedMenuItem !== e) {
-                    this.game.cancelDesignate();
+                    // this.game.cancelDesignate();
                     this.setState({
                         highlightedMenuItem: e as MenuItemId,
                     });
+                    //if this item is a building
+                    if (e in Constants.BUILDING_TILE_MAP) {
+                        this.game.setCursorToBuilding(e as MenuItemId);
+                    }
                 }
             } else {
                 console.log("Unhandled menu event: ", e);
@@ -297,11 +317,19 @@ class FortressDesigner extends Component<{}, IFortressDesignerState> {
                 <div class="status">Designating {Constants.MENU_DICTIONARY[this.state.highlightedMenuItem].text}</div>
             );
         } else {
-            const type = this.game.getTileTypeAtCursor();
-            if (type !== TileType.Empty) {
-                return (
-                    <div class="status">{TileType[type]}</div>
-                );
+            const tile = this.game.getTileAtCursor();
+            const type = tile.getType();
+            switch (type) {
+                case TileType.Building:
+                    return (
+                        <div>{tile.getBuildingName()} (Building)</div>
+                    );
+                case TileType.Empty:
+                    break;
+                default:
+                    return (
+                        <div class="status">{TileType[type]}</div>
+                    );
             }
         }
         return null;

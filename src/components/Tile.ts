@@ -21,6 +21,7 @@ class Tile {
     private userSet: boolean; // true if the user designates this, false if generated from code
     private isBuilding: boolean; // true if this tile is part of a building
     private buildingChar: string; // character for the building at this tile (0-255)
+    private buildingKey: string;
 
     constructor(tile: TileType, decorate?: boolean) {
         this.tileType = tile;
@@ -47,6 +48,10 @@ class Tile {
         return this.userSet;
     }
 
+    public getBuildingName() {
+        return Constants.MENU_DICTIONARY[this.buildingKey].text;
+    }
+
     public getDrawData(coord: [number, number]) {
         switch (this.tileType) {
             case TileType.Wall:
@@ -68,6 +73,14 @@ class Tile {
         ];
     }
 
+    public setBuilding(key: string, char: string) {
+        this.tileType = TileType.Building;
+        this.isBuilding = true;
+        this.buildingKey = key;
+        this.buildingChar = char;
+        this.character = `i${char}`;
+    }
+
     /**
      * Returns
      * @param pos
@@ -75,7 +88,9 @@ class Tile {
      * @returns {true} if this character has changed, false otherwise
      */
     public setNeighbor(pos: Direction, type: TileType): boolean {
-
+        if (pos % 2 === 1) {
+            return false;
+        }
         if (this.neighbors[pos / 2] === type) {
             return false;
         }
@@ -95,6 +110,11 @@ class Tile {
         if (type === this.tileType) {
             return false;
         }
+        if (type !== TileType.Building) {
+            this.isBuilding = false;
+            this.buildingKey = null;
+            this.buildingChar = null;
+        }
         this.tileType = type;
         this.init();
         return true;
@@ -113,9 +133,9 @@ class Tile {
                 }
 
                 if (this.character != null) {
-                    if (this.character.indexOf("w") === 0) {
+                    if (this.character.indexOf("w") === 0) { //if this tile was already a wall
                         const matches = this.character.match(/\d+/g);
-                        if (matches && matches.length > 0) {
+                        if (matches && matches.length > 0) { //get which type of wall
                             const prevNum = matches[0];
                             if (prevNum === flags.toString(10)) {
                                 //nothing is changing, do not update the variant or change the tile
@@ -163,7 +183,6 @@ class Tile {
                 this.color = "transparent";
                 break;
             case TileType.Empty:
-            default:
                 this.color = "transparent";
                 if (this.decorated) {
                     if (_.random(100, false) <= Constants.GRID_TILE_COLOR_PERCENT) {
@@ -171,6 +190,8 @@ class Tile {
                     }
                 }
 
+                break;
+            default:
                 break;
         }
 

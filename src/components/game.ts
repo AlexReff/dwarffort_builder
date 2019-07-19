@@ -24,6 +24,9 @@ class Game {
     private designator: Designator;
     private designatorTiles: Array<[number, number]>;
 
+    private buildingTiles: Array<[number, number]>;
+    private buildings: { [key: string]: MenuItemId };
+
     constructor(image: HTMLImageElement, container: HTMLElement) {
         this.tileSheetImage = image;
         this.animationToggle = false;
@@ -90,60 +93,57 @@ class Game {
         return this.display.eventToPosition(e);
     }
 
-    public getTileTypeAtCursor() {
-        return this.getTileAtCursor().getType();
-    }
-
     public isDesignating() {
         return this.designator.isDesignating();
     }
 
     public moveCursor(direction: Direction, shiftPressed?: boolean) {
         const pos = this.cursor.getPosition();
+        const offset = this.cursor.getRadius();
         const distance = shiftPressed ? 10 : 1;
         switch (direction) {
             case Direction.N:
-                if (pos[1] > 0) {
-                    pos[1] = Math.max(0, pos[1] - distance);
+                if (pos[1] - offset > 0) {
+                    pos[1] = Math.max(offset, pos[1] - distance);
                 }
                 break;
             case Direction.NE:
-                if (pos[1] > 0 || pos[0] < this.gridSize[0] - 1) {
-                    pos[0] = Math.min(this.gridSize[0] - 1, pos[0] + distance);
-                    pos[1] = Math.max(0, pos[1] - distance);
+                if (pos[1] - offset > 0 || pos[0] + offset < this.gridSize[0] - 1) {
+                    pos[0] = Math.min(this.gridSize[0] - 1 - offset, pos[0] + distance);
+                    pos[1] = Math.max(offset, pos[1] - distance);
                 }
                 break;
             case Direction.E:
-                if (pos[0] < this.gridSize[0] - 1) {
-                    pos[0] = Math.min(this.gridSize[0] - 1, pos[0] + distance);
+                if (pos[0] + offset < this.gridSize[0] - 1) {
+                    pos[0] = Math.min(this.gridSize[0] - 1 - offset, pos[0] + distance);
                 }
                 break;
             case Direction.SE:
-                if (pos[0] < this.gridSize[0] - 1 || pos[1] < this.gridSize[1] - 1) {
-                    pos[0] = Math.min(this.gridSize[0] - 1, pos[0] + distance);
-                    pos[1] = Math.min(this.gridSize[1] - 1, pos[1] + distance);
+                if (pos[0] + offset < this.gridSize[0] - 1 || pos[1] + offset < this.gridSize[1] - 1) {
+                    pos[0] = Math.min(this.gridSize[0] - 1 - offset, pos[0] + distance);
+                    pos[1] = Math.min(this.gridSize[1] - 1 - offset, pos[1] + distance);
                 }
                 break;
             case Direction.S:
-                if (pos[1] < this.gridSize[1] - 1) {
-                    pos[1] = Math.min(this.gridSize[1] - 1, pos[1] + distance);
+                if (pos[1] + offset < this.gridSize[1] - 1) {
+                    pos[1] = Math.min(this.gridSize[1] - 1 - offset, pos[1] + distance);
                 }
                 break;
             case Direction.SW:
-                if (pos[0] > 0 || pos[1] < this.gridSize[1] - 1) {
-                    pos[0] = Math.max(0, pos[0] - 1);
-                    pos[1] = Math.min(this.gridSize[1] - 1, pos[1] + distance);
+                if (pos[0] - offset > 0 || pos[1] + offset < this.gridSize[1] - 1) {
+                    pos[0] = Math.max(offset, pos[0] - 1);
+                    pos[1] = Math.min(this.gridSize[1] - 1 - offset, pos[1] + distance);
                 }
                 break;
             case Direction.W:
-                if (pos[0] > 0) {
-                    pos[0] = Math.max(0, pos[0] - distance);
+                if (pos[0] - offset > 0) {
+                    pos[0] = Math.max(offset, pos[0] - distance);
                 }
                 break;
             case Direction.NW:
-                if (pos[0] > 0 || pos[1] > 0) {
-                    pos[0] = Math.max(0, pos[0] - distance);
-                    pos[1] = Math.max(0, pos[1] - distance);
+                if (pos[0] - offset > 0 || pos[1] - offset > 0) {
+                    pos[0] = Math.max(offset, pos[0] - distance);
+                    pos[1] = Math.max(offset, pos[1] - distance);
                 }
                 break;
             default:
@@ -155,34 +155,30 @@ class Game {
 
     public moveCursorTo(targetPos: [number, number]) {
         const pos = this.cursor.getPosition();
+        const offset = this.cursor.getRadius();
 
         if ((pos[0] === targetPos[0] && pos[1] === targetPos[1]) || //already there
-            (targetPos[0] < 0 || targetPos[1] < 0 ||                //out of bounds
+            (targetPos[0] < 0 || targetPos[1] < 0 || //out of bounds
                 targetPos[0] > this.gameGrid.length - 1 ||
                 targetPos[1] > this.gameGrid[0].length - 1)) {
             return;
         }
 
+        targetPos[0] = Math.max(offset, Math.min(this.gameGrid.length - 1 - offset, targetPos[0]));
+        targetPos[1] = Math.max(offset, Math.min(this.gameGrid[0].length - 1 - offset, targetPos[1]));
+
         this.cursor.setPosition(targetPos);
 
         if (this.designator.isDesignating()) {
-            while (this.designatorTiles.length > 0) {
-                this.dirtyTiles.push(this.designatorTiles.pop());
-            }
             const range = this.designator.getRange(targetPos);
             for (let x = range.startX; x <= range.endX; x++) {
                 for (let y = range.startY; y <= range.endY; y++) {
                     this.designatorTiles.push([x, y]);
                 }
             }
-
-            this.renderDirty();
-            this.renderDesignated();
-        } else {
-            this.dirtyTiles.push(pos);
-            this.dirtyTiles.push(targetPos);
-            this.renderDirty();
         }
+
+        this.render();
     }
 
     /**
@@ -201,20 +197,24 @@ class Game {
         return false;
     }
 
-    public handleContextMenu(item: MenuItemId) {
-        switch (item) {
-            default:
-                this.handleDesignation(item);
-                break;
+    /**
+     * Handles enter key presses + right mouse clicks
+     * @returns True if we need to un-set the highlightedMenuItem in index.tsx
+     */
+    public handleEnterKey(highlightedMenuItem?: MenuItemId): boolean {
+        if (highlightedMenuItem == null) {
+            return;
+        }
+        if (this.cursor.isBuilding()) {
+            this.placeBuilding();
+            return true;
+        } else {
+            this.handleDesignation(highlightedMenuItem);
+            return false;
         }
     }
 
-    public handleDesignation(highlightedMenuItem?: MenuItemId) {
-        // called when 'enter' is pressed
-        if (highlightedMenuItem == null) {
-            console.log("Cannot designate - no menu item selected");
-            return;
-        }
+    public handleDesignation(highlightedMenuItem: MenuItemId) {
         if (this.designator.isDesignating()) {
             this.finishDesignate(highlightedMenuItem);
         } else {
@@ -244,11 +244,46 @@ class Game {
         this.render();
     }
 
-    private getTileAtCursor = () => {
+    public stopBuilding() {
+        this.cursor.stopBuilding();
+        this.designator.endDesignating();
+        this.render();
+    }
+
+    public isBuilding() {
+        return this.cursor.isBuilding();
+    }
+
+    public setCursorToBuilding(e: MenuItemId) {
+        const target = Constants.BUILDING_TILE_MAP[e];
+        if (target == null) {
+            this.cursor.stopBuilding();
+            return;
+        }
+
+        this.cursor.setBuilding(e);
+        this.render();
+    }
+
+    public getTileAtCursor = () => {
         const pos = this.cursor.getPosition();
         return this.gameGrid[pos[0]][pos[1]];
     }
 
+    private placeBuilding() {
+        const tiles = this.cursor.getBuildingTiles();
+        const key = this.cursor.getBuildingKey();
+        for (const tile of tiles) {
+            this.gameGrid[tile.pos[0]][tile.pos[1]].setBuilding(key, tile.tile);
+        }
+        this.cursor.stopBuilding();
+        this.designator.endDesignating();
+        this.render();
+    }
+
+    /**
+     * Called when a designation finishes, updates the relevant tiles to the new type
+     */
     private designateRange = (range: IGridRange, item: MenuItemId) => {
         //if we are mining floors, convert all empty neighbors to walls
         switch (item) {
@@ -273,7 +308,6 @@ class Game {
                 break;
             case MenuItemId.mine:
                 // make everything highlighted a floor
-                // make all neighbors that are EMPTY into WALLs
                 for (let x = range.startX; x <= range.endX; x++) {
                     for (let y = range.startY; y <= range.endY; y++) {
                         if (this.setTile([x, y], TileType.Floor, true)) {
@@ -281,17 +315,16 @@ class Game {
                         }
                     }
                 }
-                //clear all unset neighbors
+                // make all neighbors that are EMPTY into WALLs
                 const neighbors = this.getNeighborsOfRange(range);
-                neighbors.forEach((item) => {
-                    const tile = this.gameGrid[item[0]][item[1]];
+                neighbors.forEach((neighbor) => {
+                    const tile = this.gameGrid[neighbor[0]][neighbor[1]];
                     if (tile.getUserSet()) {
                         //do not touch this tile
                     } else {
-                        const thisType = tile.getType();
-                        if (thisType === TileType.Empty) {
+                        if (tile.getType() === TileType.Empty) {
                             tile.setType(TileType.Wall, false);
-                            this.dirtyTiles.push([item[0], item[1]]);
+                            this.dirtyTiles.push([neighbor[0], neighbor[1]]);
                         }
                     }
                 });
@@ -300,17 +333,12 @@ class Game {
                 return;
         }
 
-        this.calculateNeighbors();
+        this.populateAllNeighbors();
     }
 
-    private calculateNeighbors = () => {
-        for (let x = 0; x < this.gameGrid.length; x++) {
-            for (let y = 0; y < this.gameGrid[0].length; y++) {
-                this.updateNeighbors([x, y]);
-            }
-        }
-    }
-
+    /**
+     * Gets a list of positions that are neighbors of a given range of tiles
+     */
     private getNeighborsOfRange(range: IGridRange): Array<[number, number]> {
         //returns a border of positions around a specified range
         const dict = {};
@@ -392,24 +420,24 @@ class Game {
         if (y > 0) { //N
             this.gameGrid[x][y].setNeighbor(Direction.N, this.gameGrid[x][y - 1].getType());
 
-            if (x < this.gridSize[1] - 1) { //NE
-                this.gameGrid[x][y].setNeighbor(Direction.NE, this.gameGrid[x + 1][y - 1].getType());
-            }
+            // if (x < this.gridSize[1] - 1) { //NE
+            //     this.gameGrid[x][y].setNeighbor(Direction.NE, this.gameGrid[x + 1][y - 1].getType());
+            // }
 
-            if (x > 0) { //NW
-                this.gameGrid[x][y].setNeighbor(Direction.NW, this.gameGrid[x - 1][y - 1].getType());
-            }
+            // if (x > 0) { //NW
+            //     this.gameGrid[x][y].setNeighbor(Direction.NW, this.gameGrid[x - 1][y - 1].getType());
+            // }
         }
         if (y < this.gridSize[1] - 1) { //S
             this.gameGrid[x][y].setNeighbor(Direction.S, this.gameGrid[x][y + 1].getType());
 
-            if (x < this.gridSize[0] - 1) { //SE
-                this.gameGrid[x][y].setNeighbor(Direction.SE, this.gameGrid[x][y + 1].getType());
-            }
+            // if (x < this.gridSize[0] - 1) { //SE
+            //     this.gameGrid[x][y].setNeighbor(Direction.SE, this.gameGrid[x][y + 1].getType());
+            // }
 
-            if (x > 0) { //SW
-                this.gameGrid[x][y].setNeighbor(Direction.SW, this.gameGrid[x - 1][y + 1].getType());
-            }
+            // if (x > 0) { //SW
+            //     this.gameGrid[x][y].setNeighbor(Direction.SW, this.gameGrid[x - 1][y + 1].getType());
+            // }
         }
         if (x > 0) { //W
             this.gameGrid[x][y].setNeighbor(Direction.W, this.gameGrid[x - 1][y].getType());
@@ -420,7 +448,7 @@ class Game {
     }
 
     /**
-     * Updates the 'neighbors' properties of all neighbors around a tile
+     * Updates the 'neighbors' of all neighbors around a tile
      * @param pos Center of neighborhood
      */
     private updateNeighborhood(pos: [number, number]) {
@@ -514,6 +542,12 @@ class Game {
         this.dirtyTiles = [];
     }
 
+    private renderCursor() {
+        for (const i of this.cursor.getRange()) {
+            this.renderPosition(i);
+        }
+    }
+
     /**
      * Renders the correct tile at the given coord
      * @param coord [x, y] grid coordinate to render
@@ -526,10 +560,10 @@ class Game {
             this.display.draw.apply(this.display, parms);
             // this.display.draw(coord[0], coord[1], ",", "rgba(28, 68, 22, .4)", "transparent");
         } else {
-            const pos = this.cursor.getPosition();
-            if (pos[0] === coord[0] && pos[1] === coord[1]) {
+            //const pos = this.cursor.getPosition();
+            if (this.cursor.coordIsCursor(coord)) {
                 // render just cursor
-                const parms = this.cursor.getDrawData();
+                const parms = this.cursor.getDrawData(coord);
                 this.display.draw.apply(this.display, parms);
 
                 // render cursor over tile
