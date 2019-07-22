@@ -11,12 +11,16 @@ import { Tile, TileType } from "./tile";
 class Game {
     private display: Display;
     private tileSheetImage: HTMLImageElement;
-    private noiseMap: number[][];
-    private gridSize: [number, number]; //[width, height]
+    private gridSize: [number, number]; //size of the rendered game grid [width, height]
+    private mapSize: [number, number]; //size of the full map (including non-rendered portions)
+    private center: Point; //camera center? top left?
 
     private cursor: Cursor;
 
-    private gameGrid: Tile[][];
+    private simplex: OpenSimplexNoise;
+
+    private zLevel: number;
+    private gameGrid: { [key: number]: Tile[][] };
     private dirtyTiles: Point[];
 
     private animationToggle: boolean;
@@ -36,10 +40,18 @@ class Game {
     constructor(image: HTMLImageElement, container: HTMLElement) {
         this.tileSheetImage = image;
         this.animationToggle = false;
+        this.zLevel = 0;
+        this.gameGrid = {};
+        this.simplex = new OpenSimplexNoise(Date.now());
 
         this.gridSize = [
             Math.floor(container.offsetWidth / Constants.TILE_WIDTH),
             Math.floor(container.offsetHeight / Constants.TILE_HEIGHT),
+        ];
+
+        this.mapSize = [
+            48 * 2,
+            48 * 2,
         ];
 
         const center: Point = [
@@ -66,22 +78,23 @@ class Game {
 
         container.append(this.display.getContainer());
 
-        const simplex = new OpenSimplexNoise(Date.now());
-        this.noiseMap = simplex.array2D(this.gridSize[0], this.gridSize[1]).map((e) => {
-            return e.map((x) => {
-                return Math.floor(((x + 1.0) / 2.0) * 100.0);
-            });
-        });
+        this.populateFloor();
+        // this.noiseMap = this.simplex.array2D(this.gridSize[0], this.gridSize[1]).map((e) => {
+        //     return e.map((x) => {
+        //         return Math.floor(((x + 1.0) / 2.0) * 100.0);
+        //     });
+        // });
 
-        this.gameGrid = new Array();
-        for (let x = 0; x < this.gridSize[0]; x++) {
-            const thisRow = [];
-            for (let y = 0; y < this.gridSize[1]; y++) {
-                //handle logic for populating initial grid
-                thisRow.push(new Tile(TileType.Empty, this.noiseMap[x][y] <= Constants.GRID_TILE_DECORATED_PERCENT));
-            }
-            this.gameGrid.push(thisRow);
-        }
+        // // this.gameGrid = new Array();
+        // this.gameGrid[this.zLevel] = [];
+        // for (let x = 0; x < this.gridSize[0]; x++) {
+        //     const thisRow = [];
+        //     for (let y = 0; y < this.gridSize[1]; y++) {
+        //         //handle logic for populating initial grid
+        //         thisRow.push(new Tile(TileType.Empty, this.noiseMap[x][y] <= Constants.GRID_TILE_DECORATED_PERCENT));
+        //     }
+        //     this.gameGrid[this.zLevel].push(thisRow);
+        // }
 
         this.populateAllNeighbors();
 
@@ -91,6 +104,24 @@ class Game {
         this.animationInterval = window.setInterval(() => (this.toggleAnimation()), 250);
 
         this.render();
+    }
+
+    public populateFloor(floor?: number) {
+        const targetFloor = floor || this.zLevel;
+        const noiseMap = this.simplex.array2D(this.mapSize[0], this.mapSize[1]).map((e) => {
+            return e.map((x) => {
+                return Math.floor(((x + 1.0) / 2.0) * 100.0);
+            });
+        });
+
+        this.gameGrid[targetFloor] = [];
+        for (let x = 0; x < this.gridSize[0]; x++) {
+            const thisRow = [];
+            for (let y = 0; y < this.gridSize[1]; y++) {
+                thisRow.push(new Tile(TileType.Empty, noiseMap[x][y] <= Constants.GRID_TILE_DECORATED_PERCENT));
+            }
+            this.gameGrid[targetFloor].push(thisRow);
+        }
     }
 
     public getCanvas() {
@@ -167,13 +198,13 @@ class Game {
 
         if ((pos[0] === targetPos[0] && pos[1] === targetPos[1]) || //already there
             (targetPos[0] < 0 || targetPos[1] < 0 || //out of bounds
-                targetPos[0] > this.gameGrid.length - 1 ||
-                targetPos[1] > this.gameGrid[0].length - 1)) {
+                targetPos[0] > this.gameGrid[this.zLevel].length - 1 ||
+                targetPos[1] > this.gameGrid[this.zLevel][0].length - 1)) {
             return;
         }
 
-        targetPos[0] = Math.max(offset, Math.min(this.gameGrid.length - 1 - offset, targetPos[0]));
-        targetPos[1] = Math.max(offset, Math.min(this.gameGrid[0].length - 1 - offset, targetPos[1]));
+        targetPos[0] = Math.max(offset, Math.min(this.gameGrid[this.zLevel].length - 1 - offset, targetPos[0]));
+        targetPos[1] = Math.max(offset, Math.min(this.gameGrid[this.zLevel][0].length - 1 - offset, targetPos[1]));
 
         this.cursor.setPosition(targetPos);
 
@@ -189,6 +220,16 @@ class Game {
         this.render();
     }
 
+    public zUp() {
+        //go up one z level
+        return this.goToZLevel(this.zLevel + 1);
+    }
+
+    public zDown() {
+        //go down one z level
+        return this.goToZLevel(this.zLevel - 1);
+    }
+
     /**
      * Sets a tile to a specific type and return whether or not anything changed
      * @param pos Coordinate to set
@@ -197,7 +238,7 @@ class Game {
      * @returns {true} if a change occured (tiletype changed)
      */
     public setTile(pos: Point, type: TileType, userSet?: boolean): boolean {
-        if (this.gameGrid[pos[0]][pos[1]].setType(type, userSet)) {
+        if (this.gameGrid[this.zLevel][pos[0]][pos[1]].setType(type, userSet)) {
             this.dirtyTiles.push(pos);
             return true;
         }
@@ -272,9 +313,17 @@ class Game {
         this.render();
     }
 
-    public getTileAtCursor = () => {
+    public getTileAtCursor = (): Tile => {
         const pos = this.cursor.getPosition();
-        return this.gameGrid[pos[0]][pos[1]];
+        return this.gameGrid[this.zLevel][pos[0]][pos[1]];
+    }
+
+    private goToZLevel(level: number) {
+        if (!(level in this.gameGrid)) {
+            this.populateFloor(level);
+        }
+        this.zLevel = level;
+        this.render();
     }
 
     private placeBuilding = (): boolean => {
@@ -287,7 +336,7 @@ class Game {
         const key = this.cursor.getBuildingKey();
         const center = this.cursor.getPosition();
         for (const tile of tiles) {
-            this.gameGrid[tile.pos[0]][tile.pos[1]].setBuilding(key, tile.tile);
+            this.gameGrid[this.zLevel][tile.pos[0]][tile.pos[1]].setBuilding(key, tile.tile);
             this.buildings[`${tile.pos[0]}:${tile.pos[1]}`] = {
                 buildingKey: key,
                 buildingCenter: center,
@@ -360,7 +409,7 @@ class Game {
                         //skip this
                         return;
                     }
-                    const tile = this.gameGrid[neighbor[0]][neighbor[1]];
+                    const tile = this.gameGrid[this.zLevel][neighbor[0]][neighbor[1]];
                     if (tile.getUserSet()) {
                         //do not touch this tile
                     } else {
@@ -387,7 +436,7 @@ class Game {
         if (range.startY > 0) {
             //add 'top'
             const xStart = Math.max(range.startX - 1, 0);
-            const xStop = Math.min(range.endX + 1, this.gameGrid.length - 1);
+            const xStop = Math.min(range.endX + 1, this.gameGrid[this.zLevel].length - 1);
             for (let x = xStart; x <= xStop; x++) {
                 dict[`${x}:${range.startY - 1}`] = [x, range.startY - 1];
             }
@@ -395,23 +444,23 @@ class Game {
         if (range.startX > 0) {
             //add 'left'
             const yStart = Math.max(range.startY - 1, 0);
-            const yStop = Math.min(range.endY + 1, this.gameGrid.length - 1);
+            const yStop = Math.min(range.endY + 1, this.gameGrid[this.zLevel].length - 1);
             for (let y = yStart; y <= yStop; y++) {
                 dict[`${range.startX - 1}:${y}`] = [range.startX - 1, y];
             }
         }
-        if (range.endY + 1 < this.gameGrid[0].length) {
+        if (range.endY + 1 < this.gameGrid[this.zLevel][0].length) {
             //add 'bot'
             const xStart = Math.max(range.startX - 1, 0);
-            const xStop = Math.min(range.endX + 1, this.gameGrid.length - 1);
+            const xStop = Math.min(range.endX + 1, this.gameGrid[this.zLevel].length - 1);
             for (let x = xStart; x <= xStop; x++) {
                 dict[`${x}:${range.endY + 1}`] = [x, range.endY + 1];
             }
         }
-        if (range.endX + 1 < this.gameGrid.length) {
+        if (range.endX + 1 < this.gameGrid[this.zLevel].length) {
             //add 'right'
             const yStart = Math.max(range.startY - 1, 0);
-            const yStop = Math.min(range.endY + 1, this.gameGrid.length - 1);
+            const yStop = Math.min(range.endY + 1, this.gameGrid[this.zLevel].length - 1);
             for (let y = yStart; y <= yStop; y++) {
                 dict[`${range.endX + 1}:${y}`] = [range.endX + 1, y];
             }
@@ -453,32 +502,32 @@ class Game {
         const x = pos[0];
         const y = pos[1];
         if (y > 0) { //N
-            this.gameGrid[x][y].setNeighbor(Direction.N, this.gameGrid[x][y - 1].getType());
+            this.gameGrid[this.zLevel][x][y].setNeighbor(Direction.N, this.gameGrid[this.zLevel][x][y - 1].getType());
 
             // if (x < this.gridSize[1] - 1) { //NE
-            //     this.gameGrid[x][y].setNeighbor(Direction.NE, this.gameGrid[x + 1][y - 1].getType());
+            //     this.gameGrid[this.zLevel][x][y].setNeighbor(Direction.NE, this.gameGrid[this.zLevel][x + 1][y - 1].getType());
             // }
 
             // if (x > 0) { //NW
-            //     this.gameGrid[x][y].setNeighbor(Direction.NW, this.gameGrid[x - 1][y - 1].getType());
+            //     this.gameGrid[this.zLevel][x][y].setNeighbor(Direction.NW, this.gameGrid[this.zLevel][x - 1][y - 1].getType());
             // }
         }
         if (y < this.gridSize[1] - 1) { //S
-            this.gameGrid[x][y].setNeighbor(Direction.S, this.gameGrid[x][y + 1].getType());
+            this.gameGrid[this.zLevel][x][y].setNeighbor(Direction.S, this.gameGrid[this.zLevel][x][y + 1].getType());
 
             // if (x < this.gridSize[0] - 1) { //SE
-            //     this.gameGrid[x][y].setNeighbor(Direction.SE, this.gameGrid[x][y + 1].getType());
+            //     this.gameGrid[this.zLevel][x][y].setNeighbor(Direction.SE, this.gameGrid[this.zLevel][x][y + 1].getType());
             // }
 
             // if (x > 0) { //SW
-            //     this.gameGrid[x][y].setNeighbor(Direction.SW, this.gameGrid[x - 1][y + 1].getType());
+            //     this.gameGrid[this.zLevel][x][y].setNeighbor(Direction.SW, this.gameGrid[this.zLevel][x - 1][y + 1].getType());
             // }
         }
         if (x > 0) { //W
-            this.gameGrid[x][y].setNeighbor(Direction.W, this.gameGrid[x - 1][y].getType());
+            this.gameGrid[this.zLevel][x][y].setNeighbor(Direction.W, this.gameGrid[this.zLevel][x - 1][y].getType());
         }
         if (x < this.gridSize[1] - 1) { //E
-            this.gameGrid[x][y].setNeighbor(Direction.E, this.gameGrid[x + 1][y].getType());
+            this.gameGrid[this.zLevel][x][y].setNeighbor(Direction.E, this.gameGrid[this.zLevel][x + 1][y].getType());
         }
     }
 
@@ -488,69 +537,69 @@ class Game {
      */
     private updateNeighborhood(pos: Point) {
         this.updateNeighbors(pos); //update the center item
-        const thisType = this.gameGrid[pos[0]][pos[1]].getType();
+        const thisType = this.gameGrid[this.zLevel][pos[0]][pos[1]].getType();
         if (pos[1] > 0) { //N
-            if (this.gameGrid[pos[0]][pos[1] - 1].setNeighbor(Direction.S, thisType)) {
+            if (this.gameGrid[this.zLevel][pos[0]][pos[1] - 1].setNeighbor(Direction.S, thisType)) {
                 this.dirtyTiles.push([pos[0], pos[1] - 1]);
             }
         }
         if (pos[0] < this.gridSize[0] - 1) { //E
-            if (this.gameGrid[pos[0] + 1][pos[1]].setNeighbor(Direction.W, thisType)) {
+            if (this.gameGrid[this.zLevel][pos[0] + 1][pos[1]].setNeighbor(Direction.W, thisType)) {
                 this.dirtyTiles.push([pos[0] + 1, pos[1]]);
             }
         }
         if (pos[1] < this.gridSize[1] - 1) { //S
-            if (this.gameGrid[pos[0]][pos[1] + 1].setNeighbor(Direction.N, thisType)) {
+            if (this.gameGrid[this.zLevel][pos[0]][pos[1] + 1].setNeighbor(Direction.N, thisType)) {
                 this.dirtyTiles.push([pos[0], pos[1] + 1]);
             }
         }
         if (pos[0] > 0) { //W
-            if (this.gameGrid[pos[0] - 1][pos[1]].setNeighbor(Direction.E, thisType)) {
+            if (this.gameGrid[this.zLevel][pos[0] - 1][pos[1]].setNeighbor(Direction.E, thisType)) {
                 this.dirtyTiles.push([pos[0] - 1, pos[1]]);
             }
         }
         /*
         if (pos[1] > 0) { //N
-            if (this.gameGrid[pos[0]][pos[1] - 1].setNeighbor(Direction.S, thisType)) {
+            if (this.gameGrid[this.zLevel][pos[0]][pos[1] - 1].setNeighbor(Direction.S, thisType)) {
                 this.dirtyTiles.push([pos[0], pos[1] - 1]);
             }
 
             if (pos[0] < this.gridSize[1] - 1) { //NE
-                if (this.gameGrid[pos[0] + 1][pos[1] - 1].setNeighbor(Direction.SW, thisType)) {
+                if (this.gameGrid[this.zLevel][pos[0] + 1][pos[1] - 1].setNeighbor(Direction.SW, thisType)) {
                     this.dirtyTiles.push([pos[0] + 1, pos[1] - 1]);
                 }
             }
 
             if (pos[0] > 0) { //NW
-                if (this.gameGrid[pos[0] - 1][pos[1] - 1].setNeighbor(Direction.SE, thisType)) {
+                if (this.gameGrid[this.zLevel][pos[0] - 1][pos[1] - 1].setNeighbor(Direction.SE, thisType)) {
                     this.dirtyTiles.push([pos[0] - 1, pos[1] - 1]);
                 }
             }
         }
         if (pos[1] < this.gridSize[1] - 1) { //S
-            if (this.gameGrid[pos[0]][pos[1] + 1].setNeighbor(Direction.N, thisType)) {
+            if (this.gameGrid[this.zLevel][pos[0]][pos[1] + 1].setNeighbor(Direction.N, thisType)) {
                 this.dirtyTiles.push([pos[0], pos[1] + 1]);
             }
 
             if (pos[0] < this.gridSize[0] - 1) { //SE
-                if (this.gameGrid[pos[0] + 1][pos[1] + 1].setNeighbor(Direction.NW, thisType)) {
+                if (this.gameGrid[this.zLevel][pos[0] + 1][pos[1] + 1].setNeighbor(Direction.NW, thisType)) {
                     this.dirtyTiles.push([pos[0] + 1, pos[1] + 1]);
                 }
             }
 
             if (pos[0] > 0) { //SW
-                if (this.gameGrid[pos[0] - 1][pos[1] + 1].setNeighbor(Direction.NE, thisType)) {
+                if (this.gameGrid[this.zLevel][pos[0] - 1][pos[1] + 1].setNeighbor(Direction.NE, thisType)) {
                     this.dirtyTiles.push([pos[0] - 1, pos[1] + 1]);
                 }
             }
         }
         if (pos[0] > 0) { //W
-            if (this.gameGrid[pos[0] - 1][pos[1]].setNeighbor(Direction.E, thisType)) {
+            if (this.gameGrid[this.zLevel][pos[0] - 1][pos[1]].setNeighbor(Direction.E, thisType)) {
                 this.dirtyTiles.push([pos[0] - 1, pos[1]]);
             }
         }
         if (pos[0] < this.gridSize[1] - 1) { //E
-            if (this.gameGrid[pos[0] + 1][pos[1]].setNeighbor(Direction.W, thisType)) {
+            if (this.gameGrid[this.zLevel][pos[0] + 1][pos[1]].setNeighbor(Direction.W, thisType)) {
                 this.dirtyTiles.push([pos[0] + 1, pos[1]]);
             }
         }
@@ -569,8 +618,8 @@ class Game {
      * Render the entire grid
      */
     private render() {
-        for (let x = 0; x < this.gameGrid.length; x++) {
-            for (let y = 0; y < this.gameGrid[0].length; y++) {
+        for (let x = 0; x < this.gameGrid[this.zLevel].length; x++) {
+            for (let y = 0; y < this.gameGrid[this.zLevel][0].length; y++) {
                 this.renderPosition([x, y]);
             }
         }
@@ -609,7 +658,7 @@ class Game {
                 //     ["transparent", "transparent"]);
             } else {
                 // this.gameGrid[coord[0]][coord[1]].render(this.display.draw, coord);
-                const parms = this.gameGrid[coord[0]][coord[1]].getDrawData(coord);
+                const parms = this.gameGrid[this.zLevel][coord[0]][coord[1]].getDrawData(coord);
                 this.display.draw.apply(this.display, parms);
                 // this.display.draw(coord[0], coord[1], this.gameGrid[coord[0]][coord[1]].getCharacter(), this.gameGrid[coord[0]][coord[1]].getColor(), "transparent");
             }

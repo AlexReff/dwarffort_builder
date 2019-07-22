@@ -5,7 +5,6 @@ import { default as Tile } from "../rot/tile";
 // import Term from "../rot/term.js";
 import { default as TileGL } from "../rot/tile-gl";
 
-import { DEFAULT_HEIGHT, DEFAULT_WIDTH } from "../rot/constants";
 import * as Text from "../rot/text";
 import { DisplayData, IDisplayOptions } from "../rot/types";
 
@@ -18,8 +17,8 @@ const BACKENDS = {
 };
 
 const DEFAULT_OPTIONS: IDisplayOptions = {
-    width: DEFAULT_WIDTH,
-    height: DEFAULT_HEIGHT,
+    width: 80,
+    height: 25,
     transpose: false,
     // layout: "rect",
     layout: "tile",

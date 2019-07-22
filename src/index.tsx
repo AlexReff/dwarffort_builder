@@ -171,61 +171,62 @@ class FortressDesigner extends Component<{}, IFortressDesignerState> {
             return; //don't override ctrl+btn browser hotkeys
         }
         switch (e.keyCode) {
-            case 13: //Enter key
+            case Constants.KEYS.VK_RETURN:
                 e.preventDefault();
                 this.handleEnterRightClick();
                 break;
-            case 192: //` tilde
+            case Constants.KEYS.VK_BACK_QUOTE:
+            case Constants.KEYS.VK_TILDE:
                 //toggle debug display
                 e.preventDefault();
                 this.setState({
                     debug: !this.state.debug,
                 });
                 break;
-            case 27: //"Escape":
+            case Constants.KEYS.VK_ESCAPE:
                 e.preventDefault();
                 this.handleMenuEvent("escape");
                 break;
-            case 38: //"ArrowUp":
-            case 104: //numpad 8
+            case Constants.KEYS.VK_UP:
+            case Constants.KEYS.VK_NUMPAD8:
                 //move north
                 e.preventDefault();
                 this.game.moveCursor(Direction.N, e.shiftKey);
                 break;
-            case 105: //numpad 9
+            case Constants.KEYS.VK_NUMPAD9:
                 //move ne
                 e.preventDefault();
                 this.game.moveCursor(Direction.NE, e.shiftKey);
                 break;
-            case 39: //"ArrowRight":
-            case 102: //numpad 6
+            case Constants.KEYS.VK_RIGHT:
+            case Constants.KEYS.VK_NUMPAD6:
                 //move east
                 e.preventDefault();
                 this.game.moveCursor(Direction.E, e.shiftKey);
                 break;
-            case 99: //numpad 3
+            case Constants.KEYS.VK_NUMPAD3:
                 //move se
                 e.preventDefault();
                 this.game.moveCursor(Direction.SE, e.shiftKey);
                 break;
-            case 40: //"ArrowDown":
-            case 98: //numpad 2
+            case Constants.KEYS.VK_DOWN:
+            case Constants.KEYS.VK_NUMPAD2:
                 //move south
                 e.preventDefault();
                 this.game.moveCursor(Direction.S, e.shiftKey);
                 break;
-            case 97: //numpad 1
+            case Constants.KEYS.VK_NUMPAD1:
                 //move sw
                 e.preventDefault();
                 this.game.moveCursor(Direction.SW, e.shiftKey);
                 break;
-            case 37: //"ArrowLeft":
-            case 100: //numpad 4
+            case Constants.KEYS.VK_LEFT:
+            case Constants.KEYS.VK_NUMPAD4:
                 //move west
                 e.preventDefault();
                 this.game.moveCursor(Direction.W, e.shiftKey);
                 break;
-            case 103: //numpad 7
+            case Constants.KEYS.VK_NUMPAD7:
                 //move nw
                 e.preventDefault();
                 this.game.moveCursor(Direction.NW, e.shiftKey);
@@ -269,14 +270,16 @@ class FortressDesigner extends Component<{}, IFortressDesignerState> {
 
         if (e === "escape") {
             if (this.game.isBuilding()) {
-                // unselect menu item
                 this.setState({
                     highlightedMenuItem: null,
                 });
                 this.game.stopBuilding();
             } else if (this.game.isDesignating()) {
-                // stop designation
                 this.game.cancelDesignate();
+            } else if (this.state.highlightedMenuItem != null) {
+                this.setState({
+                    highlightedMenuItem: null,
+                });
             } else {
                 // go up one menu level
                 let newMenu = "";
@@ -288,6 +291,7 @@ class FortressDesigner extends Component<{}, IFortressDesignerState> {
                 }
                 this.setState({
                     currentMenu: newMenu,
+                    highlightedMenuItem: null,
                 });
             }
         } else {

@@ -1,5 +1,6 @@
-import * as _ from "lodash";
+// import * as _ from "lodash";
 import { Constants, Direction, Point } from "./constants";
+import RNG from "./rot/rng";
 
 enum TileType {
     Empty,
@@ -149,18 +150,18 @@ class Tile {
 
                 const opts = Constants.WALL_TILES[flags];
                 if (opts.length > 1) {
-                    this.character += String.fromCharCode(97 + _.random(opts.length - 1, false));
+                    this.character += String.fromCharCode(97 + RNG.getUniformInt(0, opts.length - 1));
                 }
 
                 return true;
             case TileType.Floor:
                 //no modifications needed if this is a floor
-                this.character = `f${_.random(Constants.FLOOR_TILES.length - 1, false)}`;
+                this.character = `f${RNG.getUniformInt(0, Constants.FLOOR_TILES.length - 1)}`;
                 // this.character = "f1";
                 break;
             case TileType.Empty:
                 if (this.decorated) {
-                    const target = Constants.DECORATOR_TILES[_.random(Constants.DECORATOR_TILES.length - 1, false)];
+                    const target = Constants.DECORATOR_TILES[RNG.getUniformInt(0, Constants.DECORATOR_TILES.length - 1)];
                     this.character = target.char;
                 } else {
                     this.character = " ";
@@ -185,8 +186,8 @@ class Tile {
             case TileType.Empty:
                 this.color = "transparent";
                 if (this.decorated) {
-                    if (_.random(100, false) <= Constants.GRID_TILE_COLOR_PERCENT) {
-                        this.color = Constants.GRID_TILE_DECORATED_COLORS[_.random(Constants.GRID_TILE_DECORATED_COLORS.length - 1, false)];
+                    if (RNG.getUniformInt(0, 100) <= Constants.GRID_TILE_COLOR_PERCENT) {
+                        this.color = Constants.GRID_TILE_DECORATED_COLORS[RNG.getUniformInt(0, Constants.GRID_TILE_DECORATED_COLORS.length - 1)];
                     }
                 }
 
