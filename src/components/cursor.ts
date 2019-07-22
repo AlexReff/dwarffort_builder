@@ -1,21 +1,21 @@
-import * as _ from "lodash";
-import { Constants, Direction, MenuItemId } from "./constants";
+// import * as _ from "lodash";
+import { Constants, Direction, MenuItemId, Point } from "./constants";
 
 class Cursor {
-    private position: [number, number];
+    private position: Point;
     private character: string;
     private color: string;
     private building: boolean;
     private buildingKey: MenuItemId;
-    private buildingRange: Array<[number, number]>;
+    private buildingRange: Point[];
     private buildingWalkable: string[][];
     private buildingTiles: string[][];
     private buildingTileMap: Array<{
-        pos: [number, number],
+        pos: Point,
         tile: string,
     }>;
 
-    constructor(pos: [number, number] = [0, 0]) {
+    constructor(pos: Point = [0, 0]) {
         this.character = ".";
         this.position = [pos[0], pos[1]];
         this.color = Constants.CURSOR_COLOR;
@@ -25,11 +25,11 @@ class Cursor {
         return this.character;
     }
 
-    public getPosition(): [number, number] {
+    public getPosition(): Point {
         return [this.position[0], this.position[1]];
     }
 
-    public getRange(): Array<[number, number]> {
+    public getRange(): Point[] {
         if (!this.building) {
             return [this.position];
         }
@@ -41,7 +41,7 @@ class Cursor {
         return this.buildingTileMap;
     }
 
-    public coordIsCursor(coord: [number, number]): boolean {
+    public coordIsCursor(coord: Point): boolean {
         if (!this.building) {
             return coord[0] === this.position[0] && coord[1] === this.position[1];
         }
@@ -100,7 +100,7 @@ class Cursor {
         }
     }
 
-    public setPosition(pos: [number, number]) {
+    public setPosition(pos: Point) {
         //difference = pos - this.position
         if (this.building) {
             const xDelta = pos[0] - this.position[0];
@@ -128,12 +128,12 @@ class Cursor {
         return Math.floor(this.buildingWalkable.length / 2);
     }
 
-    public getDrawData(pos?: [number, number]) {
+    public getDrawData(pos?: Point, impassable?: boolean) {
         if (pos != null && this.building) {
             const targetX = pos[0] - this.position[0] + Math.floor(this.buildingWalkable.length / 2);
             const targetY = pos[1] - this.position[1] + Math.floor(this.buildingWalkable[0].length / 2);
             const passable = this.buildingWalkable[targetX][targetY];
-            const color = passable === "1" ? Constants.CURSOR_PASSABLE_COLOR : Constants.CURSOR_IMPASSABLE_COLOR;
+            const color = impassable === true ? Constants.CURSOR_INVALID_COLOR : passable === "1" ? Constants.CURSOR_PASSABLE_COLOR : Constants.CURSOR_IMPASSABLE_COLOR;
             return [
                 pos[0],
                 pos[1],

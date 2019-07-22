@@ -1,5 +1,5 @@
 import * as _ from "lodash";
-import { Constants, Direction } from "./constants";
+import { Constants, Direction, Point } from "./constants";
 
 enum TileType {
     Empty,
@@ -52,7 +52,7 @@ class Tile {
         return Constants.MENU_DICTIONARY[this.buildingKey].text;
     }
 
-    public getDrawData(coord: [number, number]) {
+    public getDrawData(coord: Point) {
         switch (this.tileType) {
             case TileType.Wall:
                 return [

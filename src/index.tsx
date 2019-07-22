@@ -1,12 +1,12 @@
 //libraries
-import * as _ from "lodash";
+//import * as _ from "lodash";
 import { Component, h, render } from "preact";
 //components
 import { Constants, Direction, MenuItemId } from "./components/constants";
 import { DebugMenu } from "./components/debug";
 import { Game } from "./components/game";
-import { IMenuItem, Menu } from "./components/menu";
-import { Tile, TileType } from "./components/Tile";
+import { Menu } from "./components/menu";
+import { TileType } from "./components/tile";
 
 require("./css/index.scss");
 

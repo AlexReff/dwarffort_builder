@@ -1,11 +1,11 @@
 import * as _ from "lodash";
-import { Constants, Direction, IGridRange } from "./constants";
+import { Constants, Direction, IGridRange, Point } from "./constants";
 
 class Designator {
     private designating: boolean;
-    private designationStart: [number, number];
+    private designationStart: Point;
 
-    constructor(pos?: [number, number]) {
+    constructor(pos?: Point) {
         if (pos != null) {
             this.designationStart = [pos[0], pos[1]];
         }
@@ -13,7 +13,7 @@ class Designator {
         this.designating = false;
     }
 
-    public getDrawData(coord: [number, number]) {
+    public getDrawData(coord: Point) {
         return [
             coord[0],
             coord[1],
@@ -27,7 +27,7 @@ class Designator {
         return [this.designationStart[0], this.designationStart[1]];
     }
 
-    public getRange(cursor: [number, number]): IGridRange {
+    public getRange(cursor: Point): IGridRange {
         const startX = Math.min(this.designationStart[0], cursor[0]);
         const endX = Math.max(this.designationStart[0], cursor[0]);
         const startY = Math.min(this.designationStart[1], cursor[1]);
@@ -45,7 +45,7 @@ class Designator {
         return this.designating;
     }
 
-    public startDesignating(pos: [number, number]) {
+    public startDesignating(pos: Point) {
         this.designationStart = [pos[0], pos[1]];
         this.designating = true;
     }

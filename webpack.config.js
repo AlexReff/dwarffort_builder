@@ -10,8 +10,7 @@ module.exports = (env, argv) => {
         devtool: isDev ? "source-map" : false,
         entry: './src/index.tsx',
         externals: {
-            gsap: '_gsScope',
-            lodash: '_'
+            lodash: '_',
         },
         mode: isDev ? 'development' : 'production',
         module: {

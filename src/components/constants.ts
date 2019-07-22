@@ -12,6 +12,8 @@ interface IGridRange {
     endY: number;
 }
 
+type Point = [number, number];
+
 class Constants {
     static readonly DEBUG_MODE_ENABLED = true;
 
@@ -36,10 +38,11 @@ class Constants {
     static readonly CURSOR_COLOR = "rgba(157,132,19,1)";
     static readonly CURSOR_PASSABLE_COLOR = "rgba(0,255,0,1)";
     static readonly CURSOR_IMPASSABLE_COLOR = "rgba(0,128,0,1)";
+    static readonly CURSOR_INVALID_COLOR = "rgba(128,0,0,1)";
 
     static readonly BUILDING_TILE_MAP = buildings;
 
-    static readonly WALL_TILES: Array<Array<[number, number]>> = [
+    static readonly WALL_TILES: Point[][] = [
         [[112, 192]], //0000 'edge'     //0
         [[112, 192]], //0001 N 'edge'   //1
         [[112, 192]], //0010 E 'edge'   //2
@@ -74,7 +77,7 @@ class Constants {
         [[224, 192]], //1111 4-way      //15
     ];
 
-    static readonly FLOOR_TILES: Array<[number, number]> = [
+    static readonly FLOOR_TILES: Point[] = [
         [192, 32],
         [224, 32],
         // [0, 96],
@@ -86,7 +89,7 @@ class Constants {
     static readonly DECORATOR_TILES: Array<{
         char: string,
         desc: string,
-        coord: [number, number],
+        coord: Point,
         colorize: boolean,
     }> = [
             {
@@ -145,8 +148,8 @@ class Constants {
             },
         ];
 
-    static readonly TILE_MAP: { [key: string]: [number, number]; } = ((): { [key: string]: [number, number]; } => {
-        let val: { [key: string]: [number, number]; } = {};
+    static readonly TILE_MAP: { [key: string]: Point; } = ((): { [key: string]: Point; } => {
+        let val: { [key: string]: Point; } = {};
         val = {
             " ": [0, 0],        //empty
             "@": [16, 0],       //player?
@@ -224,4 +227,4 @@ class Constants {
     })();
 }
 
-export { Constants, Direction, IGridRange, MenuItemId };
+export { Constants, Direction, IGridRange, MenuItemId, Point };

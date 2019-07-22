@@ -1,11 +1,12 @@
-import * as _ from "lodash";
+// import * as _ from "lodash";
 import { default as OpenSimplexNoise } from "open-simplex-noise";
-import { Display } from "rot-js";
+// import * as ROT from "rot-js";
+import { default as Display } from "./rot/display";
 
-import { Constants, Direction, IGridRange, MenuItemId } from "./constants";
+import { Constants, Direction, IGridRange, MenuItemId, Point } from "./constants";
 import { Cursor } from "./cursor";
 import { Designator } from "./designator";
-import { Tile, TileType } from "./Tile";
+import { Tile, TileType } from "./tile";
 
 class Game {
     private display: Display;
@@ -16,16 +17,21 @@ class Game {
     private cursor: Cursor;
 
     private gameGrid: Tile[][];
-    private dirtyTiles: Array<[number, number]>;
+    private dirtyTiles: Point[];
 
     private animationToggle: boolean;
     private animationInterval: number;
 
     private designator: Designator;
-    private designatorTiles: Array<[number, number]>;
+    private designatorTiles: Point[];
 
-    private buildingTiles: Array<[number, number]>;
-    private buildings: { [key: string]: MenuItemId };
+    private buildings: {
+        [key: string]:
+        {
+            buildingKey: MenuItemId,
+            buildingCenter: Point,
+        },
+    };
 
     constructor(image: HTMLImageElement, container: HTMLElement) {
         this.tileSheetImage = image;
@@ -36,13 +42,15 @@ class Game {
             Math.floor(container.offsetHeight / Constants.TILE_HEIGHT),
         ];
 
-        const center: [number, number] = [
+        const center: Point = [
             Math.ceil(this.gridSize[0] / 2.0),
             Math.ceil(this.gridSize[1] / 2.0),
         ];
 
         this.cursor = new Cursor(center);
         this.designator = new Designator();
+
+        this.buildings = {};
 
         this.display = new Display({
             width: this.gridSize[0],
@@ -153,7 +161,7 @@ class Game {
         this.moveCursorTo(pos);
     }
 
-    public moveCursorTo(targetPos: [number, number]) {
+    public moveCursorTo(targetPos: Point) {
         const pos = this.cursor.getPosition();
         const offset = this.cursor.getRadius();
 
@@ -188,7 +196,7 @@ class Game {
      * @param userSet If user set or programatically set
      * @returns {true} if a change occured (tiletype changed)
      */
-    public setTile(pos: [number, number], type: TileType, userSet?: boolean): boolean {
+    public setTile(pos: Point, type: TileType, userSet?: boolean): boolean {
         if (this.gameGrid[pos[0]][pos[1]].setType(type, userSet)) {
             this.dirtyTiles.push(pos);
             return true;
@@ -206,8 +214,7 @@ class Game {
             return;
         }
         if (this.cursor.isBuilding()) {
-            this.placeBuilding();
-            return true;
+            return this.placeBuilding();
         } else {
             this.handleDesignation(highlightedMenuItem);
             return false;
@@ -270,15 +277,34 @@ class Game {
         return this.gameGrid[pos[0]][pos[1]];
     }
 
-    private placeBuilding() {
+    private placeBuilding = (): boolean => {
         const tiles = this.cursor.getBuildingTiles();
+        for (const tile of tiles) {
+            if (this.coordIsBuilding(tile.pos)) {
+                return false;
+            }
+        }
         const key = this.cursor.getBuildingKey();
+        const center = this.cursor.getPosition();
         for (const tile of tiles) {
             this.gameGrid[tile.pos[0]][tile.pos[1]].setBuilding(key, tile.tile);
+            this.buildings[`${tile.pos[0]}:${tile.pos[1]}`] = {
+                buildingKey: key,
+                buildingCenter: center,
+            };
         }
         this.cursor.stopBuilding();
         this.designator.endDesignating();
         this.render();
+        return true;
+    }
+
+    private coordIsBuilding = (coord: Point): boolean => {
+        if (this.buildings == null) {
+            return false;
+        }
+
+        return `${coord[0]}:${coord[1]}` in this.buildings;
     }
 
     /**
@@ -290,6 +316,10 @@ class Game {
             case MenuItemId.remove:
                 for (let x = range.startX; x <= range.endX; x++) {
                     for (let y = range.startY; y <= range.endY; y++) {
+                        if (this.coordIsBuilding([x, y])) {
+                            //skip this
+                            continue;
+                        }
                         if (this.setTile([x, y], TileType.Empty, false)) {
                             this.dirtyTiles.push([x, y]);
                         }
@@ -300,6 +330,10 @@ class Game {
                 // Just need to make walls
                 for (let x = range.startX; x <= range.endX; x++) {
                     for (let y = range.startY; y <= range.endY; y++) {
+                        if (this.coordIsBuilding([x, y])) {
+                            //skip this
+                            continue;
+                        }
                         if (this.setTile([x, y], TileType.Wall, true)) {
                             this.dirtyTiles.push([x, y]);
                         }
@@ -310,6 +344,10 @@ class Game {
                 // make everything highlighted a floor
                 for (let x = range.startX; x <= range.endX; x++) {
                     for (let y = range.startY; y <= range.endY; y++) {
+                        if (this.coordIsBuilding([x, y])) {
+                            //skip this
+                            continue;
+                        }
                         if (this.setTile([x, y], TileType.Floor, true)) {
                             this.dirtyTiles.push([x, y]);
                         }
@@ -318,6 +356,10 @@ class Game {
                 // make all neighbors that are EMPTY into WALLs
                 const neighbors = this.getNeighborsOfRange(range);
                 neighbors.forEach((neighbor) => {
+                    if (this.coordIsBuilding(neighbor)) {
+                        //skip this
+                        return;
+                    }
                     const tile = this.gameGrid[neighbor[0]][neighbor[1]];
                     if (tile.getUserSet()) {
                         //do not touch this tile
@@ -339,7 +381,7 @@ class Game {
     /**
      * Gets a list of positions that are neighbors of a given range of tiles
      */
-    private getNeighborsOfRange(range: IGridRange): Array<[number, number]> {
+    private getNeighborsOfRange(range: IGridRange): Point[] {
         //returns a border of positions around a specified range
         const dict = {};
         if (range.startY > 0) {
@@ -381,17 +423,10 @@ class Game {
         return result;
     }
 
-    private isTileAnimating = (pos: [number, number]): boolean => {
+    private isTileAnimating = (pos: Point): boolean => {
         if (!this.animationToggle) {
             return false;
         }
-
-        // if (this.animatedTiles[`${pos[0]}:${pos[1]}`] != null) {
-        //     return true;
-        // }
-
-        // return true if this tile is either in animatedTiles
-        // or we are designating and the cursor is not at the designation start
         if (this.designator.isDesignating()) {
             const cursor = this.cursor.getPosition();
             const bounds = this.designator.getRange(cursor);
@@ -413,7 +448,7 @@ class Game {
      * Updates a single tile on the grid with neighbor information
      * @param pos Position to update
      */
-    private updateNeighbors(pos: [number, number]) {
+    private updateNeighbors(pos: Point) {
         //populate neighbors, N,NE,E,SE,S,SW,W,NW
         const x = pos[0];
         const y = pos[1];
@@ -451,7 +486,7 @@ class Game {
      * Updates the 'neighbors' of all neighbors around a tile
      * @param pos Center of neighborhood
      */
-    private updateNeighborhood(pos: [number, number]) {
+    private updateNeighborhood(pos: Point) {
         this.updateNeighbors(pos); //update the center item
         const thisType = this.gameGrid[pos[0]][pos[1]].getType();
         if (pos[1] > 0) { //N
@@ -552,7 +587,7 @@ class Game {
      * Renders the correct tile at the given coord
      * @param coord [x, y] grid coordinate to render
      */
-    private renderPosition = (coord: [number, number]) => {
+    private renderPosition = (coord: Point) => {
         if (this.isTileAnimating(coord)) {
             // const parms = this.getDesignateDrawData();
             // this.display.draw.apply(this.display, parms);
@@ -563,7 +598,7 @@ class Game {
             //const pos = this.cursor.getPosition();
             if (this.cursor.coordIsCursor(coord)) {
                 // render just cursor
-                const parms = this.cursor.getDrawData(coord);
+                const parms = this.cursor.getDrawData(coord, this.coordIsBuilding(coord));
                 this.display.draw.apply(this.display, parms);
 
                 // render cursor over tile
@@ -588,7 +623,7 @@ class Game {
         if (this.dirtyTiles == null || this.dirtyTiles.length === 0) {
             return;
         }
-        const dirty = new Array<[number, number]>();
+        const dirty = new Array<Point>();
         while (this.dirtyTiles.length > 0) {
             dirty.push(this.dirtyTiles.pop());
         }

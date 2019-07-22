@@ -1,7 +1,7 @@
 import * as _ from "lodash";
 import { Component, h } from "preact";
 import { Constants } from "./constants";
-import { Tile } from "./Tile";
+import { Tile } from "./tile";
 
 interface IDebugMenuProps {
     isActive: boolean;
