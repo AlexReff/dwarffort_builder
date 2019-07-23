@@ -25,6 +25,13 @@ Soap Maker's Workshop S
 Screw Press p
 */
 
+interface IBuildingData {
+    char: string;
+    bg: string;
+    fg: string;
+    walkable: number;
+}
+
 class Building {
     text: string;
     key: string;
@@ -43,4 +50,4 @@ class Buildings {
     // static leatherworks: Building = new Building();
 }
 
-export { Building, Buildings };
+export { Building, Buildings, IBuildingData };

@@ -40,6 +40,8 @@ interface IFortressDesignerState {
     mouseTop: number;
     mouseOverGrid: boolean;
     refresh: boolean;
+    zLevel: number;
+    hasChangedZLevel: boolean;
 }
 
 class FortressDesigner extends Component<{}, IFortressDesignerState> {
@@ -56,6 +58,8 @@ class FortressDesigner extends Component<{}, IFortressDesignerState> {
             currentMenu: "top",
             highlightedMenuItem: null,
             debug: false,
+            zLevel: 0,
+            hasChangedZLevel: false,
         });
     }
 
@@ -230,6 +234,20 @@ class FortressDesigner extends Component<{}, IFortressDesignerState> {
                 //move nw
                 e.preventDefault();
                 this.game.moveCursor(Direction.NW, e.shiftKey);
+                break;
+            case Constants.KEYS.VK_PERIOD:
+            case Constants.KEYS.VK_GREATER_THAN:
+                this.setState({
+                    zLevel: this.game.zUp(),
+                    hasChangedZLevel: true,
+                });
+                break;
+            case Constants.KEYS.VK_COMMA:
+            case Constants.KEYS.VK_LESS_THAN:
+                this.setState({
+                    zLevel: this.game.zDown(),
+                    hasChangedZLevel: true,
+                });
                 break;
             default:
                 const key = this.state.currentMenu !== "top" ? this.state.currentMenu + ":" + e.key : e.key;

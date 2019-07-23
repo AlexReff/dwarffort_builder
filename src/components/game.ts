@@ -6,6 +6,8 @@ import { default as Display } from "./rot/display";
 import { Constants, Direction, IGridRange, MenuItemId, Point } from "./constants";
 import { Cursor } from "./cursor";
 import { Designator } from "./designator";
+import { IMenuItem } from "./menu";
+import rng from "./rot/rng";
 import { Tile, TileType } from "./tile";
 
 class Game {
@@ -17,7 +19,7 @@ class Game {
 
     private cursor: Cursor;
 
-    private simplex: OpenSimplexNoise;
+    // private simplex: OpenSimplexNoise;
 
     private zLevel: number;
     private gameGrid: { [key: number]: Tile[][] };
@@ -42,7 +44,6 @@ class Game {
         this.animationToggle = false;
         this.zLevel = 0;
         this.gameGrid = {};
-        this.simplex = new OpenSimplexNoise(Date.now());
 
         this.gridSize = [
             Math.floor(container.offsetWidth / Constants.TILE_WIDTH),
@@ -108,7 +109,8 @@ class Game {
 
     public populateFloor(floor?: number) {
         const targetFloor = floor || this.zLevel;
-        const noiseMap = this.simplex.array2D(this.mapSize[0], this.mapSize[1]).map((e) => {
+        const simplex = new OpenSimplexNoise(Date.now() * rng.getUniform());
+        const noiseMap = simplex.array2D(this.mapSize[0], this.mapSize[1]).map((e) => {
             return e.map((x) => {
                 return Math.floor(((x + 1.0) / 2.0) * 100.0);
             });
@@ -220,12 +222,12 @@ class Game {
         this.render();
     }
 
-    public zUp() {
+    public zUp(): number {
         //go up one z level
         return this.goToZLevel(this.zLevel + 1);
     }
 
-    public zDown() {
+    public zDown(): number {
         //go down one z level
         return this.goToZLevel(this.zLevel - 1);
     }
@@ -324,21 +326,23 @@ class Game {
         }
         this.zLevel = level;
         this.render();
+        return this.zLevel;
     }
 
     private placeBuilding = (): boolean => {
         const tiles = this.cursor.getBuildingTiles();
-        for (const tile of tiles) {
-            if (this.coordIsBuilding(tile.pos)) {
+        for (const tile in tiles) {
+            if (this.coordIsBuilding(tiles[tile].pos)) {
                 return false;
             }
         }
         const key = this.cursor.getBuildingKey();
         const center = this.cursor.getPosition();
-        for (const tile of tiles) {
+        for (const tileKey of Object.keys(tiles)) {
+            const tile = tiles[tileKey];
             this.gameGrid[this.zLevel][tile.pos[0]][tile.pos[1]].setBuilding(key, tile.tile);
             this.buildings[`${tile.pos[0]}:${tile.pos[1]}`] = {
-                buildingKey: key,
+                buildingKey: tileKey as MenuItemId,
                 buildingCenter: center,
             };
         }

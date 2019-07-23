@@ -2,6 +2,7 @@ const styles = require(".././css/_variables.scss");
 
 import * as buildings from "../data/buildings.json";
 import { items } from "../data/menu.json";
+import { IBuildingData } from "./buildings.js";
 import { Direction, MenuItemId } from "./enums";
 import { IMenuItem } from "./menu.js";
 
@@ -40,7 +41,7 @@ class Constants {
     static readonly CURSOR_IMPASSABLE_COLOR = "rgba(0,128,0,1)";
     static readonly CURSOR_INVALID_COLOR = "rgba(128,0,0,1)";
 
-    static readonly BUILDING_TILE_MAP = buildings;
+    static readonly BUILDING_TILE_MAP: { [key: string]: { "tiles": IBuildingData[][] } } = buildings as any;
 
     static readonly WALL_TILES: Point[][] = [
         [[112, 192]], //0000 'edge'     //0

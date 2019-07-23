@@ -1,4 +1,5 @@
 // import * as _ from "lodash";
+import { IBuildingData } from "./buildings";
 import { Constants, Direction, Point } from "./constants";
 import RNG from "./rot/rng";
 
@@ -16,13 +17,16 @@ class Tile {
 
     private tileType: TileType;
     private character: string;
-    private color: string;
+    private fgColor: string;
+    private bgColor: string;
+
+    private buildingKey: string;
+    private buildingData: IBuildingData;
+
     private neighbors: TileType[];
     private decorated: boolean;
     private userSet: boolean; // true if the user designates this, false if generated from code
     private isBuilding: boolean; // true if this tile is part of a building
-    private buildingChar: string; // character for the building at this tile (0-255)
-    private buildingKey: string;
 
     constructor(tile: TileType, decorate?: boolean) {
         this.tileType = tile;
@@ -38,7 +42,13 @@ class Tile {
     }
 
     public getColor() {
-        return this.color;
+        //return this.buildingData.fg;
+        return this.fgColor;
+    }
+
+    public getBgColor() {
+        // return this.buildingData.bg;
+        return this.bgColor;
     }
 
     public getType() {
@@ -59,27 +69,45 @@ class Tile {
                 return [
                     coord[0],
                     coord[1],
-                    [Tile.Floor.getCharacter(), this.getCharacter()],
-                    [Tile.Floor.getColor(), this.getColor()],
-                    ["transparent", "transparent"],
+                    [Tile.Floor.getCharacter(), this.character],
+                    [Tile.Floor.getColor(), this.fgColor],
+                    ["transparent", this.bgColor],
                 ];
         }
 
         return [
             coord[0],
             coord[1],
-            this.getCharacter(),
-            this.getColor(),
-            "transparent",
+            this.character,
+            this.fgColor,
+            this.bgColor,
         ];
     }
 
-    public setBuilding(key: string, char: string) {
+    public setBuilding(key: string, data: IBuildingData) {
         this.tileType = TileType.Building;
         this.isBuilding = true;
         this.buildingKey = key;
-        this.buildingChar = char;
-        this.character = `i${char}`;
+
+        if (data != null && data.char != null) {
+            this.buildingData = {
+                char: data.char,
+                fg: data.fg,
+                bg: data.bg,
+                walkable: data.walkable,
+            };
+            this.character = `i${data.char}`;
+            this.fgColor = data.fg;
+            this.bgColor = data.bg;
+        } else {
+            this.buildingData = {
+                char: "0",
+                fg: null,
+                bg: null,
+                walkable: 1,
+            };
+            this.character = `i0`;
+        }
     }
 
     /**
@@ -114,7 +142,8 @@ class Tile {
         if (type !== TileType.Building) {
             this.isBuilding = false;
             this.buildingKey = null;
-            this.buildingChar = null;
+            this.buildingData = null;
+            // this.buildingChar = null;
         }
         this.tileType = type;
         this.init();
@@ -178,16 +207,16 @@ class Tile {
         switch (this.tileType) {
             case TileType.Floor:
                 // this.color = "transparent";
-                this.color = "rgba(50, 50, 50, .2)";
+                this.fgColor = "rgba(50, 50, 50, .2)";
                 break;
             case TileType.Wall:
-                this.color = "transparent";
+                this.fgColor = "transparent";
                 break;
             case TileType.Empty:
-                this.color = "transparent";
+                this.fgColor = "transparent";
                 if (this.decorated) {
                     if (RNG.getUniformInt(0, 100) <= Constants.GRID_TILE_COLOR_PERCENT) {
-                        this.color = Constants.GRID_TILE_DECORATED_COLORS[RNG.getUniformInt(0, Constants.GRID_TILE_DECORATED_COLORS.length - 1)];
+                        this.fgColor = Constants.GRID_TILE_DECORATED_COLORS[RNG.getUniformInt(0, Constants.GRID_TILE_DECORATED_COLORS.length - 1)];
                     }
                 }
 

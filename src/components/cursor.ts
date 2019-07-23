@@ -1,4 +1,5 @@
 // import * as _ from "lodash";
+import { IBuildingData } from "./buildings";
 import { Constants, Direction, MenuItemId, Point } from "./constants";
 
 class Cursor {
@@ -8,12 +9,13 @@ class Cursor {
     private building: boolean;
     private buildingKey: MenuItemId;
     private buildingRange: Point[];
-    private buildingWalkable: string[][];
-    private buildingTiles: string[][];
-    private buildingTileMap: Array<{
-        pos: Point,
-        tile: string,
-    }>;
+    private buildingRadius: number;
+    private buildingTileMap: {
+        [key: string]: {
+            pos: Point,
+            tile: IBuildingData,
+        },
+    };
 
     constructor(pos: Point = [0, 0]) {
         this.character = ".";
@@ -68,36 +70,38 @@ class Cursor {
     public stopBuilding() {
         this.building = false;
         this.buildingKey = null;
-        this.buildingWalkable = null;
-        this.buildingTiles = null;
+        // this.buildingWalkable = null;
+        // this.buildingTiles = null;
         this.buildingRange = null;
         this.buildingTileMap = null;
     }
 
     public setBuilding(key: MenuItemId) {
         const target = Constants.BUILDING_TILE_MAP[key];
-        if (target == null || target.walkable == null || target.walkable.length === 0) {
+        if (target == null || target.tiles == null || target.tiles.length === 0) {
             return;
         }
         this.building = true;
         this.buildingKey = key;
         this.buildingRange = [];
-        this.buildingWalkable = target.walkable;
-        this.buildingTiles = target.tiles;
-        this.buildingTileMap = [];
+        // this.buildingWalkable = target.walkable;
+        // this.buildingTiles = target.tiles;
+        this.buildingTileMap = {};
 
-        const middle = Math.floor(target.walkable.length / 2);
-        for (let x = 0; x < target.walkable.length; x++) {
-            for (let y = 0; y < target.walkable[0].length; y++) {
+        const middle = Math.floor(target.tiles.length / 2);
+        for (let x = 0; x < target.tiles.length; x++) {
+            for (let y = 0; y < target.tiles[0].length; y++) {
                 const thisX = this.position[0] - middle + x;
                 const thisY = this.position[1] - middle + y;
                 this.buildingRange.push([thisX, thisY]);
-                this.buildingTileMap.push({
+                this.buildingTileMap[`${x}:${y}`] = {
                     pos: [thisX, thisY],
-                    tile: this.buildingTiles[y][x],
-                });
+                    tile: target.tiles[y][x], // this.buildingTiles[y][x],
+                };
             }
         }
+
+        this.buildingRadius = Math.floor(target.tiles.length / 2);
     }
 
     public setPosition(pos: Point) {
@@ -111,9 +115,9 @@ class Cursor {
                 coord[1] += yDelta;
             }
 
-            for (const map of this.buildingTileMap) {
-                map.pos[0] += xDelta;
-                map.pos[1] += yDelta;
+            for (const key of Object.keys(this.buildingTileMap)) {
+                this.buildingTileMap[key].pos[0] += xDelta;
+                this.buildingTileMap[key].pos[1] += yDelta;
             }
         }
 
@@ -125,15 +129,22 @@ class Cursor {
             return 0;
         }
 
-        return Math.floor(this.buildingWalkable.length / 2);
+        return this.buildingRadius;
     }
 
     public getDrawData(pos?: Point, impassable?: boolean) {
         if (pos != null && this.building) {
-            const targetX = pos[0] - this.position[0] + Math.floor(this.buildingWalkable.length / 2);
-            const targetY = pos[1] - this.position[1] + Math.floor(this.buildingWalkable[0].length / 2);
-            const passable = this.buildingWalkable[targetX][targetY];
-            const color = impassable === true ? Constants.CURSOR_INVALID_COLOR : passable === "1" ? Constants.CURSOR_PASSABLE_COLOR : Constants.CURSOR_IMPASSABLE_COLOR;
+            const targetX = pos[0] - this.position[0] + this.buildingRadius;
+            const targetY = pos[1] - this.position[1] + this.buildingRadius;
+            const targetTile = this.buildingTileMap[`${targetX}:${targetY}`];
+            let passable = true;
+            if (targetTile != null && impassable !== true &&
+                targetTile.tile != null && targetTile.tile.walkable === 0) {
+                passable = false;
+            }
+            const color = impassable === true ? Constants.CURSOR_INVALID_COLOR :
+                                     passable ? Constants.CURSOR_PASSABLE_COLOR :
+                                                Constants.CURSOR_IMPASSABLE_COLOR;
             return [
                 pos[0],
                 pos[1],
