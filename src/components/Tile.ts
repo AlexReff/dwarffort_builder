@@ -97,8 +97,8 @@ class Tile {
                 walkable: data.walkable,
             };
             this.character = `i${data.char}`;
-            this.fgColor = data.fg;
-            this.bgColor = data.bg;
+            this.fgColor = data.fg || "transparent";
+            this.bgColor = data.bg || "transparent";
         } else {
             this.buildingData = {
                 char: "0",
@@ -107,6 +107,8 @@ class Tile {
                 walkable: 1,
             };
             this.character = `i0`;
+            this.fgColor = "transparent";
+            this.bgColor = "transparent";
         }
     }
 
@@ -206,14 +208,16 @@ class Tile {
     private init() {
         switch (this.tileType) {
             case TileType.Floor:
-                // this.color = "transparent";
                 this.fgColor = "rgba(50, 50, 50, .2)";
+                this.bgColor = "transparent";
                 break;
             case TileType.Wall:
                 this.fgColor = "transparent";
+                this.bgColor = "transparent";
                 break;
             case TileType.Empty:
                 this.fgColor = "transparent";
+                this.bgColor = "transparent";
                 if (this.decorated) {
                     if (RNG.getUniformInt(0, 100) <= Constants.GRID_TILE_COLOR_PERCENT) {
                         this.fgColor = Constants.GRID_TILE_DECORATED_COLORS[RNG.getUniformInt(0, Constants.GRID_TILE_DECORATED_COLORS.length - 1)];
