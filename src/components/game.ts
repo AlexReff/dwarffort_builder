@@ -51,8 +51,6 @@ class Game {
         container.append(this.display.getContainer());
 
         this.populateFloor();
-
-        this.populateAllNeighbors();
     }
 
     public populateFloor(floor?: number) {
@@ -72,6 +70,8 @@ class Game {
             }
             this.gameGrid[targetFloor].push(thisRow);
         }
+
+        this.populateAllNeighbors();
     }
 
     public getCanvas() {

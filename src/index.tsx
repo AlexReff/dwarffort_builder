@@ -4,9 +4,9 @@ import { Component, h, render } from "preact";
 //components
 import { Constants, Direction, MenuItemId } from "./components/constants";
 import { DebugMenu } from "./components/debug";
-import { Menu } from "./components/menu";
-import { TileType } from "./components/tile";
 import { GameRender } from "./components/game/render";
+import { Menu } from "./components/menu";
+import { Tile, TileType } from "./components/tile";
 
 require("./css/index.scss");
 
@@ -60,6 +60,7 @@ class FortressDesigner extends Component<{}, IFortressDesignerState> {
             debug: false,
             zLevel: 0,
             hasChangedZLevel: false,
+            mouseOverGrid: false,
         });
     }
 
@@ -153,6 +154,8 @@ class FortressDesigner extends Component<{}, IFortressDesignerState> {
     handleMouseOver = (e) => {
         this.setState({
             mouseOverGrid: true,
+            mouseLeft: e.clientX,
+            mouseTop: e.clientY,
         });
     }
 
@@ -339,7 +342,16 @@ class FortressDesigner extends Component<{}, IFortressDesignerState> {
                 <div class="status">Designating {Constants.MENU_DICTIONARY[this.state.highlightedMenuItem].text}</div>
             );
         } else {
-            const tile = this.game.getTileAtCursor();
+            let tile: Tile = null;
+            if (this.state.mouseOverGrid) {
+                //if we are mousing-over buildings, show that info, otherwise show tile @ kb cursor
+                tile = this.game.getTileAtMouse(this.state.mouseLeft, this.state.mouseTop);
+                if (!tile.isBuilding()) {
+                    tile = this.game.getTileAtCursor();
+                }
+            } else {
+                tile = this.game.getTileAtCursor();
+            }
             const type = tile.getType();
             switch (type) {
                 case TileType.Building:
@@ -354,6 +366,7 @@ class FortressDesigner extends Component<{}, IFortressDesignerState> {
                     );
             }
         }
+
         return null;
     }
 

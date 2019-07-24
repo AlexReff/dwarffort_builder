@@ -26,13 +26,13 @@ class Tile {
     private neighbors: TileType[];
     private decorated: boolean;
     private userSet: boolean; // true if the user designates this, false if generated from code
-    private isBuilding: boolean; // true if this tile is part of a building
+    private building: boolean; // true if this tile is part of a building
 
     constructor(tile: TileType, decorate?: boolean) {
         this.tileType = tile;
         this.neighbors = new Array(4);
         this.userSet = false;
-        this.isBuilding = false;
+        this.building = false;
         this.decorated = decorate === true;
         this.init();
     }
@@ -63,6 +63,10 @@ class Tile {
         return Constants.MENU_DICTIONARY[this.buildingKey].text;
     }
 
+    public isBuilding() {
+        return this.building;
+    }
+
     public getDrawData(coord: Point) {
         switch (this.tileType) {
             case TileType.Wall:
@@ -86,7 +90,7 @@ class Tile {
 
     public setBuilding(key: string, data: IBuildingData) {
         this.tileType = TileType.Building;
-        this.isBuilding = true;
+        this.building = true;
         this.buildingKey = key;
 
         if (data != null && data.char != null) {
@@ -97,8 +101,9 @@ class Tile {
                 walkable: data.walkable,
             };
             this.character = `i${data.char}`;
-            this.fgColor = data.fg || "transparent";
-            this.bgColor = data.bg || "transparent";
+            // this.fgColor = data.fg || "transparent";
+            // this.bgColor = data.bg || "transparent";
+            this.updateColorsFromBuilding();
         } else {
             this.buildingData = {
                 char: "0",
@@ -142,7 +147,7 @@ class Tile {
             return false;
         }
         if (type !== TileType.Building) {
-            this.isBuilding = false;
+            this.building = false;
             this.buildingKey = null;
             this.buildingData = null;
             // this.buildingChar = null;
@@ -150,6 +155,21 @@ class Tile {
         this.tileType = type;
         this.init();
         return true;
+    }
+
+    private updateColorsFromBuilding() {
+        this.fgColor = this.buildingData.fg || "transparent";
+        this.bgColor = this.buildingData.bg || "transparent";
+        const fgStart = this.fgColor.indexOf("(");
+        const bgStart = this.bgColor.indexOf("(");
+        const fgEnd = this.fgColor.indexOf(")");
+        const bgEnd = this.bgColor.indexOf(")");
+        if (fgStart !== -1 && fgEnd !== -1) {
+            this.fgColor = `rgba(${this.fgColor.substr(fgStart + 1, fgEnd)}, .3)`;
+        }
+        if (bgStart !== -1 && bgEnd !== -1) {
+            this.bgColor = `rgba(${this.bgColor.substr(bgStart + 1, bgEnd)}, .4)`;
+        }
     }
 
     private computeCharacter() {

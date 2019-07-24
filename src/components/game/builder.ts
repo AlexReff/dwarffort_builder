@@ -2,7 +2,7 @@ import { Constants, MenuItemId, Point } from "../constants";
 import { GameCursor } from "./cursor";
 
 /**
- * Requires CURSOR, DESIGNATOR
+ * Requires CAMERA, CURSOR
  */
 export class GameBuilder extends GameCursor {
     protected buildings: {

@@ -2,7 +2,7 @@ import { Point } from "../constants";
 import { GameBuilder } from "./builder";
 
 /**
- * Requires CURSOR, DESIGNATOR
+ * Requires CAMERA, CURSOR
  */
 export class GameAnimator extends GameBuilder {
     protected animationToggle: boolean;

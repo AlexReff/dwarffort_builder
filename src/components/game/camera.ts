@@ -1,5 +1,6 @@
 import { Point } from "../constants";
 import { Game } from "../game";
+import { Tile } from "../tile";
 
 export class GameCamera extends Game {
     protected camera: Point;
@@ -17,6 +18,17 @@ export class GameCamera extends Game {
             Math.ceil(this.gridSize[0] / 2.0),
             Math.ceil(this.gridSize[1] / 2.0),
         ];
+    }
+
+    public getMousePosition = (e: MouseEvent | TouchEvent | { clientX: number; clientY: number; }) => {
+        const gridCoord = this.display.eventToPosition(e);
+        return this.getMapCoord(gridCoord);
+    }
+
+    public getTileAtMouse = (clientX: number, clientY: number): Tile => {
+        const coord = this.getMousePosition({ clientX, clientY });
+        // const coord = this.getMapCoord(mouse);
+        return this.gameGrid[this.zLevel][coord[0]][coord[1]];
     }
 
     /**

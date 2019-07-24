@@ -4,6 +4,9 @@ import { Designator } from "../designator";
 import { Tile, TileType } from "../tile";
 import { GameCamera } from "./camera";
 
+/**
+ * Requires CAMERA
+ */
 export class GameCursor extends GameCamera {
     protected cursor: Cursor;
     protected designator: Designator;
@@ -19,11 +22,6 @@ export class GameCursor extends GameCamera {
     public getTileAtCursor = (): Tile => {
         const pos = this.cursor.getPosition();
         return this.gameGrid[this.zLevel][pos[0]][pos[1]];
-    }
-
-    public getMousePosition = (e: MouseEvent | TouchEvent) => {
-        const gridCoord = this.display.eventToPosition(e);
-        return this.getMapCoord(gridCoord);
     }
 
     public isDesignating() {
@@ -49,13 +47,8 @@ export class GameCursor extends GameCamera {
         const distance = shiftPressed ? 10 : 1;
 
         /**
-         * If we move beyond the visible grid of the canvas, we need to check if we can move the 'camera' in that direction
-         * Camera is essentially an x,y offset of where to render, should start near the 'middle'
-         * So the stored camera is the top left coord of the viewport
-         * Math to get center:
-         * centerMapX = center-most X coord (already done)
-         * centerMapY = center-most Y coord
-         * centerGridX, centerGridY
+         * Current behavior: clamps at visible blocks
+         * New behavior: moves correct amount, adjusts camera as needed
          */
         switch (direction) {
             case Direction.N:

@@ -1,3 +1,4 @@
+// tslint:disable: one-variable-per-declaration forin
 import Backend from "../rot/backend";
 import { default as Tile } from "../rot/tile";
 // import Hex from "../rot/hex.js";
@@ -143,7 +144,7 @@ export default class Display {
      * @param {Event} e event
      * @returns {int[2]} -1 for values outside of the canvas
      */
-    eventToPosition(e: TouchEvent | MouseEvent) {
+    eventToPosition(e: TouchEvent | MouseEvent | { clientX: number, clientY: number }) {
         let x, y;
         if ("touches" in e) {
             x = e.touches[0].clientX;
@@ -203,7 +204,7 @@ export default class Display {
                         // Assign to `true` when the current char is full-width.
                         isFullWidth = (cc > 0xff00 && cc < 0xff61) || (cc > 0xffdc && cc < 0xffe8) || cc > 0xffee;
                         // Current char is space, whatever full-width or half-width both are OK.
-                        isSpace = (c.charCodeAt(0) == 0x20 || c.charCodeAt(0) == 0x3000);
+                        isSpace = (c.charCodeAt(0) === 0x20 || c.charCodeAt(0) === 0x3000);
                         // The previous char is full-width and
                         // current char is nether half-width nor a space.
                         if (isPrevFullWidth && !isFullWidth && !isSpace) { cx++; } // add an extra position
@@ -259,7 +260,7 @@ export default class Display {
      */
     _draw(key: string, clearBefore: boolean) {
         const data = this._data[key];
-        if (data[4] != this._options.bg) { clearBefore = true; }
+        if (data[4] !== this._options.bg) { clearBefore = true; }
 
         this._backend.draw(data, clearBefore);
     }
