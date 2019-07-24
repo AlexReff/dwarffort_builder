@@ -2,8 +2,8 @@ import * as _ from "lodash";
 import { Constants, Direction, IGridRange, Point } from "./constants";
 
 class Designator {
-    private designating: boolean;
-    private designationStart: Point;
+    protected designating: boolean;
+    protected designationStart: Point;
 
     constructor(pos?: Point) {
         if (pos != null) {

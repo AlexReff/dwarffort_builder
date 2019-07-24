@@ -4,9 +4,9 @@ import { Component, h, render } from "preact";
 //components
 import { Constants, Direction, MenuItemId } from "./components/constants";
 import { DebugMenu } from "./components/debug";
-import { Game } from "./components/game";
 import { Menu } from "./components/menu";
 import { TileType } from "./components/tile";
+import { GameRender } from "./components/game/render";
 
 require("./css/index.scss");
 
@@ -49,7 +49,7 @@ class FortressDesigner extends Component<{}, IFortressDesignerState> {
     private canvasElement: HTMLElement;
     private headerElement: HTMLElement;
     private tileSheetImage: HTMLImageElement;
-    private game: Game;
+    private game: GameRender;
 
     constructor() {
         super();
@@ -91,7 +91,7 @@ class FortressDesigner extends Component<{}, IFortressDesignerState> {
     }
 
     initGame = () => {
-        this.game = new Game(this.tileSheetImage, this.gridElement);
+        this.game = new GameRender(this.tileSheetImage, this.gridElement);
         this.canvasElement = this.game.getCanvas();
 
         this.gridElement.addEventListener("click", this.handleGridClick);
