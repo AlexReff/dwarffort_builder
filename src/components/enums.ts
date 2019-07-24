@@ -46,6 +46,7 @@ enum MenuItemId {
     bed = "bed",
     chair = "chair",
     door = "door",
+    inspect = "inspect",
 }
 
 export { Direction, MenuItemId };

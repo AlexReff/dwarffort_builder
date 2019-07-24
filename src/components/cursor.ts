@@ -1,6 +1,5 @@
 // import * as _ from "lodash";
-import { IBuildingData } from "./buildings";
-import { Constants, Direction, MenuItemId, Point } from "./constants";
+import { Constants, IBuildingData, MenuItemId, Point } from "./constants";
 
 class Cursor {
     private position: Point;

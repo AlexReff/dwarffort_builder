@@ -52,6 +52,72 @@ export class GameCursor extends GameCamera {
          */
         switch (direction) {
             case Direction.N:
+                if (pos[1] - offset > 0) {
+                    pos[1] = Math.max(offset, pos[1] - distance);
+                }
+                break;
+            case Direction.NE:
+                if (pos[1] - offset > 0 ||
+                    pos[0] + offset < this.mapSize[0] - 1) {
+                    pos[0] = Math.min(this.mapSize[0] - 1 - offset, pos[0] + distance);
+                    pos[1] = Math.max(offset, pos[1] - distance);
+                }
+                break;
+            case Direction.E:
+                if (pos[0] + offset < this.mapSize[0] - 1) {
+                    pos[0] = Math.min(this.mapSize[0] - 1 - offset + 0, pos[0] + distance);
+                }
+                break;
+            case Direction.SE:
+                if (pos[0] + offset < this.mapSize[0] - 1 ||
+                    pos[1] + offset < this.mapSize[1] - 1) {
+                    pos[0] = Math.min(this.mapSize[0] - 1 - offset, pos[0] + distance);
+                    pos[1] = Math.min(this.mapSize[1] - 1 - offset, pos[1] + distance);
+                }
+                break;
+            case Direction.S:
+                if (pos[1] + offset < this.mapSize[1] - 1) {
+                    pos[1] = Math.min(this.mapSize[1] - 1 - offset, pos[1] + distance);
+                }
+                break;
+            case Direction.SW:
+                if (pos[0] - offset > 0 ||
+                    pos[1] + offset < this.mapSize[1] - 1) {
+                    pos[0] = Math.max(offset, pos[0] - 1);
+                    pos[1] = Math.min(this.mapSize[1] - 1 - offset, pos[1] + distance);
+                }
+                break;
+            case Direction.W:
+                if (pos[0] - offset > 0) {
+                    pos[0] = Math.max(offset, pos[0] - distance);
+                }
+                break;
+            case Direction.NW:
+                if (pos[0] - offset > 0 ||
+                    pos[1] - offset > 0) {
+                    pos[0] = Math.max(offset, pos[0] - distance);
+                    pos[1] = Math.max(offset, pos[1] - distance);
+                }
+                break;
+            default:
+                return;
+        }
+
+        this.moveCursorTo(pos);
+    }
+
+    /**
+     * Moves the cursor in the specified direction,
+     * Locked in the visible view
+     * Does not move camera
+     */
+    public moveCursorOnGrid(direction: Direction, shiftPressed?: boolean) {
+        const pos = this.cursor.getPosition();
+        const offset = this.cursor.getRadius();
+        const distance = shiftPressed ? 10 : 1;
+
+        switch (direction) {
+            case Direction.N:
                 if (pos[1] - offset > this.camera[1]) {
                     pos[1] = Math.max(this.camera[1] + offset, pos[1] - distance);
                 }
@@ -107,6 +173,7 @@ export class GameCursor extends GameCamera {
     }
 
     public moveCursorTo(targetPos: Point) {
+        // TODO: Update to move camera if neeeded
         const pos = this.cursor.getPosition();
         const offset = this.cursor.getRadius();
 

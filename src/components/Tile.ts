@@ -1,6 +1,5 @@
 // import * as _ from "lodash";
-import { IBuildingData } from "./buildings";
-import { Constants, Direction, Point } from "./constants";
+import { Constants, Direction, IBuildingData, Point } from "./constants";
 import RNG from "./rot/rng";
 
 enum TileType {

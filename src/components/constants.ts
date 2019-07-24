@@ -2,9 +2,15 @@ const styles = require(".././css/_variables.scss");
 
 import * as buildings from "../data/buildings.json";
 import { items } from "../data/menu.json";
-import { IBuildingData } from "./buildings.js";
 import { Direction, MenuItemId } from "./enums";
 import { IMenuItem } from "./menu.js";
+
+interface IBuildingData {
+    char: string;
+    bg: string;
+    fg: string;
+    walkable: number;
+}
 
 interface IGridRange {
     startX: number;
@@ -539,4 +545,4 @@ class Constants {
     };
 }
 
-export { Constants, Direction, IGridRange, MenuItemId, Point };
+export { Constants, Direction, IBuildingData, IGridRange, MenuItemId, Point };

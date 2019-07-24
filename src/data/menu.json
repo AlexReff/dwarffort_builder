@@ -200,6 +200,11 @@
             "text": "Stockpile",
             "key": "p",
             "id": "stockpile"
+        },
+        {
+            "text": "Manage Buildings",
+            "key": "q",
+            "id": "inspect"
         }
     ]
 }

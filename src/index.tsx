@@ -200,6 +200,7 @@ class FortressDesigner extends Component<{}, IFortressDesignerState> {
                 e.preventDefault();
                 this.game.moveCursor(Direction.N, e.shiftKey);
                 break;
+            case Constants.KEYS.VK_PAGE_UP:
             case Constants.KEYS.VK_NUMPAD9:
                 //move ne
                 e.preventDefault();
@@ -211,6 +212,7 @@ class FortressDesigner extends Component<{}, IFortressDesignerState> {
                 e.preventDefault();
                 this.game.moveCursor(Direction.E, e.shiftKey);
                 break;
+            case Constants.KEYS.VK_PAGE_DOWN:
             case Constants.KEYS.VK_NUMPAD3:
                 //move se
                 e.preventDefault();
@@ -222,6 +224,7 @@ class FortressDesigner extends Component<{}, IFortressDesignerState> {
                 e.preventDefault();
                 this.game.moveCursor(Direction.S, e.shiftKey);
                 break;
+            case Constants.KEYS.VK_END:
             case Constants.KEYS.VK_NUMPAD1:
                 //move sw
                 e.preventDefault();
@@ -233,6 +236,7 @@ class FortressDesigner extends Component<{}, IFortressDesignerState> {
                 e.preventDefault();
                 this.game.moveCursor(Direction.W, e.shiftKey);
                 break;
+            case Constants.KEYS.VK_HOME:
             case Constants.KEYS.VK_NUMPAD7:
                 //move nw
                 e.preventDefault();
@@ -259,7 +263,7 @@ class FortressDesigner extends Component<{}, IFortressDesignerState> {
                     e.preventDefault();
                     this.handleMenuEvent(Constants.MENU_HOTKEYS[key].id);
                 } else {
-                    // console.log("unhandled keypress: ", e.keyCode, e.key);
+                    console.log("unhandled keypress: ", e.keyCode, e.key);
                 }
                 break;
         }
@@ -318,12 +322,13 @@ class FortressDesigner extends Component<{}, IFortressDesignerState> {
         } else {
             if (e in MenuItemId) {
                 if (this.state.highlightedMenuItem !== e) {
-                    // this.game.cancelDesignate();
                     this.setState({
                         highlightedMenuItem: e as MenuItemId,
                     });
                     //if this item is a building
-                    if (e in Constants.BUILDING_TILE_MAP) {
+                    if (e === "inspect") {
+                        //
+                    } else if (e in Constants.BUILDING_TILE_MAP) {
                         this.game.setCursorToBuilding(e as MenuItemId);
                     }
                 }
@@ -331,6 +336,10 @@ class FortressDesigner extends Component<{}, IFortressDesignerState> {
                 console.log("Unhandled menu event: ", e);
             }
         }
+    }
+
+    isInspecting = () => {
+        return this.state.highlightedMenuItem != null && this.state.highlightedMenuItem === "inspect";
     }
 
     renderFooterData = () => {
@@ -401,9 +410,6 @@ class FortressDesigner extends Component<{}, IFortressDesignerState> {
         if (this.game == null) {
             return null;
         }
-        //if placing a building, 'placing <>'
-        //if placing a nonbuilding (designate) 'painting <>'
-        //if designating, designating <>
         if (this.game.isDesignating()) {
             return (
                 <div>Designating {Constants.MENU_DICTIONARY[this.state.highlightedMenuItem].text}</div>
@@ -443,11 +449,17 @@ class FortressDesigner extends Component<{}, IFortressDesignerState> {
                         </div>
                     </div>
                     <div id="grid"></div>
-                    <Menu highlightedItem={state.highlightedMenuItem}
-                        selectedMenu={state.currentMenu}
-                        handleMenuEvent={this.handleMenuEvent}>
+                    {this.isInspecting() ?
+                        <div id="menu">
+                            INSPECTING
+                        </div>
+                        :
+                        <Menu highlightedItem={state.highlightedMenuItem}
+                            selectedMenu={state.currentMenu}
+                            handleMenuEvent={this.handleMenuEvent}>
                             {this.renderMenuStatus()}
                         </Menu>
+                    }
                     <footer id="footer">
                         <div class="inner">
                             <div class="data">{this.renderFooterData()}</div>

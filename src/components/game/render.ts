@@ -5,7 +5,6 @@ export class GameRender extends GameAnimator {
 
     constructor(image: HTMLImageElement, container: HTMLElement) {
         super(image, container);
-        this.dirtyTiles = [];
         this.render();
     }
 
@@ -48,11 +47,6 @@ export class GameRender extends GameAnimator {
      * Render the entire grid
      */
     protected render = () => {
-        // for (let x = 0; x < this.gameGrid[this.zLevel].length; x++) {
-        //     for (let y = 0; y < this.gameGrid[this.zLevel][0].length; y++) {
-        //         this.renderPosition([x, y]);
-        //     }
-        // }
         for (let x = this.camera[0]; x < this.camera[0] + this.gridSize[0]; x++) {
             for (let y = this.camera[1]; y < this.camera[1] + this.gridSize[1]; y++) {
                 this.renderPosition([x, y]);
