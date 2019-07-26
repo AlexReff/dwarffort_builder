@@ -4,15 +4,15 @@ import { Tile } from "../tile";
 
 export class GameCamera extends Game {
     protected camera: Point;
-    protected center: Point;
+    // protected center: Point;
 
     constructor(image: HTMLImageElement, container: HTMLElement) {
         super(image, container);
 
-        this.center = [
-            Math.ceil(this.gridSize[0] / 2.0),
-            Math.ceil(this.gridSize[1] / 2.0),
-        ];
+        // this.center = [
+        //     Math.ceil(this.gridSize[0] / 2.0),
+        //     Math.ceil(this.gridSize[1] / 2.0),
+        // ];
 
         this.resetCamera();
     }

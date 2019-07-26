@@ -5,13 +5,20 @@ const presets = [
             targets: [">0.25%", "not ie 11"],
             useBuiltIns: "usage"
         },
-        "@babel/preset-typescript",
-        {
-            isTSX: true,
-            jsxPragma: "h",
-            allExtensions: true
-        }
     ],
 ];
 
-module.exports = { presets };
+const plugins = [
+    "@babel/plugin-proposal-class-properties"
+];
+
+const ignore = [
+    /\/core-js/,
+];
+
+module.exports = {
+    sourceType: "unambiguous",
+    ignore,
+    presets,
+    plugins,
+};

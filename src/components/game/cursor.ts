@@ -14,7 +14,12 @@ export class GameCursor extends GameCamera {
 
     constructor(image: HTMLImageElement, container: HTMLElement) {
         super(image, container);
-        this.cursor = new Cursor(this.center);
+
+        this.cursor = new Cursor([
+            Math.ceil(this.gridSize[0] / 2.0),
+            Math.ceil(this.gridSize[1] / 2.0),
+        ]);
+
         this.designator = new Designator();
         this.designatorTiles = [];
     }
