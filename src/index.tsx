@@ -2,7 +2,7 @@
 //import * as _ from "lodash";
 import { Component, h, render } from "preact";
 //components
-import { Constants, Direction, MenuItemId } from "./components/constants";
+import { BUILDING_TILE_MAP, DEBUG_MODE_ENABLED, Direction, HEADER_HEIGHT_INITIAL, KEYS, MENU_DICTIONARY, MENU_HOTKEYS, MENU_SUBMENUS, MENU_WIDTH_INITIAL, MenuItemId, TILE_HEIGHT, TILE_WIDTH, TILESHEET_URL } from "./components/constants";
 import { DebugMenu } from "./components/debug";
 import { GameRender } from "./components/game/render";
 import { Menu } from "./components/menu";
@@ -73,20 +73,20 @@ class FortressDesigner extends Component<{}, IFortressDesignerState> {
         this.tileSheetImage.onload = () => {
             this.initGame();
         };
-        this.tileSheetImage.src = Constants.TILESHEET_URL;
+        this.tileSheetImage.src = TILESHEET_URL;
 
         //update the grid's width in css to divisible by grid
-        const wOff = this.gridElement.offsetWidth % Constants.TILE_WIDTH;
+        const wOff = this.gridElement.offsetWidth % TILE_WIDTH;
         if (wOff !== 0) {
             this.setState({
-                gridColumnLayout: `1fr ${(Constants.MENU_WIDTH_INITIAL + wOff).toString()}px`,
+                gridColumnLayout: `1fr ${(MENU_WIDTH_INITIAL + wOff).toString()}px`,
             });
         }
 
-        const hOff = this.gridElement.offsetHeight % Constants.TILE_WIDTH;
+        const hOff = this.gridElement.offsetHeight % TILE_WIDTH;
         if (hOff !== 0) {
             this.setState({
-                gridRowLayout: `${Constants.HEADER_HEIGHT_INITIAL.toString()}px 1fr ${(Constants.HEADER_HEIGHT_INITIAL + hOff).toString()}px`,
+                gridRowLayout: `${HEADER_HEIGHT_INITIAL.toString()}px 1fr ${(HEADER_HEIGHT_INITIAL + hOff).toString()}px`,
             });
         }
     }
@@ -178,79 +178,79 @@ class FortressDesigner extends Component<{}, IFortressDesignerState> {
             return; //don't override ctrl+btn browser hotkeys
         }
         switch (e.keyCode) {
-            case Constants.KEYS.VK_RETURN:
+            case KEYS.VK_RETURN:
                 e.preventDefault();
                 this.handleEnterRightClick();
                 break;
-            case Constants.KEYS.VK_BACK_QUOTE:
-            case Constants.KEYS.VK_TILDE:
+            case KEYS.VK_BACK_QUOTE:
+            case KEYS.VK_TILDE:
                 //toggle debug display
                 e.preventDefault();
-                this.setState({
-                    debug: !this.state.debug,
-                });
+                this.setState((prevState) => ({
+                    debug: !prevState.debug,
+                }));
                 break;
-            case Constants.KEYS.VK_ESCAPE:
+            case KEYS.VK_ESCAPE:
                 e.preventDefault();
                 this.handleMenuEvent("escape");
                 break;
-            case Constants.KEYS.VK_UP:
-            case Constants.KEYS.VK_NUMPAD8:
+            case KEYS.VK_UP:
+            case KEYS.VK_NUMPAD8:
                 //move north
                 e.preventDefault();
                 this.game.moveCursor(Direction.N, e.shiftKey);
                 break;
-            case Constants.KEYS.VK_PAGE_UP:
-            case Constants.KEYS.VK_NUMPAD9:
+            case KEYS.VK_PAGE_UP:
+            case KEYS.VK_NUMPAD9:
                 //move ne
                 e.preventDefault();
                 this.game.moveCursor(Direction.NE, e.shiftKey);
                 break;
-            case Constants.KEYS.VK_RIGHT:
-            case Constants.KEYS.VK_NUMPAD6:
+            case KEYS.VK_RIGHT:
+            case KEYS.VK_NUMPAD6:
                 //move east
                 e.preventDefault();
                 this.game.moveCursor(Direction.E, e.shiftKey);
                 break;
-            case Constants.KEYS.VK_PAGE_DOWN:
-            case Constants.KEYS.VK_NUMPAD3:
+            case KEYS.VK_PAGE_DOWN:
+            case KEYS.VK_NUMPAD3:
                 //move se
                 e.preventDefault();
                 this.game.moveCursor(Direction.SE, e.shiftKey);
                 break;
-            case Constants.KEYS.VK_DOWN:
-            case Constants.KEYS.VK_NUMPAD2:
+            case KEYS.VK_DOWN:
+            case KEYS.VK_NUMPAD2:
                 //move south
                 e.preventDefault();
                 this.game.moveCursor(Direction.S, e.shiftKey);
                 break;
-            case Constants.KEYS.VK_END:
-            case Constants.KEYS.VK_NUMPAD1:
+            case KEYS.VK_END:
+            case KEYS.VK_NUMPAD1:
                 //move sw
                 e.preventDefault();
                 this.game.moveCursor(Direction.SW, e.shiftKey);
                 break;
-            case Constants.KEYS.VK_LEFT:
-            case Constants.KEYS.VK_NUMPAD4:
+            case KEYS.VK_LEFT:
+            case KEYS.VK_NUMPAD4:
                 //move west
                 e.preventDefault();
                 this.game.moveCursor(Direction.W, e.shiftKey);
                 break;
-            case Constants.KEYS.VK_HOME:
-            case Constants.KEYS.VK_NUMPAD7:
+            case KEYS.VK_HOME:
+            case KEYS.VK_NUMPAD7:
                 //move nw
                 e.preventDefault();
                 this.game.moveCursor(Direction.NW, e.shiftKey);
                 break;
-            case Constants.KEYS.VK_PERIOD:
-            case Constants.KEYS.VK_GREATER_THAN:
+            case KEYS.VK_PERIOD:
+            case KEYS.VK_GREATER_THAN:
                 this.setState({
                     zLevel: this.game.zUp(),
                     hasChangedZLevel: true,
                 });
                 break;
-            case Constants.KEYS.VK_COMMA:
-            case Constants.KEYS.VK_LESS_THAN:
+            case KEYS.VK_COMMA:
+            case KEYS.VK_LESS_THAN:
                 this.setState({
                     zLevel: this.game.zDown(),
                     hasChangedZLevel: true,
@@ -258,10 +258,10 @@ class FortressDesigner extends Component<{}, IFortressDesignerState> {
                 break;
             default:
                 const key = this.state.currentMenu !== "top" ? this.state.currentMenu + ":" + e.key : e.key;
-                const hotkeyTarget = Constants.MENU_HOTKEYS[key];
+                const hotkeyTarget = MENU_HOTKEYS[key];
                 if (hotkeyTarget) {
                     e.preventDefault();
-                    this.handleMenuEvent(Constants.MENU_HOTKEYS[key].id);
+                    this.handleMenuEvent(MENU_HOTKEYS[key].id);
                 } else {
                     console.log("unhandled keypress: ", e.keyCode, e.key);
                 }
@@ -285,10 +285,10 @@ class FortressDesigner extends Component<{}, IFortressDesignerState> {
             return;
         }
 
-        if (Constants.MENU_SUBMENUS[e] != null) {
+        if (MENU_SUBMENUS[e] != null) {
             this.setState({
                 highlightedMenuItem: null,
-                currentMenu: Constants.MENU_SUBMENUS[e],
+                currentMenu: MENU_SUBMENUS[e],
             });
             return;
         }
@@ -320,20 +320,16 @@ class FortressDesigner extends Component<{}, IFortressDesignerState> {
                 });
             }
         } else {
-            if (e in MenuItemId) {
-                if (this.state.highlightedMenuItem !== e) {
-                    this.setState({
-                        highlightedMenuItem: e as MenuItemId,
-                    });
-                    //if this item is a building
-                    if (e === "inspect") {
-                        //
-                    } else if (e in Constants.BUILDING_TILE_MAP) {
-                        this.game.setCursorToBuilding(e as MenuItemId);
-                    }
+            if (this.state.highlightedMenuItem !== e) {
+                this.setState({
+                    highlightedMenuItem: e as MenuItemId,
+                });
+                //if this item is a building
+                if (e === "inspect") {
+                    //
+                } else if (e in BUILDING_TILE_MAP) {
+                    this.game.setCursorToBuilding(e as MenuItemId);
                 }
-            } else {
-                console.log("Unhandled menu event: ", e);
             }
         }
     }
@@ -348,7 +344,7 @@ class FortressDesigner extends Component<{}, IFortressDesignerState> {
         }
         if (this.game.isDesignating()) {
             return (
-                <div class="status">Designating {Constants.MENU_DICTIONARY[this.state.highlightedMenuItem].text}</div>
+                <div class="status">Designating {MENU_DICTIONARY[this.state.highlightedMenuItem].text}</div>
             );
         } else {
             let tile: Tile = null;
@@ -382,10 +378,10 @@ class FortressDesigner extends Component<{}, IFortressDesignerState> {
     getGridPosition = (clientX: number, clientY: number): [number, number] => {
         //returns top-left coordinate for grid item based on mouse position
         const bounds = this.canvasElement.getBoundingClientRect();
-        const maxHeight = this.canvasElement.offsetHeight - Constants.TILE_HEIGHT + bounds.top;
-        const maxWidth = this.canvasElement.offsetWidth - Constants.TILE_WIDTH + bounds.left;
-        const leftPos = Math.max(0, Math.min(maxWidth, clientX - (clientX % Constants.TILE_WIDTH)));
-        const topPos = Math.max(0, Math.min(maxHeight, clientY - (clientY % Constants.TILE_HEIGHT)));
+        const maxHeight = this.canvasElement.offsetHeight - TILE_HEIGHT + bounds.top;
+        const maxWidth = this.canvasElement.offsetWidth - TILE_WIDTH + bounds.left;
+        const leftPos = Math.max(0, Math.min(maxWidth, clientX - (clientX % TILE_WIDTH)));
+        const topPos = Math.max(0, Math.min(maxHeight, clientY - (clientY % TILE_HEIGHT)));
         return [leftPos, topPos];
     }
 
@@ -398,11 +394,39 @@ class FortressDesigner extends Component<{}, IFortressDesignerState> {
             }
             const targetPos = this.getGridPosition(this.state.mouseLeft, this.state.mouseTop);
             return {
-                width: `${Constants.TILE_WIDTH}px`,
-                height: `${Constants.TILE_HEIGHT}px`,
+                width: `${TILE_WIDTH}px`,
+                height: `${TILE_HEIGHT}px`,
                 left: targetPos[0],
                 top: targetPos[1],
             };
+        }
+    }
+
+    renderBreadcrumbs = () => {
+        const breadcrumbs = [];
+        if (this.state.currentMenu !== "top") {
+            const activeItem = MENU_HOTKEYS[this.state.currentMenu];
+            breadcrumbs.push(<a href="#" data-id={activeItem.key} onClick={(e) => this.breadcrumbHandler(e)}>{activeItem.text}</a>);
+
+            // let parent = activeItem.parent;
+            // while (parent != null) {
+            //     breadcrumbs.push(<a href="#" data-id={parent.key} onClick={(e) => this.breadcrumbHandler(e)}>{parent.text}</a>);
+            //     parent = parent.parent;
+            // }
+        }
+
+        breadcrumbs.push(<a href="#" data-id="top" title="Main Menu" onClick={(e) => this.breadcrumbHandler(e)}>☺</a>);
+        return breadcrumbs.reverse();
+    }
+
+    breadcrumbHandler = (e: Event) => {
+        e.preventDefault();
+        (e.currentTarget as HTMLElement).blur();
+        const key = (e.currentTarget as HTMLElement).dataset.id;
+        if (key === "top") {
+            this.handleMenuEvent("top");
+        } else if (MENU_HOTKEYS[key] != null) {
+            this.handleMenuEvent(MENU_HOTKEYS[key].id);
         }
     }
 
@@ -412,17 +436,17 @@ class FortressDesigner extends Component<{}, IFortressDesignerState> {
         }
         if (this.game.isDesignating()) {
             return (
-                <div>Designating {Constants.MENU_DICTIONARY[this.state.highlightedMenuItem].text}</div>
+                <div>Designating {MENU_DICTIONARY[this.state.highlightedMenuItem].text}</div>
             );
         }
         if (this.state.highlightedMenuItem != null && this.state.highlightedMenuItem.length > 0) {
-            if (this.state.highlightedMenuItem in Constants.BUILDING_TILE_MAP) {
+            if (this.state.highlightedMenuItem in BUILDING_TILE_MAP) {
                 return (
-                    <div>Placing {Constants.MENU_DICTIONARY[this.state.highlightedMenuItem].text}</div>
+                    <div>Placing {MENU_DICTIONARY[this.state.highlightedMenuItem].text}</div>
                 );
             }
             return (
-                <div>Designating {Constants.MENU_DICTIONARY[this.state.highlightedMenuItem].text}</div>
+                <div>Designating {MENU_DICTIONARY[this.state.highlightedMenuItem].text}</div>
             );
         }
         return <div></div>;
@@ -431,7 +455,7 @@ class FortressDesigner extends Component<{}, IFortressDesignerState> {
     render(props, state: IFortressDesignerState) {
         return (
             <div id="page">
-                {Constants.DEBUG_MODE_ENABLED ?
+                {DEBUG_MODE_ENABLED ?
                     <DebugMenu isActive={state.debug} />
                     : null}
                 <div id="highlighter" style={this.getHighlighterStyle()}></div>
@@ -449,17 +473,20 @@ class FortressDesigner extends Component<{}, IFortressDesignerState> {
                         </div>
                     </div>
                     <div id="grid"></div>
-                    {this.isInspecting() ?
-                        <div id="menu">
-                            INSPECTING
+                    <div id="menu">
+                        <div class="menu-breadcrumbs">
+                            {this.renderBreadcrumbs()}
                         </div>
-                        :
                         <Menu highlightedItem={state.highlightedMenuItem}
                             selectedMenu={state.currentMenu}
-                            handleMenuEvent={this.handleMenuEvent}>
-                            {this.renderMenuStatus()}
-                        </Menu>
-                    }
+                            handleMenuEvent={this.handleMenuEvent} />
+                        <div class="menu-bottom">
+                            <div class="menu-status">
+                                {this.renderMenuStatus()}
+                            </div>
+                            <div class="copy">&copy; {new Date().getFullYear()} Alex Reff</div>
+                        </div>
+                    </div>
                     <footer id="footer">
                         <div class="inner">
                             <div class="data">{this.renderFooterData()}</div>

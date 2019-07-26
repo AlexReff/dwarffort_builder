@@ -46,10 +46,6 @@ export class GameCursor extends GameCamera {
         const offset = this.cursor.getRadius();
         const distance = shiftPressed ? 10 : 1;
 
-        /**
-         * Current behavior: clamps at visible blocks
-         * New behavior: moves correct amount, adjusts camera as needed
-         */
         switch (direction) {
             case Direction.N:
                 if (pos[1] - offset > 0) {
@@ -103,6 +99,7 @@ export class GameCursor extends GameCamera {
                 return;
         }
 
+        this.moveCameraToIncludePoint(pos);
         this.moveCursorTo(pos);
     }
 

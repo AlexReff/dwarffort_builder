@@ -10,7 +10,7 @@ module.exports = (env, argv) => {
         devtool: isDev ? "source-map" : false,
         entry: './src/index.tsx',
         externals: {
-            lodash: '_',
+            // lodash: '_',
         },
         mode: isDev ? 'development' : 'production',
         module: {
@@ -41,14 +41,7 @@ module.exports = (env, argv) => {
                     test: /\.(t|j)sx?$/,
                     include: path.resolve(__dirname, 'src'),
                     use: [
-                        {
-                            loader: 'babel-loader',
-                            options:
-                            {
-                                presets: ['@babel/preset-env'],
-                                plugins: ["@babel/plugin-proposal-class-properties"]
-                            }
-                        },
+                        'babel-loader',
                         'awesome-typescript-loader',
                     ]
                 },

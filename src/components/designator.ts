@@ -1,5 +1,5 @@
 import * as _ from "lodash";
-import { Constants, Direction, IGridRange, Point } from "./constants";
+import { IGridRange, Point } from "./constants";
 
 class Designator {
     protected designating: boolean;

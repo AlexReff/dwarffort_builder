@@ -73,15 +73,15 @@
     }
 
     .menu-status {
-        margin-top: auto;
-        
+        //
     }
 
     .menu-bottom {
-        @include font-px;
         margin-top: auto;
         
         .copy {
+            @include font-px;
+            margin-top: 30px;
             text-align: center;
             font-size: 12px;
         }

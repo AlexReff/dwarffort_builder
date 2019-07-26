@@ -1,5 +1,5 @@
 // import * as _ from "lodash";
-import { Constants, IBuildingData, MenuItemId, Point } from "./constants";
+import { BUILDING_TILE_MAP, CURSOR_COLOR, CURSOR_IMPASSABLE_COLOR, CURSOR_INVALID_COLOR, CURSOR_PASSABLE_COLOR, IBuildingData, MenuItemId, Point } from "./constants";
 
 class Cursor {
     private position: Point;
@@ -19,7 +19,7 @@ class Cursor {
     constructor(pos: Point = [0, 0]) {
         this.character = ".";
         this.position = [pos[0], pos[1]];
-        this.color = Constants.CURSOR_COLOR;
+        this.color = CURSOR_COLOR;
     }
 
     public getCharacter() {
@@ -76,7 +76,7 @@ class Cursor {
     }
 
     public setBuilding(key: MenuItemId) {
-        const target = Constants.BUILDING_TILE_MAP[key];
+        const target = BUILDING_TILE_MAP[key];
         if (target == null || target.tiles == null || target.tiles.length === 0) {
             return;
         }
@@ -141,9 +141,9 @@ class Cursor {
                 targetTile.tile != null && targetTile.tile.walkable === 0) {
                 passable = false;
             }
-            const color = impassable === true ? Constants.CURSOR_INVALID_COLOR :
-                                     passable ? Constants.CURSOR_PASSABLE_COLOR :
-                                                Constants.CURSOR_IMPASSABLE_COLOR;
+            const color = impassable === true ? CURSOR_INVALID_COLOR :
+                                     passable ? CURSOR_PASSABLE_COLOR :
+                                                CURSOR_IMPASSABLE_COLOR;
             return [
                 pos[0],
                 pos[1],

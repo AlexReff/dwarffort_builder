@@ -1,6 +1,6 @@
 import * as _ from "lodash";
 import { Component, h } from "preact";
-import { Constants } from "./constants";
+import { TILE_HEIGHT, TILE_WIDTH, TILESHEET_URL } from "./constants";
 import { Tile } from "./tile";
 
 interface IDebugMenuProps {
@@ -41,8 +41,8 @@ class DebugMenu extends Component<IDebugMenuProps, IDebugMenuState> {
             e.clientX - bounds.left,
             e.clientY - bounds.top,
         ];
-        pos[0] = pos[0] - (pos[0] % Constants.TILE_WIDTH);
-        pos[1] = pos[1] - (pos[1] % Constants.TILE_HEIGHT);
+        pos[0] = pos[0] - (pos[0] % TILE_WIDTH);
+        pos[1] = pos[1] - (pos[1] % TILE_HEIGHT);
         this.setState({
             mouseLeft: pos[0],
             mouseTop: pos[1],
@@ -67,7 +67,7 @@ class DebugMenu extends Component<IDebugMenuProps, IDebugMenuState> {
         return (
             <div id="debug-menu" class={this.props.isActive ? "active" : null}>
                 <div id="debug-sprite">
-                    <img id="debug-sprite-img" src={Constants.TILESHEET_URL} />
+                    <img id="debug-sprite-img" src={TILESHEET_URL} />
                     <div id="debug-sprite-text">{`${this.state.mouseLeft}, ${this.state.mouseTop}`}</div>
                 </div>
             </div>

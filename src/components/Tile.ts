@@ -1,5 +1,5 @@
 // import * as _ from "lodash";
-import { Constants, Direction, IBuildingData, Point } from "./constants";
+import { DECORATOR_TILES, Direction, FLOOR_TILES, GRID_TILE_COLOR_PERCENT, GRID_TILE_DECORATED_COLORS, IBuildingData, MENU_DICTIONARY, Point, WALL_TILES } from "./constants";
 import RNG from "./rot/rng";
 
 enum TileType {
@@ -59,7 +59,7 @@ class Tile {
     }
 
     public getBuildingName() {
-        return Constants.MENU_DICTIONARY[this.buildingKey].text;
+        return MENU_DICTIONARY[this.buildingKey].text;
     }
 
     public isBuilding() {
@@ -198,7 +198,7 @@ class Tile {
 
                 this.character = "w" + flags.toString(10);
 
-                const opts = Constants.WALL_TILES[flags];
+                const opts = WALL_TILES[flags];
                 if (opts.length > 1) {
                     this.character += String.fromCharCode(97 + RNG.getUniformInt(0, opts.length - 1));
                 }
@@ -206,12 +206,12 @@ class Tile {
                 return true;
             case TileType.Floor:
                 //no modifications needed if this is a floor
-                this.character = `f${RNG.getUniformInt(0, Constants.FLOOR_TILES.length - 1)}`;
+                this.character = `f${RNG.getUniformInt(0, FLOOR_TILES.length - 1)}`;
                 // this.character = "f1";
                 break;
             case TileType.Empty:
                 if (this.decorated) {
-                    const target = Constants.DECORATOR_TILES[RNG.getUniformInt(0, Constants.DECORATOR_TILES.length - 1)];
+                    const target = DECORATOR_TILES[RNG.getUniformInt(0, DECORATOR_TILES.length - 1)];
                     this.character = target.char;
                 } else {
                     this.character = " ";
@@ -238,8 +238,8 @@ class Tile {
                 this.fgColor = "transparent";
                 this.bgColor = "transparent";
                 if (this.decorated) {
-                    if (RNG.getUniformInt(0, 100) <= Constants.GRID_TILE_COLOR_PERCENT) {
-                        this.fgColor = Constants.GRID_TILE_DECORATED_COLORS[RNG.getUniformInt(0, Constants.GRID_TILE_DECORATED_COLORS.length - 1)];
+                    if (RNG.getUniformInt(0, 100) <= GRID_TILE_COLOR_PERCENT) {
+                        this.fgColor = GRID_TILE_DECORATED_COLORS[RNG.getUniformInt(0, GRID_TILE_DECORATED_COLORS.length - 1)];
                     }
                 }
 

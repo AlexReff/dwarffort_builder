@@ -2,7 +2,7 @@
 import { default as OpenSimplexNoise } from "open-simplex-noise";
 import { default as Display } from "./rot/display";
 
-import { Constants, Direction, IGridRange, Point } from "./constants";
+import { Direction, GRID_TILE_DECORATED_PERCENT, IGridRange, Point, TILE_HEIGHT, TILE_MAP, TILE_WIDTH } from "./constants";
 import rng from "./rot/rng";
 import { Tile, TileType } from "./tile";
 
@@ -27,8 +27,8 @@ class Game {
         this.gameGrid = {};
 
         this.gridSize = [
-            container.offsetWidth / Constants.TILE_WIDTH,
-            container.offsetHeight / Constants.TILE_HEIGHT,
+            container.offsetWidth / TILE_WIDTH,
+            container.offsetHeight / TILE_HEIGHT,
         ];
 
         this.mapSize = [
@@ -40,10 +40,10 @@ class Game {
             width: this.gridSize[0],
             height: this.gridSize[1],
             layout: Display.TileGL.isSupported() ? "tile-gl" : "tile",
-            tileWidth: Constants.TILE_WIDTH,
-            tileHeight: Constants.TILE_HEIGHT,
+            tileWidth: TILE_WIDTH,
+            tileHeight: TILE_HEIGHT,
             tileSet: this.tileSheetImage,
-            tileMap: Constants.TILE_MAP,
+            tileMap: TILE_MAP,
             tileColorize: true,
             bg: "transparent",
         });
@@ -66,7 +66,7 @@ class Game {
         for (let x = 0; x < this.mapSize[0]; x++) {
             const thisRow = [];
             for (let y = 0; y < this.mapSize[1]; y++) {
-                thisRow.push(new Tile(TileType.Empty, noiseMap[x][y] <= Constants.GRID_TILE_DECORATED_PERCENT));
+                thisRow.push(new Tile(TileType.Empty, noiseMap[x][y] <= GRID_TILE_DECORATED_PERCENT));
             }
             this.gameGrid[targetFloor].push(thisRow);
         }

@@ -1,6 +1,6 @@
 import * as _ from "lodash";
 import { Component, h } from "preact";
-import { Constants, MenuItemId } from "./constants";
+import { MENU_HOTKEYS, MENU_ITEMS, MenuItemId } from "./constants";
 
 interface IMenuItem {
     "text": string;
@@ -21,27 +21,29 @@ class Menu extends Component<IMenuProps, {}> {
         super();
     }
 
-    menuItemClickHandler = (e) => {
+    render(props: IMenuProps, state: any) {
+        return (
+            <div class="menu-items">
+                {this.getChildMenu(MENU_ITEMS, "top")}
+            </div>
+        );
+    }
+
+    private menuItemClickHandler = (e) => {
         e.preventDefault();
         this.menuItemHandler(e.currentTarget.id);
     }
 
-    breadcrumbHandler = (e: Event) => {
-        e.preventDefault();
-        (e.currentTarget as HTMLElement).blur();
-        return this.menuItemHandler((e.currentTarget as HTMLElement).dataset.id);
-    }
-
-    menuItemHandler = (key: string) => {
+    private menuItemHandler = (key: string) => {
         if (key === "top") {
             this.props.handleMenuEvent("top");
-        } else if (Constants.MENU_HOTKEYS[key] != null) {
-            this.props.handleMenuEvent(Constants.MENU_HOTKEYS[key].id);
+        } else if (MENU_HOTKEYS[key] != null) {
+            this.props.handleMenuEvent(MENU_HOTKEYS[key].id);
         }
     }
 
     //render each individual menu with separate keys
-    getChildMenu(items: IMenuItem[], group: string, prefix?: string) {
+    private getChildMenu(items: IMenuItem[], group: string, prefix?: string) {
         if (typeof items === "undefined" ||
             items === null ||
             items.length === 0) {
@@ -72,42 +74,6 @@ class Menu extends Component<IMenuProps, {}> {
         const thisMenu: any[] = [<div class={"submenu" + (this.props.selectedMenu === group ? " active" : "")}>{stack}</div>];
 
         return thisMenu.concat(childStack);
-    }
-
-    renderBreadcrumbs = (props: IMenuProps) => {
-        const breadcrumbs = [];
-        if (props.selectedMenu !== "top") {
-            const activeItem = Constants.MENU_HOTKEYS[props.selectedMenu];
-            breadcrumbs.push(<a href="#" data-id={activeItem.key} onClick={(e) => this.breadcrumbHandler(e)}>{activeItem.text}</a>);
-
-            // let parent = activeItem.parent;
-            // while (parent != null) {
-            //     breadcrumbs.push(<a href="#" data-id={parent.key} onClick={(e) => this.breadcrumbHandler(e)}>{parent.text}</a>);
-            //     parent = parent.parent;
-            // }
-        }
-
-        breadcrumbs.push(<a href="#" data-id="top" title="Main Menu" onClick={(e) => this.breadcrumbHandler(e)}>☺</a>);
-        return breadcrumbs.reverse();
-    }
-
-    render(props: IMenuProps, state: any) {
-        return (
-            <div id="menu">
-                <div class="menu-breadcrumbs">
-                    {this.renderBreadcrumbs(props)}
-                </div>
-                <div class="menu-items">
-                    {this.getChildMenu(Constants.MENU_ITEMS, "top")}
-                </div>
-                <div class="menu-status">
-                    {this.props.children}
-                </div>
-                <div class="menu-bottom">
-                    <div class="copy">&copy; {new Date().getFullYear()} Alex Reff</div>
-                </div>
-            </div>
-        );
     }
 }
 

@@ -1,4 +1,4 @@
-import { Constants, MenuItemId, Point } from "../constants";
+import { BUILDING_TILE_MAP, MenuItemId, Point } from "../constants";
 import { GameCursor } from "./cursor";
 
 /**
@@ -45,7 +45,7 @@ export class GameBuilder extends GameCursor {
     }
 
     public setCursorToBuilding(e: MenuItemId) {
-        const target = Constants.BUILDING_TILE_MAP[e];
+        const target = BUILDING_TILE_MAP[e];
         if (target == null) {
             this.cursor.stopBuilding();
             return;

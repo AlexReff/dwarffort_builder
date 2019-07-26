@@ -1,17 +1,29 @@
 {
     "presets": [
         [
+            "minify",
+            {
+                "builtIns": false,
+                "mangle":
+                {
+                    "topLevel": true
+                }
+            }
+        ],
+        [
             "@babel/preset-env",
             {
                 "targets": [">0.25%", "not ie 11"],
                 "useBuiltIns": "usage"
             }
-        ],
-        "@babel/react",
+        ]
+        //,[
+        //     "@babel/preset-react",
+        //     {
+        //         "pragma": "h"
+        //     }
+        // ]
         //"es2015"
     ],
-    "plugins": [
-        "@babel/plugin-syntax-jsx",
-        ["@babel/plugin-transform-react-jsx", { "pragma":"h" }]
-    ]
+    "plugins": ["@babel/plugin-proposal-class-properties"]
 }
