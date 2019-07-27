@@ -565,10 +565,9 @@ class FortressDesigner extends Component<{}, IFortressDesignerState> {
                             <div class="menu-status">
                                 {this.renderMenuStatus()}
                             </div>
-                            <div>
-                                <label>
-                                    Strict Mode <input checked={state.strictModeEnabled} type="checkbox" onChange={this.handleStrictModeChange} />
-                                </label>
+                            <div class="strict-mode">
+                                <input id="strictmode" checked={state.strictModeEnabled} type="checkbox" onChange={this.handleStrictModeChange} />
+                                <label title="Toggle Strict Mode" for="strictmode">Strict Mode:</label>
                             </div>
                             <div class="copy">&copy; {new Date().getFullYear()} Alex Reff</div>
                         </div>
