@@ -7,9 +7,17 @@ import { DisplayData, IDisplayOptions } from "../rot/types";
  * @private
  */
 export default class TileGL extends Backend {
+    private static _isSupported: boolean;
+    private static _isSupportedChecked: boolean = false;
 
+    // tslint:disable-next-line: member-ordering
     static isSupported() {
-        return !!document.createElement("canvas").getContext("webgl2", { preserveDrawingBuffer: true });
+        if (!this._isSupportedChecked) {
+            this._isSupported = !!document.createElement("canvas").getContext("webgl2", { preserveDrawingBuffer: true });
+            this._isSupportedChecked = true;
+        }
+
+        return this._isSupported;
     }
     _gl!: WebGLRenderingContext;
     _program!: WebGLProgram;

@@ -56,6 +56,7 @@ class FortressDesigner extends Component<{}, IFortressDesignerState> {
     private tileSheetImage: HTMLImageElement;
     private game: GameRender;
     private listenersOn: boolean;
+    private resizeCooldown: number;
 
     constructor() {
         super();
@@ -90,9 +91,38 @@ class FortressDesigner extends Component<{}, IFortressDesignerState> {
         this.tileSheetImage.src = TILESHEET_URL;
     }
 
+    setWindowResizing = () => {
+        this.destroyGame();
+        this.setState({
+            windowResizing: true,
+        });
+    }
+
+    // tslint:disable-next-line: member-ordering
+    windowResizeBouncer = _.debounce(this.setWindowResizing, 300, { leading: true, trailing: false });
+
+    endWindowResizing = () => {
+        this.updateWrapperCss(() => {
+            this.initGame();
+            this.setState({ windowResizing: false });
+        });
+    }
+
+    // tslint:disable-next-line: member-ordering
+    windowResizeEndBouncer = _.debounce(this.endWindowResizing, 400, { leading: false, trailing: true });
+
+    handleWindowResize = (e: Event) => {
+        this.windowResizeBouncer();
+        this.windowResizeEndBouncer();
+    }
+
     initGame = () => {
         if (this.game == null) {
             this.game = new GameRender(this.tileSheetImage, this.gridElement);
+
+            window.addEventListener("keydown", this.handleKeyPress);
+            window.addEventListener("keyup", this.handleKeyUp);
+            window.addEventListener("resize", this.handleWindowResize);
         } else {
             this.game.init();
         }
@@ -106,10 +136,6 @@ class FortressDesigner extends Component<{}, IFortressDesignerState> {
             this.gridElement.addEventListener("mouseleave", this.handleMouseLeave);
             this.gridElement.addEventListener("contextmenu", this.handleContextMenu);
 
-            window.addEventListener("keydown", this.handleKeyPress);
-            window.addEventListener("keyup", this.handleKeyUp);
-            window.addEventListener("resize", this.handleWindowResize);
-
             this.listenersOn = true;
         }
 
@@ -119,7 +145,6 @@ class FortressDesigner extends Component<{}, IFortressDesignerState> {
     }
 
     destroyGame = () => {
-        //this.game = null;
         this.game.destroy();
 
         if (this.canvasElement != null) {
@@ -134,27 +159,14 @@ class FortressDesigner extends Component<{}, IFortressDesignerState> {
             this.gridElement.removeEventListener("mouseleave", this.handleMouseLeave);
             this.gridElement.removeEventListener("contextmenu", this.handleContextMenu);
 
-            window.removeEventListener("keydown", this.handleKeyPress);
-            window.removeEventListener("keyup", this.handleKeyUp);
-            window.removeEventListener("resize", this.handleWindowResize);
-
             this.listenersOn = false;
         }
     }
-
-    // restartGame = () => {
-    //     this.setState({
-    //         gameLoading: true,
-    //     });
-    //     this.destroyGame();
-    //     this.initGame();
-    // }
 
     updateWrapperCss = (callback?: () => void) => {
         //update the grid's width in css to divisible by grid
         const wOff = (this.gridElement.offsetWidth + this.state.gridColumnLayout) % TILE_WIDTH;
         const hOff = (this.gridElement.offsetHeight + this.state.gridRowLayout) % TILE_WIDTH;
-        console.log("wrapper css updated");
         this.setState({
             gridColumnLayout: wOff,
             gridRowLayout: hOff,
@@ -163,7 +175,6 @@ class FortressDesigner extends Component<{}, IFortressDesignerState> {
 
     getWrapperCss = () => {
         if (this.state.gridColumnLayout != null && this.state.gridRowLayout != null) {
-            console.log("wrapper css retrieved");
             return {
                 gridTemplateColumns: `1fr ${(MENU_WIDTH_INITIAL + this.state.gridColumnLayout).toString()}px`,
                 gridTemplateRows: `${HEADER_HEIGHT_INITIAL.toString()}px 1fr ${(HEADER_HEIGHT_INITIAL + this.state.gridRowLayout).toString()}px`,
@@ -223,24 +234,6 @@ class FortressDesigner extends Component<{}, IFortressDesignerState> {
         this.setState({
             mouseOverGrid: false,
         });
-    }
-
-    setWindowResizing = () => {
-        this.setState({ windowResizing: true });
-    }
-
-    endWindowResizing = () => {
-        this.updateWrapperCss(function() {
-            this.initGame();
-            this.setState({ windowResizing: false });
-        });
-    }
-
-    handleWindowResize = (e: Event) => {
-        this.destroyGame();
-        _.debounce(this.setWindowResizing, 300)();
-        _.debounce(this.setWindowResizing, 300, { leading: true, trailing: false })();
-        _.debounce(this.endWindowResizing, 1000)();
     }
 
     handleKeyUp = (e: KeyboardEvent) => {
@@ -425,20 +418,20 @@ class FortressDesigner extends Component<{}, IFortressDesignerState> {
     }
 
     getHighlighterStyle = () => {
-        if (this.headerElement && this.canvasElement) {
-            if (!this.state.mouseOverGrid || (this.state.mouseLeft == null || this.state.mouseTop == null)) {
-                return {
-                    display: "none",
-                };
-            }
-            const targetPos = this.getGridPosition(this.state.mouseLeft, this.state.mouseTop);
+        if (!this.headerElement || !this.canvasElement ||
+            !this.state.mouseOverGrid ||
+            (this.state.mouseLeft == null || this.state.mouseTop == null)) {
             return {
-                width: `${TILE_WIDTH}px`,
-                height: `${TILE_HEIGHT}px`,
-                left: targetPos[0],
-                top: targetPos[1],
+                display: "none",
             };
         }
+        const targetPos = this.getGridPosition(this.state.mouseLeft, this.state.mouseTop);
+        return {
+            width: `${TILE_WIDTH}px`,
+            height: `${TILE_HEIGHT}px`,
+            left: targetPos[0],
+            top: targetPos[1],
+        };
     }
 
     renderFooterData = () => {

@@ -2,7 +2,7 @@
 import { default as OpenSimplexNoise } from "open-simplex-noise";
 import { default as Display } from "./rot/display";
 
-import { Direction, GRID_TILE_DECORATED_PERCENT, IGridRange, Point, TILE_HEIGHT, TILE_MAP, TILE_WIDTH } from "./constants";
+import { Direction, GRID_TILE_DECORATED_PERCENT, IGridRange, Point, TILE_HEIGHT, TILE_WIDTH } from "./constants";
 import rng from "./rot/rng";
 import { Tile, TileType } from "./tile";
 
@@ -13,6 +13,7 @@ class Game {
     protected mapSize: [number, number]; //size of the full map (including non-rendered portions)
     protected zLevel: number;
     protected gameGrid: { [key: number]: Tile[][] };
+    protected noiseMaps: { [key: number]: OpenSimplexNoise };
     protected container: HTMLElement;
 
     protected dirtyTiles: Point[];
@@ -27,6 +28,7 @@ class Game {
         this.container = container;
         this.zLevel = 0;
         this.gameGrid = {};
+        this.noiseMaps = {};
 
         this.gridSize = [
             container.offsetWidth / TILE_WIDTH,
@@ -48,22 +50,42 @@ class Game {
         this.display = null;
     }
 
-    public populateFloor(floor?: number) {
+    public populateAllFloors = () => {
+        for (const floor of Object.keys(this.gameGrid)) {
+            this.populateFloor(Number(floor));
+        }
+    }
+
+    public populateFloor = (floor?: number) => {
         const targetFloor = floor || this.zLevel;
-        const simplex = new OpenSimplexNoise(Date.now() * rng.getUniform());
-        const noiseMap = simplex.array2D(this.mapSize[0], this.mapSize[1]).map((e) => {
+        if (this.noiseMaps[this.zLevel] == null) {
+            this.noiseMaps[this.zLevel] = new OpenSimplexNoise(Date.now() * rng.getUniform());
+        }
+        const noiseMap = this.noiseMaps[this.zLevel].array2D(this.mapSize[0], this.mapSize[1]).map((e) => {
             return e.map((x) => {
                 return Math.floor(((x + 1.0) / 2.0) * 100.0);
             });
         });
 
-        this.gameGrid[targetFloor] = [];
+        if (this.gameGrid[targetFloor] == null) {
+            this.gameGrid[targetFloor] = [];
+        }
+
         for (let x = 0; x < this.mapSize[0]; x++) {
-            const thisRow = [];
+            // const thisRow = [];
             for (let y = 0; y < this.mapSize[1]; y++) {
-                thisRow.push(new Tile(TileType.Empty, noiseMap[x][y] <= GRID_TILE_DECORATED_PERCENT));
+                // thisRow.push(new Tile(TileType.Empty, noiseMap[x][y] <= GRID_TILE_DECORATED_PERCENT));
+                if (this.gameGrid[targetFloor] == null) {
+                    this.gameGrid[targetFloor] = [];
+                }
+                if (this.gameGrid[targetFloor][x] == null) {
+                    this.gameGrid[targetFloor][x] = [];
+                }
+                if (this.gameGrid[targetFloor][x][y] == null) {
+                    this.gameGrid[targetFloor][x][y] = new Tile(TileType.Empty, noiseMap[x][y] <= GRID_TILE_DECORATED_PERCENT);
+                }
             }
-            this.gameGrid[targetFloor].push(thisRow);
+            // this.gameGrid[targetFloor].push(thisRow);
         }
 
         this.populateAllNeighbors();
@@ -102,18 +124,14 @@ class Game {
     protected updateGameSize = (container: HTMLElement) => {
         if (this.gridSize != null && this.gridSize.length === 2) {
             this.gridSize = [
-                Math.max(this.gridSize[0], container.offsetWidth / TILE_WIDTH),
-                Math.max(this.gridSize[1], container.offsetHeight / TILE_HEIGHT),
+                Math.max(this.gridSize[0], Math.floor(container.offsetWidth / TILE_WIDTH)),
+                Math.max(this.gridSize[1], Math.floor(container.offsetHeight / TILE_HEIGHT)),
             ];
         } else {
             this.gridSize = [
-                container.offsetWidth / TILE_WIDTH,
-                container.offsetHeight / TILE_HEIGHT,
+                Math.floor(container.offsetWidth / TILE_WIDTH),
+                Math.floor(container.offsetHeight / TILE_HEIGHT),
             ];
-        }
-
-        if (this.gridSize[0] % 1 !== 0 || this.gridSize[1] % 1 !== 0) {
-            debugger;
         }
 
         this.mapSize = [
@@ -180,37 +198,38 @@ class Game {
      * Updates a single tile on the grid with neighbor information
      * @param pos Position to update
      */
-    protected updateNeighbors(pos: Point) {
+    protected updateNeighbors(pos: Point, floor?: number) {
         //populate neighbors, N,NE,E,SE,S,SW,W,NW
         const x = pos[0];
         const y = pos[1];
+        const targetFloor = floor || this.zLevel;
         if (y > 0) { //N
-            this.gameGrid[this.zLevel][x][y].setNeighbor(Direction.N, this.gameGrid[this.zLevel][x][y - 1].getType());
+            this.gameGrid[targetFloor][x][y].setNeighbor(Direction.N, this.gameGrid[targetFloor][x][y - 1].getType());
 
             // if (x < this.mapSize[1] - 1) { //NE
-            //     this.gameGrid[this.zLevel][x][y].setNeighbor(Direction.NE, this.gameGrid[this.zLevel][x + 1][y - 1].getType());
+            //     this.gameGrid[targetFloor][x][y].setNeighbor(Direction.NE, this.gameGrid[targetFloor][x + 1][y - 1].getType());
             // }
 
             // if (x > 0) { //NW
-            //     this.gameGrid[this.zLevel][x][y].setNeighbor(Direction.NW, this.gameGrid[this.zLevel][x - 1][y - 1].getType());
+            //     this.gameGrid[targetFloor][x][y].setNeighbor(Direction.NW, this.gameGrid[targetFloor][x - 1][y - 1].getType());
             // }
         }
         if (y < this.mapSize[1] - 1) { //S
-            this.gameGrid[this.zLevel][x][y].setNeighbor(Direction.S, this.gameGrid[this.zLevel][x][y + 1].getType());
+            this.gameGrid[targetFloor][x][y].setNeighbor(Direction.S, this.gameGrid[targetFloor][x][y + 1].getType());
 
             // if (x < this.mapSize[0] - 1) { //SE
-            //     this.gameGrid[this.zLevel][x][y].setNeighbor(Direction.SE, this.gameGrid[this.zLevel][x][y + 1].getType());
+            //     this.gameGrid[targetFloor][x][y].setNeighbor(Direction.SE, this.gameGrid[targetFloor][x][y + 1].getType());
             // }
 
             // if (x > 0) { //SW
-            //     this.gameGrid[this.zLevel][x][y].setNeighbor(Direction.SW, this.gameGrid[this.zLevel][x - 1][y + 1].getType());
+            //     this.gameGrid[targetFloor][x][y].setNeighbor(Direction.SW, this.gameGrid[targetFloor][x - 1][y + 1].getType());
             // }
         }
         if (x > 0) { //W
-            this.gameGrid[this.zLevel][x][y].setNeighbor(Direction.W, this.gameGrid[this.zLevel][x - 1][y].getType());
+            this.gameGrid[targetFloor][x][y].setNeighbor(Direction.W, this.gameGrid[targetFloor][x - 1][y].getType());
         }
         if (x < this.mapSize[1] - 1) { //E
-            this.gameGrid[this.zLevel][x][y].setNeighbor(Direction.E, this.gameGrid[this.zLevel][x + 1][y].getType());
+            this.gameGrid[targetFloor][x][y].setNeighbor(Direction.E, this.gameGrid[targetFloor][x + 1][y].getType());
         }
     }
 
@@ -290,9 +309,11 @@ class Game {
     }
 
     protected populateAllNeighbors() {
-        for (let x = 0; x < this.mapSize[0]; x++) {
-            for (let y = 0; y < this.mapSize[1]; y++) {
-                this.updateNeighbors([x, y]);
+        for (const floor of Object.keys(this.gameGrid)) {
+            for (let x = 0; x < this.mapSize[0]; x++) {
+                for (let y = 0; y < this.mapSize[1]; y++) {
+                    this.updateNeighbors([x, y], Number(floor));
+                }
             }
         }
     }

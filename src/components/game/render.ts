@@ -15,7 +15,7 @@ export class GameRender extends GameAnimator {
         this.display = new Display({
             width: this.gridSize[0],
             height: this.gridSize[1],
-            layout: Display.TileGL.isSupported() ? "tile-gl" : "tile",
+            layout: Display.TileGL.isSupported ? "tile-gl" : "tile",
             tileWidth: TILE_WIDTH,
             tileHeight: TILE_HEIGHT,
             tileSet: this.tileSheetImage,
@@ -26,12 +26,14 @@ export class GameRender extends GameAnimator {
 
         this.container.append(this.display.getContainer());
 
-        if (this.gameGrid != null && Object.keys(this.gameGrid).length > 0) {
-            // do not overwrite existing map
-        } else {
-            this.populateFloor();
-        }
+        // if (this.gameGrid != null && Object.keys(this.gameGrid).length > 0) {
+        //     // do not overwrite existing map
+        // } else {
+        //     this.populateFloor();
+        // }
 
+        this.resetCamera();
+        this.populateFloor();
         this.render();
     }
 
