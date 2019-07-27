@@ -56,7 +56,6 @@ class FortressDesigner extends Component<{}, IFortressDesignerState> {
     private tileSheetImage: HTMLImageElement;
     private game: GameRender;
     private listenersOn: boolean;
-    private resizeCooldown: number;
 
     constructor() {
         super();
@@ -89,40 +88,15 @@ class FortressDesigner extends Component<{}, IFortressDesignerState> {
             this.initGame();
         };
         this.tileSheetImage.src = TILESHEET_URL;
-    }
 
-    setWindowResizing = () => {
-        this.destroyGame();
-        this.setState({
-            windowResizing: true,
-        });
-    }
-
-    // tslint:disable-next-line: member-ordering
-    windowResizeBouncer = _.debounce(this.setWindowResizing, 300, { leading: true, trailing: false });
-
-    endWindowResizing = () => {
-        this.updateWrapperCss(() => {
-            this.initGame();
-            this.setState({ windowResizing: false });
-        });
-    }
-
-    // tslint:disable-next-line: member-ordering
-    windowResizeEndBouncer = _.debounce(this.endWindowResizing, 400, { leading: false, trailing: true });
-
-    handleWindowResize = (e: Event) => {
-        this.windowResizeBouncer();
-        this.windowResizeEndBouncer();
+        window.addEventListener("keydown", this.handleKeyPress);
+        window.addEventListener("keyup", this.handleKeyUp);
+        window.addEventListener("resize", this.handleWindowResize);
     }
 
     initGame = () => {
         if (this.game == null) {
             this.game = new GameRender(this.tileSheetImage, this.gridElement);
-
-            window.addEventListener("keydown", this.handleKeyPress);
-            window.addEventListener("keyup", this.handleKeyUp);
-            window.addEventListener("resize", this.handleWindowResize);
         } else {
             this.game.init();
         }
@@ -161,6 +135,31 @@ class FortressDesigner extends Component<{}, IFortressDesignerState> {
 
             this.listenersOn = false;
         }
+    }
+
+    setWindowResizing = () => {
+        this.destroyGame();
+        this.setState({
+            windowResizing: true,
+        });
+    }
+
+    // tslint:disable-next-line: member-ordering
+    windowResizeBouncer = _.debounce(this.setWindowResizing, 300, { leading: true, trailing: false });
+
+    endWindowResizing = () => {
+        this.updateWrapperCss(() => {
+            this.initGame();
+            this.setState({ windowResizing: false });
+        });
+    }
+
+    // tslint:disable-next-line: member-ordering
+    windowResizeEndBouncer = _.debounce(this.endWindowResizing, 400, { leading: false, trailing: true });
+
+    handleWindowResize = (e: Event) => {
+        this.windowResizeBouncer();
+        this.windowResizeEndBouncer();
     }
 
     updateWrapperCss = (callback?: () => void) => {
