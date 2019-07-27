@@ -2,7 +2,7 @@
 import { default as OpenSimplexNoise } from "open-simplex-noise";
 import { default as Display } from "./rot/display";
 
-import { Direction, GRID_TILE_DECORATED_PERCENT, IGridRange, Point, TILE_HEIGHT, TILE_WIDTH } from "./constants";
+import { DIRECTION, GRID_TILE_DECORATED_PERCENT, IGridRange, Point, TILE_H, TILE_W } from "./constants";
 import rng from "./rot/rng";
 import { Tile, TileType } from "./tile";
 
@@ -15,6 +15,7 @@ class Game {
     protected gameGrid: { [key: number]: Tile[][] };
     protected noiseMaps: { [key: number]: OpenSimplexNoise };
     protected container: HTMLElement;
+    protected strictMode: boolean;
 
     protected dirtyTiles: Point[];
     protected coordIsBuilding: (coord: [number, number]) => boolean;
@@ -29,10 +30,11 @@ class Game {
         this.zLevel = 0;
         this.gameGrid = {};
         this.noiseMaps = {};
+        this.strictMode = true;
 
         this.gridSize = [
-            container.offsetWidth / TILE_WIDTH,
-            container.offsetHeight / TILE_HEIGHT,
+            container.offsetWidth / TILE_W,
+            container.offsetHeight / TILE_H,
         ];
 
         this.mapSize = [
@@ -54,6 +56,11 @@ class Game {
         for (const floor of Object.keys(this.gameGrid)) {
             this.populateFloor(Number(floor));
         }
+    }
+
+    public setStrictMode = (strict: boolean) => {
+        this.strictMode = strict;
+        this.render();
     }
 
     public populateFloor = (floor?: number) => {
@@ -124,13 +131,13 @@ class Game {
     protected updateGameSize = (container: HTMLElement) => {
         if (this.gridSize != null && this.gridSize.length === 2) {
             this.gridSize = [
-                Math.max(this.gridSize[0], Math.floor(container.offsetWidth / TILE_WIDTH)),
-                Math.max(this.gridSize[1], Math.floor(container.offsetHeight / TILE_HEIGHT)),
+                Math.max(this.gridSize[0], Math.floor(container.offsetWidth / TILE_W)),
+                Math.max(this.gridSize[1], Math.floor(container.offsetHeight / TILE_H)),
             ];
         } else {
             this.gridSize = [
-                Math.floor(container.offsetWidth / TILE_WIDTH),
-                Math.floor(container.offsetHeight / TILE_HEIGHT),
+                Math.floor(container.offsetWidth / TILE_W),
+                Math.floor(container.offsetHeight / TILE_H),
             ];
         }
 
@@ -204,32 +211,32 @@ class Game {
         const y = pos[1];
         const targetFloor = floor || this.zLevel;
         if (y > 0) { //N
-            this.gameGrid[targetFloor][x][y].setNeighbor(Direction.N, this.gameGrid[targetFloor][x][y - 1].getType());
+            this.gameGrid[targetFloor][x][y].setNeighbor(DIRECTION.N, this.gameGrid[targetFloor][x][y - 1].getType());
 
             // if (x < this.mapSize[1] - 1) { //NE
-            //     this.gameGrid[targetFloor][x][y].setNeighbor(Direction.NE, this.gameGrid[targetFloor][x + 1][y - 1].getType());
+            //     this.gameGrid[targetFloor][x][y].setNeighbor(DIRECTION.NE, this.gameGrid[targetFloor][x + 1][y - 1].getType());
             // }
 
             // if (x > 0) { //NW
-            //     this.gameGrid[targetFloor][x][y].setNeighbor(Direction.NW, this.gameGrid[targetFloor][x - 1][y - 1].getType());
+            //     this.gameGrid[targetFloor][x][y].setNeighbor(DIRECTION.NW, this.gameGrid[targetFloor][x - 1][y - 1].getType());
             // }
         }
         if (y < this.mapSize[1] - 1) { //S
-            this.gameGrid[targetFloor][x][y].setNeighbor(Direction.S, this.gameGrid[targetFloor][x][y + 1].getType());
+            this.gameGrid[targetFloor][x][y].setNeighbor(DIRECTION.S, this.gameGrid[targetFloor][x][y + 1].getType());
 
             // if (x < this.mapSize[0] - 1) { //SE
-            //     this.gameGrid[targetFloor][x][y].setNeighbor(Direction.SE, this.gameGrid[targetFloor][x][y + 1].getType());
+            //     this.gameGrid[targetFloor][x][y].setNeighbor(DIRECTION.SE, this.gameGrid[targetFloor][x][y + 1].getType());
             // }
 
             // if (x > 0) { //SW
-            //     this.gameGrid[targetFloor][x][y].setNeighbor(Direction.SW, this.gameGrid[targetFloor][x - 1][y + 1].getType());
+            //     this.gameGrid[targetFloor][x][y].setNeighbor(DIRECTION.SW, this.gameGrid[targetFloor][x - 1][y + 1].getType());
             // }
         }
         if (x > 0) { //W
-            this.gameGrid[targetFloor][x][y].setNeighbor(Direction.W, this.gameGrid[targetFloor][x - 1][y].getType());
+            this.gameGrid[targetFloor][x][y].setNeighbor(DIRECTION.W, this.gameGrid[targetFloor][x - 1][y].getType());
         }
         if (x < this.mapSize[1] - 1) { //E
-            this.gameGrid[targetFloor][x][y].setNeighbor(Direction.E, this.gameGrid[targetFloor][x + 1][y].getType());
+            this.gameGrid[targetFloor][x][y].setNeighbor(DIRECTION.E, this.gameGrid[targetFloor][x + 1][y].getType());
         }
     }
 
@@ -241,67 +248,67 @@ class Game {
         this.updateNeighbors(pos); //update the center item
         const thisType = this.gameGrid[this.zLevel][pos[0]][pos[1]].getType();
         if (pos[1] > 0) { //N
-            if (this.gameGrid[this.zLevel][pos[0]][pos[1] - 1].setNeighbor(Direction.S, thisType)) {
+            if (this.gameGrid[this.zLevel][pos[0]][pos[1] - 1].setNeighbor(DIRECTION.S, thisType)) {
                 this.dirtyTiles.push([pos[0], pos[1] - 1]);
             }
         }
         if (pos[0] < this.mapSize[0] - 1) { //E
-            if (this.gameGrid[this.zLevel][pos[0] + 1][pos[1]].setNeighbor(Direction.W, thisType)) {
+            if (this.gameGrid[this.zLevel][pos[0] + 1][pos[1]].setNeighbor(DIRECTION.W, thisType)) {
                 this.dirtyTiles.push([pos[0] + 1, pos[1]]);
             }
         }
         if (pos[1] < this.mapSize[1] - 1) { //S
-            if (this.gameGrid[this.zLevel][pos[0]][pos[1] + 1].setNeighbor(Direction.N, thisType)) {
+            if (this.gameGrid[this.zLevel][pos[0]][pos[1] + 1].setNeighbor(DIRECTION.N, thisType)) {
                 this.dirtyTiles.push([pos[0], pos[1] + 1]);
             }
         }
         if (pos[0] > 0) { //W
-            if (this.gameGrid[this.zLevel][pos[0] - 1][pos[1]].setNeighbor(Direction.E, thisType)) {
+            if (this.gameGrid[this.zLevel][pos[0] - 1][pos[1]].setNeighbor(DIRECTION.E, thisType)) {
                 this.dirtyTiles.push([pos[0] - 1, pos[1]]);
             }
         }
         /*
         if (pos[1] > 0) { //N
-            if (this.gameGrid[this.zLevel][pos[0]][pos[1] - 1].setNeighbor(Direction.S, thisType)) {
+            if (this.gameGrid[this.zLevel][pos[0]][pos[1] - 1].setNeighbor(DIRECTION.S, thisType)) {
                 this.dirtyTiles.push([pos[0], pos[1] - 1]);
             }
 
             if (pos[0] < this.mapSize[1] - 1) { //NE
-                if (this.gameGrid[this.zLevel][pos[0] + 1][pos[1] - 1].setNeighbor(Direction.SW, thisType)) {
+                if (this.gameGrid[this.zLevel][pos[0] + 1][pos[1] - 1].setNeighbor(DIRECTION.SW, thisType)) {
                     this.dirtyTiles.push([pos[0] + 1, pos[1] - 1]);
                 }
             }
 
             if (pos[0] > 0) { //NW
-                if (this.gameGrid[this.zLevel][pos[0] - 1][pos[1] - 1].setNeighbor(Direction.SE, thisType)) {
+                if (this.gameGrid[this.zLevel][pos[0] - 1][pos[1] - 1].setNeighbor(DIRECTION.SE, thisType)) {
                     this.dirtyTiles.push([pos[0] - 1, pos[1] - 1]);
                 }
             }
         }
         if (pos[1] < this.mapSize[1] - 1) { //S
-            if (this.gameGrid[this.zLevel][pos[0]][pos[1] + 1].setNeighbor(Direction.N, thisType)) {
+            if (this.gameGrid[this.zLevel][pos[0]][pos[1] + 1].setNeighbor(DIRECTION.N, thisType)) {
                 this.dirtyTiles.push([pos[0], pos[1] + 1]);
             }
 
             if (pos[0] < this.mapSize[0] - 1) { //SE
-                if (this.gameGrid[this.zLevel][pos[0] + 1][pos[1] + 1].setNeighbor(Direction.NW, thisType)) {
+                if (this.gameGrid[this.zLevel][pos[0] + 1][pos[1] + 1].setNeighbor(DIRECTION.NW, thisType)) {
                     this.dirtyTiles.push([pos[0] + 1, pos[1] + 1]);
                 }
             }
 
             if (pos[0] > 0) { //SW
-                if (this.gameGrid[this.zLevel][pos[0] - 1][pos[1] + 1].setNeighbor(Direction.NE, thisType)) {
+                if (this.gameGrid[this.zLevel][pos[0] - 1][pos[1] + 1].setNeighbor(DIRECTION.NE, thisType)) {
                     this.dirtyTiles.push([pos[0] - 1, pos[1] + 1]);
                 }
             }
         }
         if (pos[0] > 0) { //W
-            if (this.gameGrid[this.zLevel][pos[0] - 1][pos[1]].setNeighbor(Direction.E, thisType)) {
+            if (this.gameGrid[this.zLevel][pos[0] - 1][pos[1]].setNeighbor(DIRECTION.E, thisType)) {
                 this.dirtyTiles.push([pos[0] - 1, pos[1]]);
             }
         }
         if (pos[0] < this.mapSize[1] - 1) { //E
-            if (this.gameGrid[this.zLevel][pos[0] + 1][pos[1]].setNeighbor(Direction.W, thisType)) {
+            if (this.gameGrid[this.zLevel][pos[0] + 1][pos[1]].setNeighbor(DIRECTION.W, thisType)) {
                 this.dirtyTiles.push([pos[0] + 1, pos[1]]);
             }
         }

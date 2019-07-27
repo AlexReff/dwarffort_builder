@@ -1,4 +1,4 @@
-import { Point, TILE_HEIGHT, TILE_MAP, TILE_WIDTH } from "../constants";
+import { Point, TILE_H, TILE_MAP, TILE_W } from "../constants";
 import Display from "../rot/display";
 import { GameAnimator } from "./animator";
 
@@ -16,8 +16,8 @@ export class GameRender extends GameAnimator {
             width: this.gridSize[0],
             height: this.gridSize[1],
             layout: Display.TileGL.isSupported ? "tile-gl" : "tile",
-            tileWidth: TILE_WIDTH,
-            tileHeight: TILE_HEIGHT,
+            tileWidth: TILE_W,
+            tileHeight: TILE_H,
             tileSet: this.tileSheetImage,
             tileMap: TILE_MAP,
             tileColorize: true,
@@ -25,12 +25,6 @@ export class GameRender extends GameAnimator {
         });
 
         this.container.append(this.display.getContainer());
-
-        // if (this.gameGrid != null && Object.keys(this.gameGrid).length > 0) {
-        //     // do not overwrite existing map
-        // } else {
-        //     this.populateFloor();
-        // }
 
         this.resetCamera();
         this.populateFloor();
@@ -49,19 +43,15 @@ export class GameRender extends GameAnimator {
             parms[1] = newCoord[1];
             this.display.draw.apply(this.display, parms);
         } else {
+            let parms = null;
             if (this.cursor.coordIsCursor(coord)) {
                 // render just cursor
-                const parms = this.cursor.getDrawData(coord, this.coordIsBuilding(coord));
-                // const newCoord = this.getGridCoord([Number(parms[0]), Number(parms[1])]);
-                // parms[0] = newCoord[0];
-                // parms[1] = newCoord[1];
-                this.parseParms(parms);
-                this.display.draw.apply(this.display, parms);
+                parms = this.cursor.getDrawData(coord, !this.coordIsBuildable(coord));
             } else {
-                const parms = this.gameGrid[this.zLevel][coord[0]][coord[1]].getDrawData(coord);
-                this.parseParms(parms);
-                this.display.draw.apply(this.display, parms);
+                parms = this.gameGrid[this.zLevel][coord[0]][coord[1]].getDrawData(coord);
             }
+            this.parseParms(parms);
+            this.display.draw.apply(this.display, parms);
         }
     }
 

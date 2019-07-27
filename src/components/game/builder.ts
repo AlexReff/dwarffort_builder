@@ -1,5 +1,6 @@
-import { BUILDING_TILE_MAP, MenuItemId, Point } from "../constants";
+import { BUILDINGS, MENU_ITEM, Point } from "../constants";
 import { GameCursor } from "./cursor";
+import { TileType } from "../tile";
 
 /**
  * Requires CAMERA, CURSOR
@@ -8,7 +9,7 @@ export class GameBuilder extends GameCursor {
     protected buildings: {
         [key: string]:
         {
-            buildingKey: MenuItemId,
+            buildingKey: MENU_ITEM,
             buildingCenter: Point,
         },
     };
@@ -22,7 +23,7 @@ export class GameBuilder extends GameCursor {
      * Handles enter key presses + right mouse clicks
      * @returns True if we need to un-set the highlightedMenuItem in index.tsx
      */
-    public handleEnterKey(highlightedMenuItem?: MenuItemId): boolean {
+    public handleEnterKey(highlightedMenuItem?: MENU_ITEM): boolean {
         if (highlightedMenuItem == null) {
             return;
         }
@@ -44,8 +45,8 @@ export class GameBuilder extends GameCursor {
         return this.cursor.isBuilding();
     }
 
-    public setCursorToBuilding(e: MenuItemId) {
-        const target = BUILDING_TILE_MAP[e];
+    public setCursorToBuilding(e: MENU_ITEM) {
+        const target = BUILDINGS[e];
         if (target == null) {
             this.cursor.stopBuilding();
             return;
@@ -55,7 +56,7 @@ export class GameBuilder extends GameCursor {
         this.render();
     }
 
-    public handleDesignation(highlightedMenuItem: MenuItemId) {
+    public handleDesignation(highlightedMenuItem: MENU_ITEM) {
         if (this.designator.isDesignating()) {
             this.finishDesignate(highlightedMenuItem);
         } else {
@@ -63,7 +64,7 @@ export class GameBuilder extends GameCursor {
         }
     }
 
-    public finishDesignate(item: MenuItemId) {
+    public finishDesignate(item: MENU_ITEM) {
         const cursorPos = this.cursor.getPosition();
         const range = this.designator.getRange(cursorPos);
         this.designateRange(range, item);
@@ -75,7 +76,8 @@ export class GameBuilder extends GameCursor {
     protected placeBuilding = (): boolean => {
         const tiles = this.cursor.getBuildingTiles();
         for (const tile in tiles) {
-            if (this.coordIsBuilding(tiles[tile].pos)) {
+            if (!this.coordIsBuildable(tiles[tile].pos)) {
+                // cannot place building at this location - alert user?
                 return false;
             }
         }
@@ -85,7 +87,7 @@ export class GameBuilder extends GameCursor {
             const tile = tiles[tileKey];
             this.gameGrid[this.zLevel][tile.pos[0]][tile.pos[1]].setBuilding(key, tile.tile);
             this.buildings[`${tile.pos[0]}:${tile.pos[1]}`] = {
-                buildingKey: tileKey as MenuItemId,
+                buildingKey: tileKey as MENU_ITEM,
                 buildingCenter: center,
             };
         }
@@ -96,10 +98,11 @@ export class GameBuilder extends GameCursor {
     }
 
     protected coordIsBuilding = (coord: Point): boolean => {
-        if (this.buildings == null) {
-            return false;
-        }
+        return this.gameGrid[this.zLevel][coord[0]][coord[1]].isBuilding();
+    }
 
-        return `${coord[0]}:${coord[1]}` in this.buildings;
+    protected coordIsBuildable = (coord: Point): boolean => {
+        return (this.strictMode ? this.gameGrid[this.zLevel][coord[0]][coord[1]].getType() === TileType.Floor : true)
+            && !this.coordIsBuilding(coord);
     }
 }

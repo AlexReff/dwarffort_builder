@@ -1,6 +1,6 @@
 import * as _ from "lodash";
 import { Component, h } from "preact";
-import { TILE_HEIGHT, TILE_WIDTH, TILESHEET_URL } from "./constants";
+import { TILE_H, TILE_W, TILESHEET_URL } from "./constants";
 import { Tile } from "./tile";
 
 interface IDebugMenuProps {
@@ -41,8 +41,8 @@ class DebugMenu extends Component<IDebugMenuProps, IDebugMenuState> {
             e.clientX - bounds.left,
             e.clientY - bounds.top,
         ];
-        pos[0] = pos[0] - (pos[0] % TILE_WIDTH);
-        pos[1] = pos[1] - (pos[1] % TILE_HEIGHT);
+        pos[0] = pos[0] - (pos[0] % TILE_W);
+        pos[1] = pos[1] - (pos[1] % TILE_H);
         this.setState({
             mouseLeft: pos[0],
             mouseTop: pos[1],

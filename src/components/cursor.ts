@@ -1,12 +1,12 @@
 // import * as _ from "lodash";
-import { BUILDING_TILE_MAP, CURSOR_COLOR, CURSOR_IMPASSABLE_COLOR, CURSOR_INVALID_COLOR, CURSOR_PASSABLE_COLOR, IBuildingData, MenuItemId, Point } from "./constants";
+import { BUILDINGS, CURSOR_COLOR, CURSOR_IMPASSABLE_COLOR, CURSOR_INVALID_COLOR, CURSOR_PASSABLE_COLOR, IBuildingData, MENU_ITEM, Point } from "./constants";
 
 class Cursor {
     private position: Point;
     private character: string;
     private color: string;
     private building: boolean;
-    private buildingKey: MenuItemId;
+    private buildingKey: MENU_ITEM;
     private buildingRange: Point[];
     private buildingRadius: number;
     private buildingTileMap: {
@@ -75,16 +75,14 @@ class Cursor {
         this.buildingTileMap = null;
     }
 
-    public setBuilding(key: MenuItemId) {
-        const target = BUILDING_TILE_MAP[key];
+    public setBuilding(key: MENU_ITEM) {
+        const target = BUILDINGS[key];
         if (target == null || target.tiles == null || target.tiles.length === 0) {
             return;
         }
         this.building = true;
         this.buildingKey = key;
         this.buildingRange = [];
-        // this.buildingWalkable = target.walkable;
-        // this.buildingTiles = target.tiles;
         this.buildingTileMap = {};
 
         const middle = Math.floor(target.tiles.length / 2);
@@ -95,7 +93,7 @@ class Cursor {
                 this.buildingRange.push([thisX, thisY]);
                 this.buildingTileMap[`${x}:${y}`] = {
                     pos: [thisX, thisY],
-                    tile: target.tiles[y][x], // this.buildingTiles[y][x],
+                    tile: target.tiles[y][x],
                 };
             }
         }

@@ -4,8 +4,8 @@ import * as buildings from "../data/buildings.json";
 import { items } from "../data/menu.json";
 import { IMenuItem } from "./menu.js";
 
-import { Direction, KEYS, MenuItemId } from "./enums";
-export { Direction, KEYS, MenuItemId };
+import { DIRECTION, KEYS, MENU_ITEM } from "./enums";
+export { DIRECTION, KEYS, MENU_ITEM };
 
 export interface IBuildingData {
     char: string;
@@ -25,8 +25,8 @@ export type Point = [number, number];
 
 export const DEBUG_MODE_ENABLED = true;
 
-export const TILE_WIDTH = styles.tileWidth;
-export const TILE_HEIGHT = styles.tileHeight;
+export const TILE_W = styles.tileWidth;
+export const TILE_H = styles.tileHeight;
 export const TILESHEET_URL = "/assets/Phoebus_cleaned.png"; // "/assets/Phoebus_16x16.png";
 
 export const MENU_WIDTH_INITIAL: number = Number(styles.menuWidth);
@@ -48,7 +48,7 @@ export const CURSOR_PASSABLE_COLOR = "rgba(0,255,0,1)";
 export const CURSOR_IMPASSABLE_COLOR = "rgba(0,128,0,1)";
 export const CURSOR_INVALID_COLOR = "rgba(128,0,0,1)";
 
-export const BUILDING_TILE_MAP: { [key: string]: { "tiles": IBuildingData[][] } } = buildings as any;
+export const BUILDINGS: { [key: string]: { "tiles": IBuildingData[][] } } = buildings as any;
 
 export const WALL_TILES: Point[][] = [
     [[112, 192]], //0000 'edge'     //0
@@ -94,67 +94,17 @@ export const FLOOR_TILES: Point[] = [
     // [32, 176],
 ];
 
-export const DECORATOR_TILES: Array<{
-    char: string,
-    desc: string,
-    coord: Point,
-    colorize: boolean,
-}> = [
-        {
-            char: "z0",
-            desc: "3 spades",
-            coord: [192, 16],
-            colorize: true,
-        },
-        {
-            char: "z1",
-            desc: "3 ore",
-            coord: [32, 128],
-            colorize: false,
-        },
-        {
-            char: "z2",
-            desc: "3 ore",
-            coord: [192, 144],
-            colorize: false,
-        },
-        {
-            char: "z3",
-            desc: "3 ore",
-            coord: [176, 160],
-            colorize: false,
-        },
-        {
-            char: "z4",
-            desc: "large spade",
-            coord: [208, 16],
-            colorize: true,
-        },
-        {
-            char: "z5",
-            desc: "large single ore",
-            coord: [160, 32],
-            colorize: true,
-        },
-        {
-            char: "z6",
-            desc: "large symmetrical ore",
-            coord: [176, 128],
-            colorize: false,
-        },
-        {
-            char: "z7",
-            desc: "medium ore",
-            coord: [144, 160],
-            colorize: false,
-        },
-        {
-            char: "z8",
-            desc: "2 ore",
-            coord: [160, 160],
-            colorize: false,
-        },
-    ];
+export const DEC_TILES: Array<[number, number]> = [
+    [192, 16], // 3 spades
+    [32, 128], // 3 ore
+    [192, 144], // 3 ore
+    [176, 160], // 3 ore
+    [208, 16], // large spade
+    [160, 32], // large single ore
+    [176, 128], // large symmetrical ore
+    [144, 160], // medium ore
+    [160, 160], // 2 ore
+];
 
 export const TILE_MAP: { [key: string]: Point; } = ((): { [key: string]: Point; } => {
     let val: { [key: string]: Point; } = {};
@@ -165,32 +115,35 @@ export const TILE_MAP: { [key: string]: Point; } = ((): { [key: string]: Point; 
         ",": [176, 32],     //designation
     };
 
-    //decorator tiles `z${number}`
-    DECORATOR_TILES.forEach((tile) => {
-        val[tile.char] = tile.coord;
-    });
+    // //decorator tiles `z${number}`
+    // DECORATOR_TILES.forEach((tile) => {
+    //     val[tile.char] = tile.coord;
+    // });
+    for (let i = 0; i < DEC_TILES.length; i++) {
+        val[`z${i}`] = DEC_TILES[i];
+    }
 
     //wall tiles `w${number}${optional variant letter (a,b,c,etc)}`
     for (const key of Object.keys(WALL_TILES)) {
         if (WALL_TILES[key].length > 1) {
             for (let i = 0; i < WALL_TILES[key].length; i++) {
-                val["w" + key + String.fromCharCode(i + 97)] = WALL_TILES[key][i];
+                val[`w${key + String.fromCharCode(i + 97)}`] = WALL_TILES[key][i];
             }
         } else {
-            val["w" + key] = WALL_TILES[key][0];
+            val[`w${key}`] = WALL_TILES[key][0];
         }
     }
 
     //floor tiles `f${number}`
     for (let i = 0; i < FLOOR_TILES.length; i++) {
-        val["f" + i] = FLOOR_TILES[i];
+        val[`f${i}`] = FLOOR_TILES[i];
     }
 
     //reference by # directly
     let count = 0;
     for (let y = 0; y < 16; y++) {
         for (let x = 0; x < 16; x++) {
-            val["i" + count++] = [x * TILE_WIDTH, y * TILE_HEIGHT];
+            val[`i${count++}`] = [x * TILE_W, y * TILE_H];
         }
     }
 
@@ -199,10 +152,11 @@ export const TILE_MAP: { [key: string]: Point; } = ((): { [key: string]: Point; 
 
 export const MENU_ITEMS = items as IMenuItem[];
 
-export const MENU_SUBMENUS: Map<string, string> = new Map();
+export const SUBMENUS: Map<string, string> = new Map();
+export const MENU_IDS: Map<string, IMenuItem> = new Map();
 
-export const MENU_HOTKEYS: Map<string, IMenuItem> = (() => {
-    const MENU_PARSED: Map<string, IMenuItem> = new Map();
+export const MENU_KEYS: Map<string, IMenuItem> = (() => {
+    const result: Map<string, IMenuItem> = new Map();
     const parseMenuItemRecursive = (menuItems: IMenuItem[], parent?: IMenuItem) => {
         for (const item of menuItems) {
             item.parent = parent;
@@ -213,9 +167,10 @@ export const MENU_HOTKEYS: Map<string, IMenuItem> = (() => {
                 iterParent = iterParent.parent;
             }
             const key = prefix + item.key;
-            MENU_PARSED[key] = item;
+            result[key] = item;
+            MENU_IDS[item.id] = item;
             if (item.children != null && item.children.length) {
-                MENU_SUBMENUS[item.id] = key;
+                SUBMENUS[item.id] = key;
                 parseMenuItemRecursive(item.children, item);
             }
         }
@@ -223,13 +178,16 @@ export const MENU_HOTKEYS: Map<string, IMenuItem> = (() => {
 
     parseMenuItemRecursive(MENU_ITEMS);
 
-    return MENU_PARSED;
-})();
-
-export const MENU_DICTIONARY: Map<string, IMenuItem> = (() => {
-    const result: Map<string, IMenuItem> = new Map();
-    for (const i of Object.keys(MENU_HOTKEYS)) {
-        result[(MENU_HOTKEYS[i] as IMenuItem).id] = MENU_HOTKEYS[i];
-    }
     return result;
 })();
+
+// /**
+//  * Map by hotkey
+//  */
+// export const MENU_IDS: Map<string, IMenuItem> = (() => {
+//     const result: Map<string, IMenuItem> = new Map();
+//     for (const i of Object.keys(MENU_KEYS)) {
+//         result[(MENU_KEYS[i] as IMenuItem).id] = MENU_KEYS[i];
+//     }
+//     return result;
+// })();

@@ -1,11 +1,11 @@
 import * as _ from "lodash";
 import { Component, h } from "preact";
-import { MENU_HOTKEYS, MENU_ITEMS, MenuItemId } from "./constants";
+import { MENU_KEYS, MENU_ITEM, MENU_ITEMS } from "./constants";
 
 interface IMenuItem {
     "text": string;
     "key": string;
-    "id": MenuItemId;
+    "id": MENU_ITEM;
     "children"?: IMenuItem[];
     "parent"?: IMenuItem;
 }
@@ -37,8 +37,8 @@ class Menu extends Component<IMenuProps, {}> {
     private menuItemHandler = (key: string) => {
         if (key === "top") {
             this.props.handleMenuEvent("top");
-        } else if (MENU_HOTKEYS[key] != null) {
-            this.props.handleMenuEvent(MENU_HOTKEYS[key].id);
+        } else if (MENU_KEYS[key] != null) {
+            this.props.handleMenuEvent(MENU_KEYS[key].id);
         }
     }
 

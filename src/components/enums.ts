@@ -1,4 +1,4 @@
-const enum Direction {
+const enum DIRECTION {
     N = 0,
     NE = 1,
     E = 2,
@@ -9,7 +9,7 @@ const enum Direction {
     NW = 7,
 }
 
-const enum MenuItemId {
+const enum MENU_ITEM {
     mine = "mine",
     wall = "wall",
     channel = "channel",
@@ -360,4 +360,4 @@ const enum KEYS {
     VK_SLEEP = 95,
 }
 
-export { Direction, MenuItemId, KEYS };
+export { DIRECTION, MENU_ITEM, KEYS };

@@ -2,7 +2,7 @@
 import * as _ from "lodash";
 import { Component, h, render } from "preact";
 //components
-import { BUILDING_TILE_MAP, DEBUG_MODE_ENABLED, Direction, HEADER_HEIGHT_INITIAL, KEYS, MENU_DICTIONARY, MENU_HOTKEYS, MENU_SUBMENUS, MENU_WIDTH_INITIAL, MenuItemId, TILE_HEIGHT, TILE_WIDTH, TILESHEET_URL } from "./components/constants";
+import { BUILDINGS, DEBUG_MODE_ENABLED, DIRECTION, HEADER_HEIGHT_INITIAL, KEYS, MENU_IDS, MENU_KEYS, SUBMENUS, MENU_WIDTH_INITIAL, MENU_ITEM, TILE_H, TILE_W, TILESHEET_URL } from "./components/constants";
 import { DebugMenu } from "./components/debug";
 import { GameRender } from "./components/game/render";
 import { Menu } from "./components/menu";
@@ -32,7 +32,7 @@ Add google analytics + simple text ads before public release?
 interface IFortressDesignerState {
     // only things relevant to HTML state
     currentMenu: string;
-    highlightedMenuItem: MenuItemId;
+    highlightedMenuItem: MENU_ITEM;
     debug: boolean;
     gridColumnLayout: number;
     gridRowLayout: number;
@@ -47,6 +47,7 @@ interface IFortressDesignerState {
     hasChangedZLevel: boolean;
     windowResizing: boolean;
     gameLoading: boolean;
+    strictModeEnabled: boolean;
 }
 
 class FortressDesigner extends Component<{}, IFortressDesignerState> {
@@ -73,6 +74,7 @@ class FortressDesigner extends Component<{}, IFortressDesignerState> {
             gameLoading: true,
             gridColumnLayout: 0,
             gridRowLayout: 0,
+            strictModeEnabled: true,
         });
     }
 
@@ -164,8 +166,8 @@ class FortressDesigner extends Component<{}, IFortressDesignerState> {
 
     updateWrapperCss = (callback?: () => void) => {
         //update the grid's width in css to divisible by grid
-        const wOff = (this.gridElement.offsetWidth + this.state.gridColumnLayout) % TILE_WIDTH;
-        const hOff = (this.gridElement.offsetHeight + this.state.gridRowLayout) % TILE_WIDTH;
+        const wOff = (this.gridElement.offsetWidth + this.state.gridColumnLayout) % TILE_W;
+        const hOff = (this.gridElement.offsetHeight + this.state.gridRowLayout) % TILE_W;
         this.setState({
             gridColumnLayout: wOff,
             gridRowLayout: hOff,
@@ -264,49 +266,49 @@ class FortressDesigner extends Component<{}, IFortressDesignerState> {
             case KEYS.VK_NUMPAD8:
                 //move north
                 e.preventDefault();
-                this.game.moveCursor(Direction.N, e.shiftKey);
+                this.game.moveCursor(DIRECTION.N, e.shiftKey);
                 break;
             case KEYS.VK_PAGE_UP:
             case KEYS.VK_NUMPAD9:
                 //move ne
                 e.preventDefault();
-                this.game.moveCursor(Direction.NE, e.shiftKey);
+                this.game.moveCursor(DIRECTION.NE, e.shiftKey);
                 break;
             case KEYS.VK_RIGHT:
             case KEYS.VK_NUMPAD6:
                 //move east
                 e.preventDefault();
-                this.game.moveCursor(Direction.E, e.shiftKey);
+                this.game.moveCursor(DIRECTION.E, e.shiftKey);
                 break;
             case KEYS.VK_PAGE_DOWN:
             case KEYS.VK_NUMPAD3:
                 //move se
                 e.preventDefault();
-                this.game.moveCursor(Direction.SE, e.shiftKey);
+                this.game.moveCursor(DIRECTION.SE, e.shiftKey);
                 break;
             case KEYS.VK_DOWN:
             case KEYS.VK_NUMPAD2:
                 //move south
                 e.preventDefault();
-                this.game.moveCursor(Direction.S, e.shiftKey);
+                this.game.moveCursor(DIRECTION.S, e.shiftKey);
                 break;
             case KEYS.VK_END:
             case KEYS.VK_NUMPAD1:
                 //move sw
                 e.preventDefault();
-                this.game.moveCursor(Direction.SW, e.shiftKey);
+                this.game.moveCursor(DIRECTION.SW, e.shiftKey);
                 break;
             case KEYS.VK_LEFT:
             case KEYS.VK_NUMPAD4:
                 //move west
                 e.preventDefault();
-                this.game.moveCursor(Direction.W, e.shiftKey);
+                this.game.moveCursor(DIRECTION.W, e.shiftKey);
                 break;
             case KEYS.VK_HOME:
             case KEYS.VK_NUMPAD7:
                 //move nw
                 e.preventDefault();
-                this.game.moveCursor(Direction.NW, e.shiftKey);
+                this.game.moveCursor(DIRECTION.NW, e.shiftKey);
                 break;
             case KEYS.VK_PERIOD:
             case KEYS.VK_GREATER_THAN:
@@ -324,10 +326,10 @@ class FortressDesigner extends Component<{}, IFortressDesignerState> {
                 break;
             default:
                 const key = this.state.currentMenu !== "top" ? this.state.currentMenu + ":" + e.key : e.key;
-                const hotkeyTarget = MENU_HOTKEYS[key];
+                const hotkeyTarget = MENU_KEYS[key];
                 if (hotkeyTarget) {
                     e.preventDefault();
-                    this.handleMenuEvent(MENU_HOTKEYS[key].id);
+                    this.handleMenuEvent(MENU_KEYS[key].id);
                 } else {
                     // console.log("unhandled keypress: ", e.keyCode, e.key);
                 }
@@ -351,10 +353,10 @@ class FortressDesigner extends Component<{}, IFortressDesignerState> {
             return;
         }
 
-        if (MENU_SUBMENUS[e] != null) {
+        if (SUBMENUS[e] != null) {
             this.setState({
                 highlightedMenuItem: null,
-                currentMenu: MENU_SUBMENUS[e],
+                currentMenu: SUBMENUS[e],
             });
             return;
         }
@@ -388,16 +390,23 @@ class FortressDesigner extends Component<{}, IFortressDesignerState> {
         } else {
             if (this.state.highlightedMenuItem !== e) {
                 this.setState({
-                    highlightedMenuItem: e as MenuItemId,
+                    highlightedMenuItem: e as MENU_ITEM,
                 });
                 //if this item is a building
                 if (e === "inspect") {
                     //
-                } else if (e in BUILDING_TILE_MAP) {
-                    this.game.setCursorToBuilding(e as MenuItemId);
+                } else if (e in BUILDINGS) {
+                    this.game.setCursorToBuilding(e as MENU_ITEM);
                 }
             }
         }
+    }
+
+    handleStrictModeChange = (e: Event) => {
+        this.setState({
+            strictModeEnabled: (e.currentTarget as any).checked,
+        });
+        this.game.setStrictMode((e.currentTarget as any).checked);
     }
 
     isInspecting = () => {
@@ -408,10 +417,10 @@ class FortressDesigner extends Component<{}, IFortressDesignerState> {
         //returns top-left coordinate for grid item based on mouse position
         if (this.canvasElement != null) {
             const bounds = this.canvasElement.getBoundingClientRect();
-            const maxHeight = this.canvasElement.offsetHeight - TILE_HEIGHT + bounds.top;
-            const maxWidth = this.canvasElement.offsetWidth - TILE_WIDTH + bounds.left;
-            const leftPos = Math.max(0, Math.min(maxWidth, clientX - (clientX % TILE_WIDTH)));
-            const topPos = Math.max(0, Math.min(maxHeight, clientY - (clientY % TILE_HEIGHT)));
+            const maxHeight = this.canvasElement.offsetHeight - TILE_H + bounds.top;
+            const maxWidth = this.canvasElement.offsetWidth - TILE_W + bounds.left;
+            const leftPos = Math.max(0, Math.min(maxWidth, clientX - (clientX % TILE_W)));
+            const topPos = Math.max(0, Math.min(maxHeight, clientY - (clientY % TILE_H)));
             return [leftPos, topPos];
         }
     }
@@ -426,8 +435,8 @@ class FortressDesigner extends Component<{}, IFortressDesignerState> {
         }
         const targetPos = this.getGridPosition(this.state.mouseLeft, this.state.mouseTop);
         return {
-            width: `${TILE_WIDTH}px`,
-            height: `${TILE_HEIGHT}px`,
+            width: `${TILE_W}px`,
+            height: `${TILE_H}px`,
             left: targetPos[0],
             top: targetPos[1],
         };
@@ -439,7 +448,7 @@ class FortressDesigner extends Component<{}, IFortressDesignerState> {
         }
         if (this.game.isDesignating()) {
             return (
-                <div class="status">Designating {MENU_DICTIONARY[this.state.highlightedMenuItem].text}</div>
+                <div class="status">Designating {MENU_IDS[this.state.highlightedMenuItem].text}</div>
             );
         } else {
             let tile: Tile = null;
@@ -473,7 +482,7 @@ class FortressDesigner extends Component<{}, IFortressDesignerState> {
     renderBreadcrumbs = () => {
         const breadcrumbs = [];
         if (this.state.currentMenu !== "top") {
-            const activeItem = MENU_HOTKEYS[this.state.currentMenu];
+            const activeItem = MENU_KEYS[this.state.currentMenu];
             breadcrumbs.push(<a href="#" data-id={activeItem.key} onClick={(e) => this.breadcrumbHandler(e)}>{activeItem.text}</a>);
 
             // let parent = activeItem.parent;
@@ -493,8 +502,8 @@ class FortressDesigner extends Component<{}, IFortressDesignerState> {
         const key = (e.currentTarget as HTMLElement).dataset.id;
         if (key === "top") {
             this.handleMenuEvent("top");
-        } else if (MENU_HOTKEYS[key] != null) {
-            this.handleMenuEvent(MENU_HOTKEYS[key].id);
+        } else if (MENU_KEYS[key] != null) {
+            this.handleMenuEvent(MENU_KEYS[key].id);
         }
     }
 
@@ -504,17 +513,17 @@ class FortressDesigner extends Component<{}, IFortressDesignerState> {
         }
         if (this.game.isDesignating()) {
             return (
-                <div>Designating {MENU_DICTIONARY[this.state.highlightedMenuItem].text}</div>
+                <div>Designating {MENU_IDS[this.state.highlightedMenuItem].text}</div>
             );
         }
         if (this.state.highlightedMenuItem != null && this.state.highlightedMenuItem.length > 0) {
-            if (this.state.highlightedMenuItem in BUILDING_TILE_MAP) {
+            if (this.state.highlightedMenuItem in BUILDINGS) {
                 return (
-                    <div>Placing {MENU_DICTIONARY[this.state.highlightedMenuItem].text}</div>
+                    <div>Placing {MENU_IDS[this.state.highlightedMenuItem].text}</div>
                 );
             }
             return (
-                <div>Designating {MENU_DICTIONARY[this.state.highlightedMenuItem].text}</div>
+                <div>Designating {MENU_IDS[this.state.highlightedMenuItem].text}</div>
             );
         }
         return <div></div>;
@@ -555,6 +564,11 @@ class FortressDesigner extends Component<{}, IFortressDesignerState> {
                         <div class="menu-bottom">
                             <div class="menu-status">
                                 {this.renderMenuStatus()}
+                            </div>
+                            <div>
+                                <label>
+                                    Strict Mode <input checked={state.strictModeEnabled} type="checkbox" onChange={this.handleStrictModeChange} />
+                                </label>
                             </div>
                             <div class="copy">&copy; {new Date().getFullYear()} Alex Reff</div>
                         </div>

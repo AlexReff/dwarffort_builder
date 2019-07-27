@@ -1,5 +1,5 @@
 // import * as _ from "lodash";
-import { DECORATOR_TILES, Direction, FLOOR_TILES, GRID_TILE_COLOR_PERCENT, GRID_TILE_DECORATED_COLORS, IBuildingData, MENU_DICTIONARY, Point, WALL_TILES } from "./constants";
+import { DEC_TILES, DIRECTION, FLOOR_TILES, GRID_TILE_COLOR_PERCENT, GRID_TILE_DECORATED_COLORS, IBuildingData, MENU_IDS, Point, WALL_TILES } from "./constants";
 import RNG from "./rot/rng";
 
 enum TileType {
@@ -59,7 +59,7 @@ class Tile {
     }
 
     public getBuildingName() {
-        return MENU_DICTIONARY[this.buildingKey].text;
+        return MENU_IDS[this.buildingKey].text;
     }
 
     public isBuilding() {
@@ -122,7 +122,7 @@ class Tile {
      * @param type
      * @returns {true} if this character has changed, false otherwise
      */
-    public setNeighbor(pos: Direction, type: TileType): boolean {
+    public setNeighbor(pos: DIRECTION, type: TileType): boolean {
         if (pos % 2 === 1) {
             return false;
         }
@@ -211,8 +211,7 @@ class Tile {
                 break;
             case TileType.Empty:
                 if (this.decorated) {
-                    const target = DECORATOR_TILES[RNG.getUniformInt(0, DECORATOR_TILES.length - 1)];
-                    this.character = target.char;
+                    this.character = `z${RNG.getUniformInt(0, DEC_TILES.length - 1)}`;
                 } else {
                     this.character = " ";
                 }
