@@ -1,5 +1,5 @@
 //libraries
-//import * as _ from "lodash";
+import * as _ from "lodash";
 import { Component, h, render } from "preact";
 //components
 import { BUILDING_TILE_MAP, DEBUG_MODE_ENABLED, Direction, HEADER_HEIGHT_INITIAL, KEYS, MENU_DICTIONARY, MENU_HOTKEYS, MENU_SUBMENUS, MENU_WIDTH_INITIAL, MenuItemId, TILE_HEIGHT, TILE_WIDTH, TILESHEET_URL } from "./components/constants";
@@ -34,14 +34,19 @@ interface IFortressDesignerState {
     currentMenu: string;
     highlightedMenuItem: MenuItemId;
     debug: boolean;
-    gridColumnLayout: string;
-    gridRowLayout: string;
+    gridColumnLayout: number;
+    gridRowLayout: number;
     mouseLeft: number;
     mouseTop: number;
     mouseOverGrid: boolean;
+    /**
+     * Only used to trigger react re-renders
+     */
     refresh: boolean;
     zLevel: number;
     hasChangedZLevel: boolean;
+    windowResizing: boolean;
+    gameLoading: boolean;
 }
 
 class FortressDesigner extends Component<{}, IFortressDesignerState> {
@@ -50,9 +55,12 @@ class FortressDesigner extends Component<{}, IFortressDesignerState> {
     private headerElement: HTMLElement;
     private tileSheetImage: HTMLImageElement;
     private game: GameRender;
+    private listenersOn: boolean;
 
     constructor() {
         super();
+
+        this.listenersOn = false;
 
         this.setState({
             currentMenu: "top",
@@ -61,6 +69,10 @@ class FortressDesigner extends Component<{}, IFortressDesignerState> {
             zLevel: 0,
             hasChangedZLevel: false,
             mouseOverGrid: false,
+            windowResizing: false,
+            gameLoading: true,
+            gridColumnLayout: 0,
+            gridRowLayout: 0,
         });
     }
 
@@ -68,52 +80,100 @@ class FortressDesigner extends Component<{}, IFortressDesignerState> {
         this.gridElement = document.getElementById("grid");
         this.headerElement = document.getElementById("header");
 
+        this.updateWrapperCss();
+
         this.tileSheetImage = new Image();
         this.tileSheetImage.crossOrigin = "Anonymous";
         this.tileSheetImage.onload = () => {
             this.initGame();
         };
         this.tileSheetImage.src = TILESHEET_URL;
-
-        //update the grid's width in css to divisible by grid
-        const wOff = this.gridElement.offsetWidth % TILE_WIDTH;
-        if (wOff !== 0) {
-            this.setState({
-                gridColumnLayout: `1fr ${(MENU_WIDTH_INITIAL + wOff).toString()}px`,
-            });
-        }
-
-        const hOff = this.gridElement.offsetHeight % TILE_WIDTH;
-        if (hOff !== 0) {
-            this.setState({
-                gridRowLayout: `${HEADER_HEIGHT_INITIAL.toString()}px 1fr ${(HEADER_HEIGHT_INITIAL + hOff).toString()}px`,
-            });
-        }
     }
 
     initGame = () => {
-        this.game = new GameRender(this.tileSheetImage, this.gridElement);
+        if (this.game == null) {
+            this.game = new GameRender(this.tileSheetImage, this.gridElement);
+        } else {
+            this.game.init();
+        }
+
         this.canvasElement = this.game.getCanvas();
 
-        this.gridElement.addEventListener("click", this.handleGridClick);
-        this.gridElement.addEventListener("mousemove", this.handleMouseMove);
-        this.gridElement.addEventListener("mouseover", this.handleMouseOver);
-        this.gridElement.addEventListener("mouseleave", this.handleMouseLeave);
-        this.gridElement.addEventListener("contextmenu", this.handleContextMenu);
+        if (!this.listenersOn) {
+            this.gridElement.addEventListener("click", this.handleGridClick);
+            this.gridElement.addEventListener("mousemove", this.handleMouseMove);
+            this.gridElement.addEventListener("mouseover", this.handleMouseOver);
+            this.gridElement.addEventListener("mouseleave", this.handleMouseLeave);
+            this.gridElement.addEventListener("contextmenu", this.handleContextMenu);
 
-        window.addEventListener("keydown", this.handleKeyPress);
-        window.addEventListener("keyup", this.handleKeyUp);
-        window.addEventListener("resize", this.handleWindowResize);
+            window.addEventListener("keydown", this.handleKeyPress);
+            window.addEventListener("keyup", this.handleKeyUp);
+            window.addEventListener("resize", this.handleWindowResize);
+
+            this.listenersOn = true;
+        }
+
+        this.setState({
+            gameLoading: false,
+        });
+    }
+
+    destroyGame = () => {
+        //this.game = null;
+        this.game.destroy();
+
+        if (this.canvasElement != null) {
+            this.canvasElement.remove();
+            this.canvasElement = null;
+        }
+
+        if (this.listenersOn) {
+            this.gridElement.removeEventListener("click", this.handleGridClick);
+            this.gridElement.removeEventListener("mousemove", this.handleMouseMove);
+            this.gridElement.removeEventListener("mouseover", this.handleMouseOver);
+            this.gridElement.removeEventListener("mouseleave", this.handleMouseLeave);
+            this.gridElement.removeEventListener("contextmenu", this.handleContextMenu);
+
+            window.removeEventListener("keydown", this.handleKeyPress);
+            window.removeEventListener("keyup", this.handleKeyUp);
+            window.removeEventListener("resize", this.handleWindowResize);
+
+            this.listenersOn = false;
+        }
+    }
+
+    // restartGame = () => {
+    //     this.setState({
+    //         gameLoading: true,
+    //     });
+    //     this.destroyGame();
+    //     this.initGame();
+    // }
+
+    updateWrapperCss = (callback?: () => void) => {
+        //update the grid's width in css to divisible by grid
+        const wOff = (this.gridElement.offsetWidth + this.state.gridColumnLayout) % TILE_WIDTH;
+        const hOff = (this.gridElement.offsetHeight + this.state.gridRowLayout) % TILE_WIDTH;
+        console.log("wrapper css updated");
+        this.setState({
+            gridColumnLayout: wOff,
+            gridRowLayout: hOff,
+        }, callback);
+    }
+
+    getWrapperCss = () => {
+        if (this.state.gridColumnLayout != null && this.state.gridRowLayout != null) {
+            console.log("wrapper css retrieved");
+            return {
+                gridTemplateColumns: `1fr ${(MENU_WIDTH_INITIAL + this.state.gridColumnLayout).toString()}px`,
+                gridTemplateRows: `${HEADER_HEIGHT_INITIAL.toString()}px 1fr ${(HEADER_HEIGHT_INITIAL + this.state.gridRowLayout).toString()}px`,
+            };
+        }
+        return null;
     }
 
     componentWillUnmount() {
-        this.gridElement.removeEventListener("click", this.handleGridClick);
-        this.gridElement.removeEventListener("mousemove", this.handleMouseMove);
-        this.gridElement.removeEventListener("mouseover", this.handleMouseOver);
-        this.gridElement.removeEventListener("mouseleave", this.handleMouseLeave);
-        window.removeEventListener("keydown", this.handleKeyPress);
-        window.removeEventListener("keyup", this.handleKeyUp);
-        window.removeEventListener("resize", this.handleWindowResize);
+        this.destroyGame();
     }
 
     handleContextMenu = (e: MouseEvent | TouchEvent) => {
@@ -165,8 +225,22 @@ class FortressDesigner extends Component<{}, IFortressDesignerState> {
         });
     }
 
+    setWindowResizing = () => {
+        this.setState({ windowResizing: true });
+    }
+
+    endWindowResizing = () => {
+        this.updateWrapperCss(function() {
+            this.initGame();
+            this.setState({ windowResizing: false });
+        });
+    }
+
     handleWindowResize = (e: Event) => {
-        // TODO: Handle this
+        this.destroyGame();
+        _.debounce(this.setWindowResizing, 300)();
+        _.debounce(this.setWindowResizing, 300, { leading: true, trailing: false })();
+        _.debounce(this.endWindowResizing, 1000)();
     }
 
     handleKeyUp = (e: KeyboardEvent) => {
@@ -263,7 +337,7 @@ class FortressDesigner extends Component<{}, IFortressDesignerState> {
                     e.preventDefault();
                     this.handleMenuEvent(MENU_HOTKEYS[key].id);
                 } else {
-                    console.log("unhandled keypress: ", e.keyCode, e.key);
+                    // console.log("unhandled keypress: ", e.keyCode, e.key);
                 }
                 break;
         }
@@ -338,6 +412,35 @@ class FortressDesigner extends Component<{}, IFortressDesignerState> {
         return this.state.highlightedMenuItem != null && this.state.highlightedMenuItem === "inspect";
     }
 
+    getGridPosition = (clientX: number, clientY: number): [number, number] => {
+        //returns top-left coordinate for grid item based on mouse position
+        if (this.canvasElement != null) {
+            const bounds = this.canvasElement.getBoundingClientRect();
+            const maxHeight = this.canvasElement.offsetHeight - TILE_HEIGHT + bounds.top;
+            const maxWidth = this.canvasElement.offsetWidth - TILE_WIDTH + bounds.left;
+            const leftPos = Math.max(0, Math.min(maxWidth, clientX - (clientX % TILE_WIDTH)));
+            const topPos = Math.max(0, Math.min(maxHeight, clientY - (clientY % TILE_HEIGHT)));
+            return [leftPos, topPos];
+        }
+    }
+
+    getHighlighterStyle = () => {
+        if (this.headerElement && this.canvasElement) {
+            if (!this.state.mouseOverGrid || (this.state.mouseLeft == null || this.state.mouseTop == null)) {
+                return {
+                    display: "none",
+                };
+            }
+            const targetPos = this.getGridPosition(this.state.mouseLeft, this.state.mouseTop);
+            return {
+                width: `${TILE_WIDTH}px`,
+                height: `${TILE_HEIGHT}px`,
+                left: targetPos[0],
+                top: targetPos[1],
+            };
+        }
+    }
+
     renderFooterData = () => {
         if (this.game == null) {
             return;
@@ -373,33 +476,6 @@ class FortressDesigner extends Component<{}, IFortressDesignerState> {
         }
 
         return null;
-    }
-
-    getGridPosition = (clientX: number, clientY: number): [number, number] => {
-        //returns top-left coordinate for grid item based on mouse position
-        const bounds = this.canvasElement.getBoundingClientRect();
-        const maxHeight = this.canvasElement.offsetHeight - TILE_HEIGHT + bounds.top;
-        const maxWidth = this.canvasElement.offsetWidth - TILE_WIDTH + bounds.left;
-        const leftPos = Math.max(0, Math.min(maxWidth, clientX - (clientX % TILE_WIDTH)));
-        const topPos = Math.max(0, Math.min(maxHeight, clientY - (clientY % TILE_HEIGHT)));
-        return [leftPos, topPos];
-    }
-
-    getHighlighterStyle = () => {
-        if (this.headerElement) {
-            if (!this.state.mouseOverGrid || (this.state.mouseLeft == null || this.state.mouseTop == null)) {
-                return {
-                    display: "none",
-                };
-            }
-            const targetPos = this.getGridPosition(this.state.mouseLeft, this.state.mouseTop);
-            return {
-                width: `${TILE_WIDTH}px`,
-                height: `${TILE_HEIGHT}px`,
-                left: targetPos[0],
-                top: targetPos[1],
-            };
-        }
     }
 
     renderBreadcrumbs = () => {
@@ -459,7 +535,7 @@ class FortressDesigner extends Component<{}, IFortressDesignerState> {
                     <DebugMenu isActive={state.debug} />
                     : null}
                 <div id="highlighter" style={this.getHighlighterStyle()}></div>
-                <div id="wrapper" style={{ gridTemplateColumns: state.gridColumnLayout, gridTemplateRows: state.gridRowLayout }}>
+                <div id="wrapper" style={this.getWrapperCss()}>
                     <div id="header">
                         <div class="left"><a class="home-link" href="https://reff.dev/">reff.dev</a></div>
                         <div class="center">
@@ -472,7 +548,11 @@ class FortressDesigner extends Component<{}, IFortressDesignerState> {
                             </div> */}
                         </div>
                     </div>
-                    <div id="grid"></div>
+                    <div id="grid">
+                        <div class="loading">
+                            Loading...
+                        </div>
+                    </div>
                     <div id="menu">
                         <div class="menu-breadcrumbs">
                             {this.renderBreadcrumbs()}

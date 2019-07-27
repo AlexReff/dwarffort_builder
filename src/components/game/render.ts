@@ -1,10 +1,37 @@
-import { Point } from "../constants";
+import { Point, TILE_HEIGHT, TILE_MAP, TILE_WIDTH } from "../constants";
+import Display from "../rot/display";
 import { GameAnimator } from "./animator";
 
 export class GameRender extends GameAnimator {
 
     constructor(image: HTMLImageElement, container: HTMLElement) {
         super(image, container);
+        this.init();
+    }
+
+    public init = () => {
+        this.updateGameSize(this.container);
+
+        this.display = new Display({
+            width: this.gridSize[0],
+            height: this.gridSize[1],
+            layout: Display.TileGL.isSupported() ? "tile-gl" : "tile",
+            tileWidth: TILE_WIDTH,
+            tileHeight: TILE_HEIGHT,
+            tileSet: this.tileSheetImage,
+            tileMap: TILE_MAP,
+            tileColorize: true,
+            bg: "transparent",
+        });
+
+        this.container.append(this.display.getContainer());
+
+        if (this.gameGrid != null && Object.keys(this.gameGrid).length > 0) {
+            // do not overwrite existing map
+        } else {
+            this.populateFloor();
+        }
+
         this.render();
     }
 

@@ -20,7 +20,7 @@ export class GameCamera extends Game {
     public resetCamera = () => {
         this.camera = [
             Math.floor((this.mapSize[0] - this.gridSize[0]) / 2),
-            Math.floor((this.mapSize[0] - this.gridSize[0]) / 2),
+            Math.floor((this.mapSize[1] - this.gridSize[1]) / 2),
         ];
     }
 

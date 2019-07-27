@@ -13,6 +13,7 @@ class Game {
     protected mapSize: [number, number]; //size of the full map (including non-rendered portions)
     protected zLevel: number;
     protected gameGrid: { [key: number]: Tile[][] };
+    protected container: HTMLElement;
 
     protected dirtyTiles: Point[];
     protected coordIsBuilding: (coord: [number, number]) => boolean;
@@ -23,6 +24,7 @@ class Game {
 
     constructor(image: HTMLImageElement, container: HTMLElement) {
         this.tileSheetImage = image;
+        this.container = container;
         this.zLevel = 0;
         this.gameGrid = {};
 
@@ -35,22 +37,15 @@ class Game {
             Math.max(48 * 2, this.gridSize[0]),
             Math.max(48 * 2, this.gridSize[1]),
         ];
+        // this.updateGameSize(this.container);
+    }
 
-        this.display = new Display({
-            width: this.gridSize[0],
-            height: this.gridSize[1],
-            layout: Display.TileGL.isSupported() ? "tile-gl" : "tile",
-            tileWidth: TILE_WIDTH,
-            tileHeight: TILE_HEIGHT,
-            tileSet: this.tileSheetImage,
-            tileMap: TILE_MAP,
-            tileColorize: true,
-            bg: "transparent",
-        });
+    public destroy = () => {
+        if (this.display != null) {
+            this.display.getContainer().remove();
+        }
 
-        container.append(this.display.getContainer());
-
-        this.populateFloor();
+        this.display = null;
     }
 
     public populateFloor(floor?: number) {
@@ -102,6 +97,29 @@ class Game {
         }
 
         return false;
+    }
+
+    protected updateGameSize = (container: HTMLElement) => {
+        if (this.gridSize != null && this.gridSize.length === 2) {
+            this.gridSize = [
+                Math.max(this.gridSize[0], container.offsetWidth / TILE_WIDTH),
+                Math.max(this.gridSize[1], container.offsetHeight / TILE_HEIGHT),
+            ];
+        } else {
+            this.gridSize = [
+                container.offsetWidth / TILE_WIDTH,
+                container.offsetHeight / TILE_HEIGHT,
+            ];
+        }
+
+        if (this.gridSize[0] % 1 !== 0 || this.gridSize[1] % 1 !== 0) {
+            debugger;
+        }
+
+        this.mapSize = [
+            Math.max(this.mapSize[0], this.gridSize[0]),
+            Math.max(this.mapSize[1], this.gridSize[1]),
+        ];
     }
 
     protected goToZLevel(level: number) {
