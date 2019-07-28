@@ -12,9 +12,24 @@
         transform: translate(-50%, -50%);
         width: 100%;
         // height: 32px;
+        display: flex;
     }
 
-    .data {
+    div[class^="data-"] {
         font-size: 16px;
+        width: 45%;
+
+        > div[class^="info-"] {
+            display: inline-block;
+            margin-left: 5px;
+            border-left: 4px dashed $frame-border-color;
+            padding-left: 5px;
+
+            &:first-child {
+                margin-left: 0;
+                border-left: 0;
+                padding-left: 0;
+            }
+        }
     }
 }

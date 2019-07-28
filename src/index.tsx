@@ -2,7 +2,7 @@
 import * as _ from "lodash";
 import { Component, h, render } from "preact";
 //components
-import { BUILDINGS, DEBUG_MODE_ENABLED, DIRECTION, HEADER_HEIGHT_INITIAL, KEYS, MENU_IDS, MENU_KEYS, SUBMENUS, MENU_WIDTH_INITIAL, MENU_ITEM, TILE_H, TILE_W, TILESHEET_URL } from "./components/constants";
+import { BUILDINGS, DEBUG_MODE_ENABLED, DIRECTION, HEADER_HEIGHT_INITIAL, KEYS, MENU_IDS, MENU_ITEM, MENU_KEYS, MENU_WIDTH_INITIAL, SUBMENUS, TILE_H, TILE_W, TILESHEET_URL } from "./components/constants";
 import { DebugMenu } from "./components/debug";
 import { GameRender } from "./components/game/render";
 import { Menu } from "./components/menu";
@@ -442,41 +442,55 @@ class FortressDesigner extends Component<{}, IFortressDesignerState> {
         };
     }
 
-    renderFooterData = () => {
+    getFooterDetails = (tile: Tile) => {
+        const type = tile.getType();
+        switch (type) {
+            case TileType.Building:
+                return (
+                    <div class="info-bldg">{tile.getBuildingName()} (Building)</div>
+                );
+            case TileType.Empty:
+                const pos = tile.getPosition();
+                return (
+                    <div class="info-coord">{`[${pos[0]},${pos[1]}]`}</div>
+                );
+            default:
+                return (
+                    <div class="info-type">{TileType[type]}</div>
+                );
+        }
+    }
+
+    renderFooterMouse = () => {
         if (this.game == null) {
             return;
         }
-        if (this.game.isDesignating()) {
-            return (
-                <div class="status">Designating {MENU_IDS[this.state.highlightedMenuItem].text}</div>
-            );
-        } else {
-            let tile: Tile = null;
-            if (this.state.mouseOverGrid) {
-                //if we are mousing-over buildings, show that info, otherwise show tile @ kb cursor
-                tile = this.game.getTileAtMouse(this.state.mouseLeft, this.state.mouseTop);
-                if (!tile.isBuilding()) {
-                    tile = this.game.getTileAtCursor();
-                }
-            } else {
-                tile = this.game.getTileAtCursor();
-            }
-            const type = tile.getType();
-            switch (type) {
-                case TileType.Building:
-                    return (
-                        <div>{tile.getBuildingName()} (Building)</div>
-                    );
-                case TileType.Empty:
-                    break;
-                default:
-                    return (
-                        <div class="status">{TileType[type]}</div>
-                    );
-            }
+
+        if (!this.state.mouseOverGrid) {
+            return;
         }
 
-        return null;
+        const tile = this.game.getTileAtMouse(this.state.mouseLeft, this.state.mouseTop);
+        if (tile) {
+            return this.getFooterDetails(tile);
+        }
+    }
+
+    renderFooterCursor = () => {
+        if (this.game == null) {
+            return;
+        }
+        const result = [];
+        const tile: Tile = this.game.getTileAtCursor();
+        if (tile) {
+            result.push(this.getFooterDetails(tile));
+        }
+        if (this.game.isDesignating()) {
+            result.push((
+                <div class="info-status">Designating {MENU_IDS[this.state.highlightedMenuItem].text}</div>
+            ));
+        }
+        return result;
     }
 
     renderBreadcrumbs = () => {
@@ -574,7 +588,8 @@ class FortressDesigner extends Component<{}, IFortressDesignerState> {
                     </div>
                     <footer id="footer">
                         <div class="inner">
-                            <div class="data">{this.renderFooterData()}</div>
+                            <div class="data-cursor">Cursor: {this.renderFooterCursor()}</div>
+                            <div class="data-mouse">Mouse: {this.renderFooterMouse()}</div>
                         </div>
                     </footer>
                 </div>

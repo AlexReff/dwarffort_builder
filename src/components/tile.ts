@@ -22,17 +22,22 @@ class Tile {
     private buildingKey: string;
     private buildingData: IBuildingData;
 
+    private position: Point;
+
     private neighbors: TileType[];
     private decorated: boolean;
     private userSet: boolean; // true if the user designates this, false if generated from code
     private building: boolean; // true if this tile is part of a building
 
-    constructor(tile: TileType, decorate?: boolean) {
+    constructor(tile: TileType, point?: Point, decorate?: boolean) {
         this.tileType = tile;
         this.neighbors = new Array(4);
         this.userSet = false;
         this.building = false;
         this.decorated = decorate === true;
+        if (point && point.length === 2) {
+            this.position = [point[0], point[1]];
+        }
         this.init();
     }
 
@@ -43,6 +48,10 @@ class Tile {
     public getColor() {
         //return this.buildingData.fg;
         return this.fgColor;
+    }
+
+    public getPosition() {
+        return [this.position[0], this.position[1]];
     }
 
     public getBgColor() {

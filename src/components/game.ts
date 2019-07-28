@@ -89,7 +89,7 @@ class Game {
                     this.gameGrid[targetFloor][x] = [];
                 }
                 if (this.gameGrid[targetFloor][x][y] == null) {
-                    this.gameGrid[targetFloor][x][y] = new Tile(TileType.Empty, noiseMap[x][y] <= GRID_TILE_DECORATED_PERCENT);
+                    this.gameGrid[targetFloor][x][y] = new Tile(TileType.Empty, [ x, y ], noiseMap[x][y] <= GRID_TILE_DECORATED_PERCENT);
                 }
             }
             // this.gameGrid[targetFloor].push(thisRow);

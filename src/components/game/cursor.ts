@@ -24,9 +24,17 @@ export class GameCursor extends GameCamera {
         this.designatorTiles = [];
     }
 
-    public getTileAtCursor = (): Tile => {
-        const pos = this.cursor.getPosition();
+    public getTileAtPosition = (pos: Point) => {
         return this.gameGrid[this.zLevel][pos[0]][pos[1]];
+    }
+
+    public getTileAtCursor = (): Tile => {
+        const pos = this.getCursorPosition();
+        return this.getTileAtPosition(pos);
+    }
+
+    public getCursorPosition = (): Point => {
+        return this.cursor.getPosition();
     }
 
     public isDesignating() {
