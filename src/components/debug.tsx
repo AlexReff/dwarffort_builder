@@ -1,6 +1,6 @@
 import * as _ from "lodash";
 import { Component, h } from "preact";
-import { TILE_H, TILE_W, TILESHEET_URL } from "./constants";
+import { TILE_H, TILE_W, TILE_URL } from "./constants";
 import { Tile } from "./tile";
 
 interface IDebugMenuProps {
@@ -67,7 +67,7 @@ class DebugMenu extends Component<IDebugMenuProps, IDebugMenuState> {
         return (
             <div id="debug-menu" class={this.props.isActive ? "active" : null}>
                 <div id="debug-sprite">
-                    <img id="debug-sprite-img" src={TILESHEET_URL} />
+                    <img id="debug-sprite-img" src={TILE_URL} />
                     <div id="debug-sprite-text">{`${this.state.mouseLeft}, ${this.state.mouseTop}`}</div>
                 </div>
             </div>

@@ -16,8 +16,8 @@ export class GameCursor extends GameCamera {
         super(image, container);
 
         this.cursor = new Cursor([
-            Math.ceil(this.gridSize[0] / 2.0),
-            Math.ceil(this.gridSize[1] / 2.0),
+            Math.ceil((this.camera[0] + this.gridSize[0]) / 2.0),
+            Math.ceil((this.camera[1] + this.gridSize[1]) / 2.0),
         ]);
 
         this.designator = new Designator();
@@ -245,6 +245,10 @@ export class GameCursor extends GameCamera {
         }
     }
 
+    public setPaintOverwrite(val: boolean) {
+        this.paintOverwrite = val;
+    }
+
     /**
      * Called when a designation finishes, updates the relevant tiles to the new type
      */
@@ -299,7 +303,7 @@ export class GameCursor extends GameCamera {
                         return;
                     }
                     const tile = this.gameGrid[this.zLevel][neighbor[0]][neighbor[1]];
-                    if (tile.getUserSet()) {
+                    if (tile.isUserSet()) {
                         //do not touch this tile
                     } else {
                         if (tile.getType() === TileType.Empty) {

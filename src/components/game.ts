@@ -2,7 +2,7 @@
 import { default as OpenSimplexNoise } from "open-simplex-noise";
 import { default as Display } from "./rot/display";
 
-import { DIRECTION, GRID_TILE_DECORATED_PERCENT, IGridRange, Point, TILE_H, TILE_W } from "./constants";
+import { DEFAULTS, DIRECTION, IGridRange, Point, TILE_H, TILE_W } from "./constants";
 import rng from "./rot/rng";
 import { Tile, TileType } from "./tile";
 
@@ -16,6 +16,7 @@ class Game {
     protected noiseMaps: { [key: number]: OpenSimplexNoise };
     protected container: HTMLElement;
     protected strictMode: boolean;
+    protected paintOverwrite: boolean;
 
     protected dirtyTiles: Point[];
     protected coordIsBuilding: (coord: [number, number]) => boolean;
@@ -31,6 +32,7 @@ class Game {
         this.gameGrid = {};
         this.noiseMaps = {};
         this.strictMode = true;
+        this.paintOverwrite = true;
 
         this.gridSize = [
             container.offsetWidth / TILE_W,
@@ -38,10 +40,9 @@ class Game {
         ];
 
         this.mapSize = [
-            Math.max(48 * 2, this.gridSize[0]),
-            Math.max(48 * 2, this.gridSize[1]),
+            Math.max(DEFAULTS.MAP_MIN_W, this.gridSize[0]),
+            Math.max(DEFAULTS.MAP_MIN_H, this.gridSize[1]),
         ];
-        // this.updateGameSize(this.container);
     }
 
     public destroy = () => {
@@ -79,9 +80,7 @@ class Game {
         }
 
         for (let x = 0; x < this.mapSize[0]; x++) {
-            // const thisRow = [];
             for (let y = 0; y < this.mapSize[1]; y++) {
-                // thisRow.push(new Tile(TileType.Empty, noiseMap[x][y] <= GRID_TILE_DECORATED_PERCENT));
                 if (this.gameGrid[targetFloor] == null) {
                     this.gameGrid[targetFloor] = [];
                 }
@@ -89,10 +88,9 @@ class Game {
                     this.gameGrid[targetFloor][x] = [];
                 }
                 if (this.gameGrid[targetFloor][x][y] == null) {
-                    this.gameGrid[targetFloor][x][y] = new Tile(TileType.Empty, [ x, y ], noiseMap[x][y] <= GRID_TILE_DECORATED_PERCENT);
+                    this.gameGrid[targetFloor][x][y] = new Tile(TileType.Empty, [ x, y ], noiseMap[x][y] <= 15);
                 }
             }
-            // this.gameGrid[targetFloor].push(thisRow);
         }
 
         this.populateAllNeighbors();

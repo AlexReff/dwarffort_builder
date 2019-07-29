@@ -2,8 +2,9 @@
 import * as _ from "lodash";
 import { Component, h, render } from "preact";
 //components
-import { BUILDINGS, DEBUG_MODE_ENABLED, DIRECTION, HEADER_HEIGHT_INITIAL, KEYS, MENU_IDS, MENU_ITEM, MENU_KEYS, MENU_WIDTH_INITIAL, SUBMENUS, TILE_H, TILE_W, TILESHEET_URL } from "./components/constants";
+import { BUILDINGS, DEBUG, DIRECTION, HEADER_H, KEYS, MENU_IDS, MENU_ITEM, MENU_KEYS, MENU_W, SUBMENUS, TILE_H, TILE_URL, TILE_W, DEFAULTS } from "./components/constants";
 import { DebugMenu } from "./components/debug";
+import { CURSOR_BEHAVIOR } from "./components/enums";
 import { GameRender } from "./components/game/render";
 import { Menu } from "./components/menu";
 import { Tile, TileType } from "./components/tile";
@@ -11,43 +12,38 @@ import { Tile, TileType } from "./components/tile";
 require("./css/index.scss");
 
 /*
---Draw a 2d grid on the canvas
-Add Mouse support for hover/click on tiles
-Add drag support to tilegrid
-Add sidebar with build options (+hotkeys?)
-Ability to click on sidebar item and modify cursor hover/click behavior
-Add drag behavior option - rectangular select or paint (select rectangular area to modify/move/clear or 'paint' - select every item the cursor directly moves over)
-Add arrow key support + keyboard tile cursor
-Add stockpiles, workshops, walls, multiple z-levels
-
-Add menu state tracking + submenus
-Add virtual grid object mapping data structure
-Add arrow key support to shift everything on-screen
-Add browser resize detection + canvas resizing
-
+? Add drag support to tilegrid
+. Ability to click on sidebar item and modify cursor hover/click behavior
+. Add drag behavior option - rectangular select or paint
+    (select rectangular area to modify/move/clear or 'paint' - select every item the cursor directly moves over)
 '?: Help' Menu?
 Add google analytics + simple text ads before public release?
 */
 
+// only things relevant to HTML state
 interface IFortressDesignerState {
-    // only things relevant to HTML state
     currentMenu: string;
-    highlightedMenuItem: MENU_ITEM;
+    currentMenuItem: MENU_ITEM;
+
     debug: boolean;
+    strictMode: boolean;
     gridColumnLayout: number;
     gridRowLayout: number;
     mouseLeft: number;
     mouseTop: number;
     mouseOverGrid: boolean;
-    /**
-     * Only used to trigger react re-renders
-     */
-    refresh: boolean;
+    painting: boolean;
+
     zLevel: number;
     hasChangedZLevel: boolean;
     windowResizing: boolean;
     gameLoading: boolean;
-    strictModeEnabled: boolean;
+    cursorMode: CURSOR_BEHAVIOR;
+
+    /**
+     * Only used to trigger react re-renders
+     */
+    refresh: boolean;
 }
 
 class FortressDesigner extends Component<{}, IFortressDesignerState> {
@@ -65,16 +61,18 @@ class FortressDesigner extends Component<{}, IFortressDesignerState> {
 
         this.setState({
             currentMenu: "top",
-            highlightedMenuItem: null,
+            currentMenuItem: null,
             debug: false,
             zLevel: 0,
             hasChangedZLevel: false,
             mouseOverGrid: false,
             windowResizing: false,
             gameLoading: true,
+            painting: false,
             gridColumnLayout: 0,
             gridRowLayout: 0,
-            strictModeEnabled: true,
+            strictMode: DEFAULTS.STRICT_MODE,
+            cursorMode: DEFAULTS.CURSOR_MODE,
         });
     }
 
@@ -89,7 +87,7 @@ class FortressDesigner extends Component<{}, IFortressDesignerState> {
         this.tileSheetImage.onload = () => {
             this.initGame();
         };
-        this.tileSheetImage.src = TILESHEET_URL;
+        this.tileSheetImage.src = TILE_URL;
 
         window.addEventListener("keydown", this.handleKeyPress);
         window.addEventListener("keyup", this.handleKeyUp);
@@ -111,6 +109,8 @@ class FortressDesigner extends Component<{}, IFortressDesignerState> {
             this.gridElement.addEventListener("mouseover", this.handleMouseOver);
             this.gridElement.addEventListener("mouseleave", this.handleMouseLeave);
             this.gridElement.addEventListener("contextmenu", this.handleContextMenu);
+            this.gridElement.addEventListener("mousedown", this.handleMouseDown);
+            this.gridElement.addEventListener("mouseup", this.handleMouseUp);
 
             this.listenersOn = true;
         }
@@ -134,6 +134,8 @@ class FortressDesigner extends Component<{}, IFortressDesignerState> {
             this.gridElement.removeEventListener("mouseover", this.handleMouseOver);
             this.gridElement.removeEventListener("mouseleave", this.handleMouseLeave);
             this.gridElement.removeEventListener("contextmenu", this.handleContextMenu);
+            this.gridElement.removeEventListener("mousedown", this.handleMouseDown);
+            this.gridElement.removeEventListener("mouseup", this.handleMouseUp);
 
             this.listenersOn = false;
         }
@@ -177,8 +179,8 @@ class FortressDesigner extends Component<{}, IFortressDesignerState> {
     getWrapperCss = () => {
         if (this.state.gridColumnLayout != null && this.state.gridRowLayout != null) {
             return {
-                gridTemplateColumns: `1fr ${(MENU_WIDTH_INITIAL + this.state.gridColumnLayout).toString()}px`,
-                gridTemplateRows: `${HEADER_HEIGHT_INITIAL.toString()}px 1fr ${(HEADER_HEIGHT_INITIAL + this.state.gridRowLayout).toString()}px`,
+                gridTemplateColumns: `1fr ${(MENU_W + this.state.gridColumnLayout).toString()}px`,
+                gridTemplateRows: `${HEADER_H.toString()}px 1fr ${(HEADER_H + this.state.gridRowLayout).toString()}px`,
             };
         }
         return null;
@@ -200,9 +202,9 @@ class FortressDesigner extends Component<{}, IFortressDesignerState> {
      * Handles enter key + right clicks
      */
     handleEnterRightClick() {
-        if (this.game.handleEnterKey(this.state.highlightedMenuItem)) {
+        if (this.game.handleEnterKey(this.state.currentMenuItem)) {
             this.setState({
-                highlightedMenuItem: null,
+                currentMenuItem: null,
             });
         }
     }
@@ -211,6 +213,11 @@ class FortressDesigner extends Component<{}, IFortressDesignerState> {
         e.preventDefault();
         const pos = this.game.getMousePosition(e);
         this.game.moveCursorTo(pos);
+        if (this.state.cursorMode === CURSOR_BEHAVIOR.MODERN) {
+            this.game.paint();
+        } else if (this.state.cursorMode === CURSOR_BEHAVIOR.CLASSIC) {
+            //
+        }
         this.setState({
             refresh: true,
         });
@@ -220,6 +227,13 @@ class FortressDesigner extends Component<{}, IFortressDesignerState> {
         this.setState({
             mouseLeft: e.clientX,
             mouseTop: e.clientY,
+        }, () => {
+            if (this.state.cursorMode === CURSOR_BEHAVIOR.MODERN) {
+                this.game.moveCursorTo(this.game.getMousePosition(e));
+                if (this.state.painting) {
+                    this.game.paint();
+                }
+            }
         });
     }
 
@@ -228,12 +242,36 @@ class FortressDesigner extends Component<{}, IFortressDesignerState> {
             mouseOverGrid: true,
             mouseLeft: e.clientX,
             mouseTop: e.clientY,
+        }, () => {
+            if (this.state.cursorMode === CURSOR_BEHAVIOR.MODERN) {
+                this.game.moveCursorTo(this.game.getMousePosition(e));
+            }
         });
     }
 
     handleMouseLeave = (e) => {
         this.setState({
             mouseOverGrid: false,
+        });
+    }
+
+    handleMouseDown = (e: MouseEvent) => {
+        if (this.state.cursorMode !== CURSOR_BEHAVIOR.MODERN || e.button !== 0) {
+            return;
+        }
+
+        this.setState({
+            painting: true,
+        });
+    }
+
+    handleMouseUp = (e: MouseEvent) => {
+        if (e.button !== 0) {
+            return;
+        }
+
+        this.setState({
+            painting: false,
         });
     }
 
@@ -347,7 +385,7 @@ class FortressDesigner extends Component<{}, IFortressDesignerState> {
 
         if (e === "top") {
             this.setState({
-                highlightedMenuItem: null,
+                currentMenuItem: null,
                 currentMenu: "top",
             });
             return;
@@ -355,7 +393,7 @@ class FortressDesigner extends Component<{}, IFortressDesignerState> {
 
         if (SUBMENUS[e] != null) {
             this.setState({
-                highlightedMenuItem: null,
+                currentMenuItem: null,
                 currentMenu: SUBMENUS[e],
             });
             return;
@@ -364,14 +402,14 @@ class FortressDesigner extends Component<{}, IFortressDesignerState> {
         if (e === "escape") {
             if (this.game.isBuilding()) {
                 this.setState({
-                    highlightedMenuItem: null,
+                    currentMenuItem: null,
                 });
                 this.game.stopBuilding();
             } else if (this.game.isDesignating()) {
                 this.game.cancelDesignate();
-            } else if (this.state.highlightedMenuItem != null) {
+            } else if (this.state.currentMenuItem != null) {
                 this.setState({
-                    highlightedMenuItem: null,
+                    currentMenuItem: null,
                 });
             } else {
                 // go up one menu level
@@ -384,13 +422,13 @@ class FortressDesigner extends Component<{}, IFortressDesignerState> {
                 }
                 this.setState({
                     currentMenu: newMenu,
-                    highlightedMenuItem: null,
+                    currentMenuItem: null,
                 });
             }
         } else {
-            if (this.state.highlightedMenuItem !== e) {
+            if (this.state.currentMenuItem !== e) {
                 this.setState({
-                    highlightedMenuItem: e as MENU_ITEM,
+                    currentMenuItem: e as MENU_ITEM,
                 });
                 //if this item is a building
                 if (e === "inspect") {
@@ -404,13 +442,13 @@ class FortressDesigner extends Component<{}, IFortressDesignerState> {
 
     handleStrictModeChange = (e: Event) => {
         this.setState({
-            strictModeEnabled: (e.currentTarget as any).checked,
+            strictMode: (e.currentTarget as any).checked,
         });
         this.game.setStrictMode((e.currentTarget as any).checked);
     }
 
     isInspecting = () => {
-        return this.state.highlightedMenuItem != null && this.state.highlightedMenuItem === "inspect";
+        return this.state.currentMenuItem != null && this.state.currentMenuItem === "inspect";
     }
 
     getGridPosition = (clientX: number, clientY: number): [number, number] => {
@@ -443,22 +481,28 @@ class FortressDesigner extends Component<{}, IFortressDesignerState> {
     }
 
     getFooterDetails = (tile: Tile) => {
+        const result = [];
+        const pos = tile.getPosition();
+        result.push((
+            <div class="info-coord">{`[${pos[0]},${pos[1]}]`}</div>
+        ));
         const type = tile.getType();
         switch (type) {
             case TileType.Building:
-                return (
+                result.push((
                     <div class="info-bldg">{tile.getBuildingName()} (Building)</div>
-                );
+                ));
+                break;
             case TileType.Empty:
-                const pos = tile.getPosition();
-                return (
-                    <div class="info-coord">{`[${pos[0]},${pos[1]}]`}</div>
-                );
+                break;
             default:
-                return (
+                result.push((
                     <div class="info-type">{TileType[type]}</div>
-                );
+                ));
+                break;
         }
+
+        return result;
     }
 
     renderFooterMouse = () => {
@@ -487,7 +531,7 @@ class FortressDesigner extends Component<{}, IFortressDesignerState> {
         }
         if (this.game.isDesignating()) {
             result.push((
-                <div class="info-status">Designating {MENU_IDS[this.state.highlightedMenuItem].text}</div>
+                <div class="info-status">Designating {MENU_IDS[this.state.currentMenuItem].text}</div>
             ));
         }
         return result;
@@ -521,23 +565,32 @@ class FortressDesigner extends Component<{}, IFortressDesignerState> {
         }
     }
 
+    renderMenuToolbar = () => {
+        // shows if a building is selected
+        return (
+            <div class="menu-toolbar">
+                TOOLBAR
+            </div>
+        );
+    }
+
     renderMenuStatus = () => {
         if (this.game == null) {
             return null;
         }
         if (this.game.isDesignating()) {
             return (
-                <div>Designating {MENU_IDS[this.state.highlightedMenuItem].text}</div>
+                <div>Designating {MENU_IDS[this.state.currentMenuItem].text}</div>
             );
         }
-        if (this.state.highlightedMenuItem != null && this.state.highlightedMenuItem.length > 0) {
-            if (this.state.highlightedMenuItem in BUILDINGS) {
+        if (this.state.currentMenuItem != null && this.state.currentMenuItem.length > 0) {
+            if (this.state.currentMenuItem in BUILDINGS) {
                 return (
-                    <div>Placing {MENU_IDS[this.state.highlightedMenuItem].text}</div>
+                    <div>Placing {MENU_IDS[this.state.currentMenuItem].text}</div>
                 );
             }
             return (
-                <div>Designating {MENU_IDS[this.state.highlightedMenuItem].text}</div>
+                <div>Designating {MENU_IDS[this.state.currentMenuItem].text}</div>
             );
         }
         return <div></div>;
@@ -546,10 +599,8 @@ class FortressDesigner extends Component<{}, IFortressDesignerState> {
     render(props, state: IFortressDesignerState) {
         return (
             <div id="page">
-                {DEBUG_MODE_ENABLED ?
-                    <DebugMenu isActive={state.debug} />
-                    : null}
-                <div id="highlighter" style={this.getHighlighterStyle()}></div>
+                {DEBUG ? <DebugMenu isActive={state.debug} /> : null}
+                <div id="highlighter" class={state.cursorMode === CURSOR_BEHAVIOR.CLASSIC ? "classic" : "modern"} style={this.getHighlighterStyle()}></div>
                 <div id="wrapper" style={this.getWrapperCss()}>
                     <div id="header">
                         <div class="left"><a class="home-link" href="https://reff.dev/">reff.dev</a></div>
@@ -572,15 +623,16 @@ class FortressDesigner extends Component<{}, IFortressDesignerState> {
                         <div class="menu-breadcrumbs">
                             {this.renderBreadcrumbs()}
                         </div>
-                        <Menu highlightedItem={state.highlightedMenuItem}
+                        <Menu highlightedItem={state.currentMenuItem}
                             selectedMenu={state.currentMenu}
                             handleMenuEvent={this.handleMenuEvent} />
                         <div class="menu-bottom">
+                            {this.renderMenuToolbar()}
                             <div class="menu-status">
                                 {this.renderMenuStatus()}
                             </div>
                             <div class="strict-mode">
-                                <input id="strictmode" checked={state.strictModeEnabled} type="checkbox" onChange={this.handleStrictModeChange} />
+                                <input id="strictmode" checked={state.strictMode} type="checkbox" onChange={this.handleStrictModeChange} />
                                 <label title="Toggle Strict Mode" for="strictmode">Strict Mode:</label>
                             </div>
                             <div class="copy">&copy; {new Date().getFullYear()} Alex Reff</div>

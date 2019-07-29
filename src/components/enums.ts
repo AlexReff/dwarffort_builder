@@ -1,3 +1,9 @@
+
+const enum CURSOR_BEHAVIOR {
+    CLASSIC, //classic df-style with 'x' on a tile
+    MODERN, //builder style, drag+select, mouse-centric UI behavior
+}
+
 const enum DIRECTION {
     N = 0,
     NE = 1,
@@ -360,4 +366,4 @@ const enum KEYS {
     VK_SLEEP = 95,
 }
 
-export { DIRECTION, MENU_ITEM, KEYS };
+export { CURSOR_BEHAVIOR, DIRECTION, MENU_ITEM, KEYS };

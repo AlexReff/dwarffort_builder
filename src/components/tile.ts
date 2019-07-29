@@ -1,5 +1,5 @@
 // import * as _ from "lodash";
-import { DEC_TILES, DIRECTION, FLOOR_TILES, GRID_TILE_COLOR_PERCENT, GRID_TILE_DECORATED_COLORS, IBuildingData, MENU_IDS, Point, WALL_TILES } from "./constants";
+import { DEC_TILES, DIRECTION, FLOOR_TILES, DEC_TILES_COLORS, IBuildingData, MENU_IDS, Point, WALL_TILES } from "./constants";
 import RNG from "./rot/rng";
 
 enum TileType {
@@ -63,7 +63,7 @@ class Tile {
         return this.tileType;
     }
 
-    public getUserSet() {
+    public isUserSet() {
         return this.userSet;
     }
 
@@ -246,8 +246,8 @@ class Tile {
                 this.fgColor = "transparent";
                 this.bgColor = "transparent";
                 if (this.decorated) {
-                    if (RNG.getUniformInt(0, 100) <= GRID_TILE_COLOR_PERCENT) {
-                        this.fgColor = GRID_TILE_DECORATED_COLORS[RNG.getUniformInt(0, GRID_TILE_DECORATED_COLORS.length - 1)];
+                    if (RNG.getUniformInt(0, 100) <= 50) {
+                        this.fgColor = DEC_TILES_COLORS[RNG.getUniformInt(0, DEC_TILES_COLORS.length - 1)];
                     }
                 }
 

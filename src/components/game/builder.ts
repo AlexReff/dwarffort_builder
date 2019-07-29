@@ -1,6 +1,6 @@
 import { BUILDINGS, MENU_ITEM, Point } from "../constants";
-import { GameCursor } from "./cursor";
 import { TileType } from "../tile";
+import { GameCursor } from "./cursor";
 
 /**
  * Requires CAMERA, CURSOR
@@ -23,29 +23,42 @@ export class GameBuilder extends GameCursor {
      * Handles enter key presses + right mouse clicks
      * @returns True if we need to un-set the highlightedMenuItem in index.tsx
      */
-    public handleEnterKey(highlightedMenuItem?: MENU_ITEM): boolean {
+    public handleEnterKey = (highlightedMenuItem?: MENU_ITEM): boolean => {
         if (highlightedMenuItem == null) {
             return;
         }
         if (this.cursor.isBuilding()) {
-            return this.placeBuilding();
+            return this.tryPlaceBuilding();
         } else {
             this.handleDesignation(highlightedMenuItem);
             return false;
         }
     }
 
-    public stopBuilding() {
+    public paint = () => {
+        // console.log("paint called");
+        if (this.cursor.isBuilding()) {
+            // console.log("tryPlaceBuilding called");
+            this.tryPlaceBuilding();
+        } else {
+            // this.cursor.
+            // switch (this.) {
+            //     //
+            // }
+        }
+    }
+
+    public stopBuilding = () => {
         this.cursor.stopBuilding();
         this.designator.endDesignating();
         this.render();
     }
 
-    public isBuilding() {
+    public isBuilding = () => {
         return this.cursor.isBuilding();
     }
 
-    public setCursorToBuilding(e: MENU_ITEM) {
+    public setCursorToBuilding = (e: MENU_ITEM) => {
         const target = BUILDINGS[e];
         if (target == null) {
             this.cursor.stopBuilding();
@@ -56,7 +69,7 @@ export class GameBuilder extends GameCursor {
         this.render();
     }
 
-    public handleDesignation(highlightedMenuItem: MENU_ITEM) {
+    public handleDesignation = (highlightedMenuItem: MENU_ITEM) => {
         if (this.designator.isDesignating()) {
             this.finishDesignate(highlightedMenuItem);
         } else {
@@ -64,7 +77,7 @@ export class GameBuilder extends GameCursor {
         }
     }
 
-    public finishDesignate(item: MENU_ITEM) {
+    public finishDesignate = (item: MENU_ITEM) => {
         const cursorPos = this.cursor.getPosition();
         const range = this.designator.getRange(cursorPos);
         this.designateRange(range, item);
@@ -73,7 +86,14 @@ export class GameBuilder extends GameCursor {
         this.render();
     }
 
-    protected placeBuilding = (): boolean => {
+    /**
+     * Attempts to place a building
+     * @returns {true} if a building was placed
+     */
+    protected tryPlaceBuilding = (): boolean => {
+        if (!this.isBuilding()) {
+            return;
+        }
         const tiles = this.cursor.getBuildingTiles();
         for (const tile in tiles) {
             if (!this.coordIsBuildable(tiles[tile].pos)) {

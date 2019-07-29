@@ -1,6 +1,6 @@
 import * as _ from "lodash";
 import { Component, h } from "preact";
-import { MENU_KEYS, MENU_ITEM, MENU_ITEMS } from "./constants";
+import { MENU_ITEM, MENU_ITEMS, MENU_KEYS, SUBMENU_MAX_H } from "./constants";
 
 interface IMenuItem {
     "text": string;
@@ -23,10 +23,16 @@ class Menu extends Component<IMenuProps, {}> {
 
     render(props: IMenuProps, state: any) {
         return (
-            <div class="menu-items">
+            <div class="menu-items" style={this.getMenuItemsCss()}>
                 {this.getChildMenu(MENU_ITEMS, "top")}
             </div>
         );
+    }
+
+    private getMenuItemsCss = () => {
+        return {
+            minHeight: SUBMENU_MAX_H * 21,
+        };
     }
 
     private menuItemClickHandler = (e) => {

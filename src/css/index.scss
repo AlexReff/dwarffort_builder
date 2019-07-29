@@ -53,9 +53,16 @@ canvas {
 #highlighter {
     box-sizing: border-box;
     position: absolute;
-    border: 1px solid #CCC;
     z-index: 2;
     pointer-events: none;
+
+    &.strict {
+        border: 1px solid #CCC;
+    }
+
+    &.modern {
+        display: none;
+    }
 }
 
 #debug-menu {
