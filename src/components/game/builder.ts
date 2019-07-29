@@ -23,7 +23,7 @@ export class GameBuilder extends GameCursor {
      * Handles enter key presses + right mouse clicks
      * @returns True if we need to un-set the highlightedMenuItem in index.tsx
      */
-    public handleEnterKey = (highlightedMenuItem?: MENU_ITEM): boolean => {
+    handleEnterKey = (highlightedMenuItem?: MENU_ITEM): boolean => {
         if (highlightedMenuItem == null) {
             return;
         }
@@ -35,30 +35,55 @@ export class GameBuilder extends GameCursor {
         }
     }
 
-    public paint = () => {
-        // console.log("paint called");
+    /**
+     * Paints the current menu item at mouse position
+     * @returns {true} if the highlighted menu item should be reset
+     */
+    paint = (highlightedMenuItem?: MENU_ITEM) => {
         if (this.cursor.isBuilding()) {
-            // console.log("tryPlaceBuilding called");
-            this.tryPlaceBuilding();
-        } else {
-            // this.cursor.
-            // switch (this.) {
-            //     //
+            return this.tryPlaceBuilding();
+        } else if (highlightedMenuItem != null && highlightedMenuItem.length > 0) {
+            const pos = this.cursor.getPosition();
+            this.designateRange({ startX: pos[0], endX: pos[0], startY: pos[1], endY: pos[1] }, highlightedMenuItem);
+            this.render();
+            // switch (highlightedMenuItem) {
+            //     case MENU_ITEM.remove:
+            //         if (!this.gameGrid[this.zLevel][pos[0]][pos[1]].isBuilding()) {
+            //             this.gameGrid[this.zLevel][pos[0]][pos[1]].setType(TileType.Empty);
+            //             this.updateNeighborhood(pos);
+            //         }
+            //         break;
+            //     case MENU_ITEM.wall:
+            //         if (!this.gameGrid[this.zLevel][pos[0]][pos[1]].isBuilding()) {
+            //             this.gameGrid[this.zLevel][pos[0]][pos[1]].setType(TileType.Wall, true);
+            //             this.updateNeighborhood(pos);
+            //         }
+            //         break;
+            //     case MENU_ITEM.mine:
+            //         if (!this.gameGrid[this.zLevel][pos[0]][pos[1]].isBuilding()) {
+            //             this.gameGrid[this.zLevel][pos[0]][pos[1]].setType(TileType.Floor, true);
+            //             this.updateNeighborhood(pos);
+            //         }
+            //         break;
+            //     default:
+            //         return;
             // }
         }
+
+        return false;
     }
 
-    public stopBuilding = () => {
+    stopBuilding = () => {
         this.cursor.stopBuilding();
         this.designator.endDesignating();
         this.render();
     }
 
-    public isBuilding = () => {
+    isBuilding = () => {
         return this.cursor.isBuilding();
     }
 
-    public setCursorToBuilding = (e: MENU_ITEM) => {
+    setCursorToBuilding = (e: MENU_ITEM) => {
         const target = BUILDINGS[e];
         if (target == null) {
             this.cursor.stopBuilding();
@@ -69,7 +94,7 @@ export class GameBuilder extends GameCursor {
         this.render();
     }
 
-    public handleDesignation = (highlightedMenuItem: MENU_ITEM) => {
+    handleDesignation = (highlightedMenuItem: MENU_ITEM) => {
         if (this.designator.isDesignating()) {
             this.finishDesignate(highlightedMenuItem);
         } else {
@@ -77,7 +102,7 @@ export class GameBuilder extends GameCursor {
         }
     }
 
-    public finishDesignate = (item: MENU_ITEM) => {
+    finishDesignate = (item: MENU_ITEM) => {
         const cursorPos = this.cursor.getPosition();
         const range = this.designator.getRange(cursorPos);
         this.designateRange(range, item);
@@ -110,6 +135,7 @@ export class GameBuilder extends GameCursor {
                 buildingKey: tileKey as MENU_ITEM,
                 buildingCenter: center,
             };
+            this.updateNeighborhood([tile.pos[0], tile.pos[1]]);
         }
         this.cursor.stopBuilding();
         this.designator.endDesignating();
@@ -122,7 +148,17 @@ export class GameBuilder extends GameCursor {
     }
 
     protected coordIsBuildable = (coord: Point): boolean => {
-        return (this.strictMode ? this.gameGrid[this.zLevel][coord[0]][coord[1]].getType() === TileType.Floor : true)
-            && !this.coordIsBuilding(coord);
+        const isBldg = this.coordIsBuilding(coord);
+        if (this.strictMode) {
+            const tileType = this.gameGrid[this.zLevel][coord[0]][coord[1]].getType();
+            //
+            if (tileType === TileType.Floor && !isBldg) {
+                return true;
+            }
+        } else {
+            return !isBldg;
+        }
+
+        return false;
     }
 }

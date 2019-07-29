@@ -13,7 +13,7 @@ class Designator {
         this.designating = false;
     }
 
-    public getDrawData(coord: Point) {
+    getDrawData = (coord: Point) => {
         return [
             coord[0],
             coord[1],
@@ -23,11 +23,11 @@ class Designator {
         ];
     }
 
-    public getStartPosition() {
+    getStartPosition = () => {
         return [this.designationStart[0], this.designationStart[1]];
     }
 
-    public getRange(cursor: Point): IGridRange {
+    getRange = (cursor: Point): IGridRange => {
         const startX = Math.min(this.designationStart[0], cursor[0]);
         const endX = Math.max(this.designationStart[0], cursor[0]);
         const startY = Math.min(this.designationStart[1], cursor[1]);
@@ -41,16 +41,16 @@ class Designator {
         };
     }
 
-    public isDesignating() {
+    isDesignating = () => {
         return this.designating;
     }
 
-    public startDesignating(pos: Point) {
+    startDesignating = (pos: Point) => {
         this.designationStart = [pos[0], pos[1]];
         this.designating = true;
     }
 
-    public endDesignating() {
+    endDesignating = () => {
         this.designationStart = null;
         this.designating = false;
     }

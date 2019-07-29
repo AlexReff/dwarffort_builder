@@ -55,13 +55,11 @@ canvas {
     position: absolute;
     z-index: 2;
     pointer-events: none;
+    border: 1px solid rgba(0,128,0,.7);
+    display: none;
 
-    &.strict {
-        border: 1px solid #CCC;
-    }
-
-    &.modern {
-        display: none;
+    &.active {
+        display: inline-block;
     }
 }
 

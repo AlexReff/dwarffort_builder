@@ -1,6 +1,6 @@
 import * as _ from "lodash";
 import { Component, h } from "preact";
-import { TILE_H, TILE_W, TILE_URL } from "./constants";
+import { TILE_H, TILE_URL, TILE_W } from "./constants";
 import { Tile } from "./tile";
 
 interface IDebugMenuProps {
@@ -22,12 +22,12 @@ class DebugMenu extends Component<IDebugMenuProps, IDebugMenuState> {
 
     private imgElement: HTMLImageElement;
 
-    componentDidMount() {
+    componentDidMount = () => {
         this.imgElement = document.getElementById("debug-sprite-img") as HTMLImageElement;
         this.imgElement.addEventListener("mousemove", this.handleSpriteMouseover);
     }
 
-    render(props: IDebugMenuProps, state: IDebugMenuState) {
+    render = (props: IDebugMenuProps, state: IDebugMenuState) => {
         return (
             <div id="debug" class={props.isActive ? "active" : null}>
                 {this.renderSpriteSheet()}

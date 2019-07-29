@@ -18,7 +18,11 @@ export class GameAnimator extends GameBuilder {
         if (!this.animationToggle) {
             return false;
         }
-        if (this.designator.isDesignating()) {
+        return this.coordIsDesignating(pos);
+    }
+
+    protected coordIsDesignating = (pos: Point): boolean => {
+        if (this.isDesignating()) {
             const cursor = this.cursor.getPosition();
             const bounds = this.designator.getRange(cursor);
             return pos[0] >= bounds.startX && pos[1] >= bounds.startY && pos[0] <= bounds.endX && pos[1] <= bounds.endY;

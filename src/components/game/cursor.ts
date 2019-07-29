@@ -24,37 +24,47 @@ export class GameCursor extends GameCamera {
         this.designatorTiles = [];
     }
 
-    public getTileAtPosition = (pos: Point) => {
+    getTileAtPosition = (pos: Point) => {
         return this.gameGrid[this.zLevel][pos[0]][pos[1]];
     }
 
-    public getTileAtCursor = (): Tile => {
+    getTileAtCursor = (): Tile => {
         const pos = this.getCursorPosition();
         return this.getTileAtPosition(pos);
     }
 
-    public getCursorPosition = (): Point => {
+    getCursorPosition = (): Point => {
         return this.cursor.getPosition();
     }
 
-    public isDesignating() {
+    hideCursor = () => {
+        this.cursor.setHidden(true);
+        this.render();
+    }
+
+    showCursor = () => {
+        this.cursor.setHidden(false);
+        this.render();
+    }
+
+    isDesignating = () => {
         return this.designator.isDesignating();
     }
 
-    public beginDesignate() {
+    beginDesignate = () => {
         const pos = this.cursor.getPosition();
         this.designator.startDesignating(pos);
         this.designatorTiles.push([pos[0], pos[1]]);
         this.renderPosition(pos);
     }
 
-    public cancelDesignate() {
+    cancelDesignate = () => {
         this.designator.endDesignating();
         this.designatorTiles = [];
         this.render();
     }
 
-    public moveCursor(dir: DIRECTION, shiftPressed?: boolean) {
+    moveCursor = (dir: DIRECTION, shiftPressed?: boolean) => {
         const pos = this.cursor.getPosition();
         const offset = this.cursor.getRadius();
         const distance = shiftPressed ? 10 : 1;
@@ -117,11 +127,9 @@ export class GameCursor extends GameCamera {
     }
 
     /**
-     * Moves the cursor in the specified DIRECTION,
-     * Locked in the visible view
-     * Does not move camera
+     * @deprecated use moveCursor
      */
-    public moveCursorOnGrid(direction: DIRECTION, shiftPressed?: boolean) {
+    moveCursorOnGrid = (direction: DIRECTION, shiftPressed?: boolean) => {
         const pos = this.cursor.getPosition();
         const offset = this.cursor.getRadius();
         const distance = shiftPressed ? 10 : 1;
@@ -182,7 +190,7 @@ export class GameCursor extends GameCamera {
         this.moveCursorTo(pos);
     }
 
-    public moveCursorTo(targetPos: Point) {
+    moveCursorTo = (targetPos: Point) => {
         // TODO: Update to move camera if neeeded
         const pos = this.cursor.getPosition();
         const offset = this.cursor.getRadius();
@@ -212,7 +220,7 @@ export class GameCursor extends GameCamera {
         this.render();
     }
 
-    public moveCameraToIncludePoint = (pos: Point) => {
+    moveCameraToIncludePoint = (pos: Point) => {
         //for each NESW DIRECTION, move camera in that DIRECTION if needed
         const radius = this.cursor.getRadius();
         if (pos[0] < 0 || pos[1] < 0 ||
@@ -245,7 +253,7 @@ export class GameCursor extends GameCamera {
         }
     }
 
-    public setPaintOverwrite(val: boolean) {
+    setPaintOverwrite = (val: boolean) => {
         this.paintOverwrite = val;
     }
 

@@ -10,9 +10,9 @@ enum TileType {
 }
 
 class Tile {
-    public static Floor = new Tile(TileType.Floor);
-    public static Empty = new Tile(TileType.Empty);
-    public static Wall = new Tile(TileType.Wall);
+    static Floor = new Tile(TileType.Floor);
+    static Empty = new Tile(TileType.Empty);
+    static Wall = new Tile(TileType.Wall);
 
     private tileType: TileType;
     private character: string;
@@ -41,41 +41,39 @@ class Tile {
         this.init();
     }
 
-    public getCharacter() {
+    getCharacter = () => {
         return this.character;
     }
 
-    public getColor() {
-        //return this.buildingData.fg;
+    getColor = () => {
         return this.fgColor;
     }
 
-    public getPosition() {
+    getPosition = () => {
         return [this.position[0], this.position[1]];
     }
 
-    public getBgColor() {
-        // return this.buildingData.bg;
+    getBgColor = () => {
         return this.bgColor;
     }
 
-    public getType() {
+    getType = () => {
         return this.tileType;
     }
 
-    public isUserSet() {
+    isUserSet = () => {
         return this.userSet;
     }
 
-    public getBuildingName() {
+    getBuildingName = () => {
         return MENU_IDS[this.buildingKey].text;
     }
 
-    public isBuilding() {
+    isBuilding = () => {
         return this.building;
     }
 
-    public getDrawData(coord: Point) {
+    getDrawData = (coord: Point) => {
         switch (this.tileType) {
             case TileType.Wall:
                 return [
@@ -96,7 +94,7 @@ class Tile {
         ];
     }
 
-    public setBuilding(key: string, data: IBuildingData) {
+    setBuilding = (key: string, data: IBuildingData) => {
         this.tileType = TileType.Building;
         this.building = true;
         this.buildingKey = key;
@@ -109,8 +107,6 @@ class Tile {
                 walkable: data.walkable,
             };
             this.character = `i${data.char}`;
-            // this.fgColor = data.fg || "transparent";
-            // this.bgColor = data.bg || "transparent";
             this.updateColorsFromBuilding();
         } else {
             this.buildingData = {
@@ -131,7 +127,7 @@ class Tile {
      * @param type
      * @returns {true} if this character has changed, false otherwise
      */
-    public setNeighbor(pos: DIRECTION, type: TileType): boolean {
+    setNeighbor = (pos: DIRECTION, type: TileType): boolean => {
         if (pos % 2 === 1) {
             return false;
         }
@@ -145,7 +141,7 @@ class Tile {
         return this.computeCharacter();
     }
 
-    public setType(type: TileType, fromUser?: boolean): boolean {
+    setType = (type: TileType, fromUser?: boolean): boolean => {
         if (fromUser === true) {
             this.userSet = true;
         } else if (fromUser === false) {
@@ -165,7 +161,7 @@ class Tile {
         return true;
     }
 
-    private updateColorsFromBuilding() {
+    private updateColorsFromBuilding = () => {
         this.fgColor = this.buildingData.fg || "transparent";
         this.bgColor = this.buildingData.bg || "transparent";
         const fgStart = this.fgColor.indexOf("(");
@@ -180,7 +176,7 @@ class Tile {
         }
     }
 
-    private computeCharacter() {
+    private computeCharacter = () => {
         const prevChar = this.character;
         switch (this.tileType) {
             case TileType.Wall:
@@ -214,9 +210,7 @@ class Tile {
 
                 return true;
             case TileType.Floor:
-                //no modifications needed if this is a floor
                 this.character = `f${RNG.getUniformInt(0, FLOOR_TILES.length - 1)}`;
-                // this.character = "f1";
                 break;
             case TileType.Empty:
                 if (this.decorated) {
@@ -232,7 +226,7 @@ class Tile {
         return this.character !== prevChar;
     }
 
-    private init() {
+    private init = () => {
         switch (this.tileType) {
             case TileType.Floor:
                 this.fgColor = "rgba(50, 50, 50, .2)";
@@ -250,7 +244,6 @@ class Tile {
                         this.fgColor = DEC_TILES_COLORS[RNG.getUniformInt(0, DEC_TILES_COLORS.length - 1)];
                     }
                 }
-
                 break;
             default:
                 break;

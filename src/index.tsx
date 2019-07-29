@@ -2,7 +2,7 @@
 import * as _ from "lodash";
 import { Component, h, render } from "preact";
 //components
-import { BUILDINGS, DEBUG, DIRECTION, HEADER_H, KEYS, MENU_IDS, MENU_ITEM, MENU_KEYS, MENU_W, SUBMENUS, TILE_H, TILE_URL, TILE_W, DEFAULTS } from "./components/constants";
+import { BUILDINGS, DEBUG, DIRECTION, HEADER_H, KEYS, MENU_IDS, MENU_ITEM, MENU_KEYS, MENU_W, SUBMENUS, TILE_H, TILE_URL, TILE_W, DEFAULTS, Point } from "./components/constants";
 import { DebugMenu } from "./components/debug";
 import { CURSOR_BEHAVIOR } from "./components/enums";
 import { GameRender } from "./components/game/render";
@@ -32,13 +32,17 @@ interface IFortressDesignerState {
     mouseLeft: number;
     mouseTop: number;
     mouseOverGrid: boolean;
-    painting: boolean;
+    leftMouseDown: boolean;
+
+    highlighting: boolean; // if user is click+drag on INSPECT
+    highlightingStart: Point;
 
     zLevel: number;
     hasChangedZLevel: boolean;
     windowResizing: boolean;
     gameLoading: boolean;
     cursorMode: CURSOR_BEHAVIOR;
+    cursorFollowsMouse: boolean;
 
     /**
      * Only used to trigger react re-renders
@@ -68,7 +72,8 @@ class FortressDesigner extends Component<{}, IFortressDesignerState> {
             mouseOverGrid: false,
             windowResizing: false,
             gameLoading: true,
-            painting: false,
+            leftMouseDown: false,
+            highlighting: false,
             gridColumnLayout: 0,
             gridRowLayout: 0,
             strictMode: DEFAULTS.STRICT_MODE,
@@ -76,7 +81,7 @@ class FortressDesigner extends Component<{}, IFortressDesignerState> {
         });
     }
 
-    componentDidMount() {
+    componentDidMount = () => {
         this.gridElement = document.getElementById("grid");
         this.headerElement = document.getElementById("header");
 
@@ -121,6 +126,10 @@ class FortressDesigner extends Component<{}, IFortressDesignerState> {
     }
 
     destroyGame = () => {
+        if (this.game == null) {
+            return;
+        }
+
         this.game.destroy();
 
         if (this.canvasElement != null) {
@@ -186,7 +195,7 @@ class FortressDesigner extends Component<{}, IFortressDesignerState> {
         return null;
     }
 
-    componentWillUnmount() {
+    componentWillUnmount = () => {
         this.destroyGame();
     }
 
@@ -194,14 +203,18 @@ class FortressDesigner extends Component<{}, IFortressDesignerState> {
         e.preventDefault();
         const pos = this.game.getMousePosition(e);
         this.game.moveCursorTo(pos);
-        this.handleEnterRightClick();
+        if (this.isInspecting()) {
+            //right-click inspect building/item
+        } else {
+            this.handleEnterRightClick();
+        }
         return false;
     }
 
     /**
      * Handles enter key + right clicks
      */
-    handleEnterRightClick() {
+    handleEnterRightClick = () => {
         if (this.game.handleEnterKey(this.state.currentMenuItem)) {
             this.setState({
                 currentMenuItem: null,
@@ -210,17 +223,28 @@ class FortressDesigner extends Component<{}, IFortressDesignerState> {
     }
 
     handleGridClick = (e: MouseEvent | TouchEvent) => {
-        e.preventDefault();
-        const pos = this.game.getMousePosition(e);
-        this.game.moveCursorTo(pos);
-        if (this.state.cursorMode === CURSOR_BEHAVIOR.MODERN) {
-            this.game.paint();
-        } else if (this.state.cursorMode === CURSOR_BEHAVIOR.CLASSIC) {
-            //
+        if (e instanceof MouseEvent && e.button !== 0) {
+            return;
         }
-        this.setState({
-            refresh: true,
-        });
+        e.preventDefault();
+
+        if (this.isInspecting()) {
+            //handle inspection
+        } else {
+            const pos = this.game.getMousePosition(e);
+            this.game.moveCursorTo(pos);
+            if (this.state.cursorMode === CURSOR_BEHAVIOR.MODERN) {
+                // if (this)
+                if (this.game.paint(this.state.currentMenuItem)) {
+                    this.setState({
+                        currentMenuItem: null,
+                    });
+                }
+            }
+            this.setState({
+                refresh: true,
+            });
+        }
     }
 
     handleMouseMove = (e) => {
@@ -228,10 +252,20 @@ class FortressDesigner extends Component<{}, IFortressDesignerState> {
             mouseLeft: e.clientX,
             mouseTop: e.clientY,
         }, () => {
-            if (this.state.cursorMode === CURSOR_BEHAVIOR.MODERN) {
+            if (this.state.currentMenuItem === MENU_ITEM.inspect) {
+                if (this.state.leftMouseDown) {
+                    this.setState({
+                        highlighting: true, //don't show inspect highlighter until mouse moves after click
+                    });
+                }
+            } else if (this.state.cursorMode === CURSOR_BEHAVIOR.MODERN) {
                 this.game.moveCursorTo(this.game.getMousePosition(e));
-                if (this.state.painting) {
-                    this.game.paint();
+                if (this.state.leftMouseDown) {
+                    if (this.game.paint(this.state.currentMenuItem)) {
+                        this.setState({
+                            currentMenuItem: null,
+                        });
+                    }
                 }
             }
         });
@@ -256,23 +290,31 @@ class FortressDesigner extends Component<{}, IFortressDesignerState> {
     }
 
     handleMouseDown = (e: MouseEvent) => {
-        if (this.state.cursorMode !== CURSOR_BEHAVIOR.MODERN || e.button !== 0) {
-            return;
+        if (e.button === 0) {
+            if (this.isInspecting()) {
+                this.setState({
+                    leftMouseDown: true,
+                    highlightingStart: this.game.getMousePosition(e),
+                });
+            } else {
+                this.setState({
+                    leftMouseDown: true,
+                });
+            }
         }
-
-        this.setState({
-            painting: true,
-        });
     }
 
     handleMouseUp = (e: MouseEvent) => {
-        if (e.button !== 0) {
-            return;
+        if (e.button === 0) {
+            if (this.state.highlighting) {
+                // handle 'highlight selection'
+            }
+            this.setState({
+                leftMouseDown: false,
+                highlighting: false,
+                highlightingStart: null,
+            });
         }
-
-        this.setState({
-            painting: false,
-        });
     }
 
     handleKeyUp = (e: KeyboardEvent) => {
@@ -383,6 +425,12 @@ class FortressDesigner extends Component<{}, IFortressDesignerState> {
             return;
         }
 
+        if (e === "inspect") {
+            this.game.hideCursor();
+        } else {
+            this.game.showCursor();
+        }
+
         if (e === "top") {
             this.setState({
                 currentMenuItem: null,
@@ -430,10 +478,7 @@ class FortressDesigner extends Component<{}, IFortressDesignerState> {
                 this.setState({
                     currentMenuItem: e as MENU_ITEM,
                 });
-                //if this item is a building
-                if (e === "inspect") {
-                    //
-                } else if (e in BUILDINGS) {
+                if (e in BUILDINGS) {
                     this.game.setCursorToBuilding(e as MENU_ITEM);
                 }
             }
@@ -451,32 +496,42 @@ class FortressDesigner extends Component<{}, IFortressDesignerState> {
         return this.state.currentMenuItem != null && this.state.currentMenuItem === "inspect";
     }
 
-    getGridPosition = (clientX: number, clientY: number): [number, number] => {
-        //returns top-left coordinate for grid item based on mouse position
-        if (this.canvasElement != null) {
-            const bounds = this.canvasElement.getBoundingClientRect();
-            const maxHeight = this.canvasElement.offsetHeight - TILE_H + bounds.top;
-            const maxWidth = this.canvasElement.offsetWidth - TILE_W + bounds.left;
-            const leftPos = Math.max(0, Math.min(maxWidth, clientX - (clientX % TILE_W)));
-            const topPos = Math.max(0, Math.min(maxHeight, clientY - (clientY % TILE_H)));
-            return [leftPos, topPos];
-        }
-    }
+    // getGridPosition = (clientX: number, clientY: number): [number, number] => {
+    //     //returns top-left coordinate for grid item based on mouse position
+    //     if (this.canvasElement != null) {
+    //         const bounds = this.canvasElement.getBoundingClientRect();
+    //         const maxHeight = this.canvasElement.offsetHeight - TILE_H + bounds.top;
+    //         const maxWidth = this.canvasElement.offsetWidth - TILE_W + bounds.left;
+    //         const leftPos = Math.max(0, Math.min(maxWidth, clientX - (clientX % TILE_W)));
+    //         const topPos = Math.max(0, Math.min(maxHeight, clientY - (clientY % TILE_H)));
+    //         return [leftPos, topPos];
+    //     }
+    // }
 
     getHighlighterStyle = () => {
-        if (!this.headerElement || !this.canvasElement ||
+        if (!this.state.highlighting ||
+            !this.headerElement ||
+            !this.canvasElement ||
             !this.state.mouseOverGrid ||
-            (this.state.mouseLeft == null || this.state.mouseTop == null)) {
+            this.state.mouseLeft == null ||
+            this.state.mouseTop == null) {
             return {
                 display: "none",
             };
         }
-        const targetPos = this.getGridPosition(this.state.mouseLeft, this.state.mouseTop);
+        const targetPos = this.game.getMousePosition({ clientX: this.state.mouseLeft, clientY: this.state.mouseTop });
+        const bounds = this.canvasElement.getBoundingClientRect();
+        const camera = this.game.getCamera();
+        let width = TILE_W * (1 + Math.abs(targetPos[0] - this.state.highlightingStart[0]));
+        let height = TILE_H * (1 + Math.abs(targetPos[1] - this.state.highlightingStart[1]));
+
+        let left = bounds.left + TILE_W * (Math.min(targetPos[0], this.state.highlightingStart[0]) - camera[0]);
+        let top = bounds.top + TILE_H * (Math.min(targetPos[1], this.state.highlightingStart[1]) - camera[1]);
         return {
-            width: `${TILE_W}px`,
-            height: `${TILE_H}px`,
-            left: targetPos[0],
-            top: targetPos[1],
+            width: `${width}px`,
+            height: `${height}px`,
+            left: left,
+            top: top,
         };
     }
 
@@ -600,7 +655,7 @@ class FortressDesigner extends Component<{}, IFortressDesignerState> {
         return (
             <div id="page">
                 {DEBUG ? <DebugMenu isActive={state.debug} /> : null}
-                <div id="highlighter" class={state.cursorMode === CURSOR_BEHAVIOR.CLASSIC ? "classic" : "modern"} style={this.getHighlighterStyle()}></div>
+                <div id="highlighter" class={state.highlighting ? "active" : null} style={this.getHighlighterStyle()}></div>
                 <div id="wrapper" style={this.getWrapperCss()}>
                     <div id="header">
                         <div class="left"><a class="home-link" href="https://reff.dev/">reff.dev</a></div>
@@ -626,8 +681,8 @@ class FortressDesigner extends Component<{}, IFortressDesignerState> {
                         <Menu highlightedItem={state.currentMenuItem}
                             selectedMenu={state.currentMenu}
                             handleMenuEvent={this.handleMenuEvent} />
+                        {this.renderMenuToolbar()}
                         <div class="menu-bottom">
-                            {this.renderMenuToolbar()}
                             <div class="menu-status">
                                 {this.renderMenuStatus()}
                             </div>

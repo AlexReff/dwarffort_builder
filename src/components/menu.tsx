@@ -31,7 +31,7 @@ class Menu extends Component<IMenuProps, {}> {
 
     private getMenuItemsCss = () => {
         return {
-            minHeight: SUBMENU_MAX_H * 21,
+            minHeight: (SUBMENU_MAX_H * 21) + 10,
         };
     }
 

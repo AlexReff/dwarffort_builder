@@ -5,6 +5,7 @@ class Cursor {
     private position: Point;
     private character: string;
     private color: string;
+    private hidden: boolean;
     private building: boolean;
     private buildingKey: MENU_ITEM;
     private buildingRange: Point[];
@@ -20,17 +21,22 @@ class Cursor {
         this.character = ".";
         this.position = [pos[0], pos[1]];
         this.color = DEFAULTS.COLORS.CURSOR_DEFAULT;
+        this.hidden = false;
     }
 
-    public getCharacter() {
+    getCharacter = () => {
         return this.character;
     }
 
-    public getPosition(): Point {
+    getPosition = (): Point => {
         return [this.position[0], this.position[1]];
     }
 
-    public getRange(): Point[] {
+    setHidden = (val: boolean) => {
+        this.hidden = val;
+    }
+
+    getRange = (): Point[] => {
         if (!this.building) {
             return [this.position];
         }
@@ -38,11 +44,14 @@ class Cursor {
         return this.buildingRange;
     }
 
-    public getBuildingTiles() {
+    getBuildingTiles = () => {
         return this.buildingTileMap;
     }
 
-    public coordIsCursor(coord: Point): boolean {
+    coordIsCursor = (coord: Point): boolean => {
+        if (this.hidden) {
+            return false;
+        }
         if (!this.building) {
             return coord[0] === this.position[0] && coord[1] === this.position[1];
         }
@@ -54,19 +63,19 @@ class Cursor {
         return false;
     }
 
-    public getColor() {
+    getColor = () => {
         return this.color;
     }
 
-    public isBuilding() {
+    isBuilding = () => {
         return this.building;
     }
 
-    public getBuildingKey() {
+    getBuildingKey = () => {
         return this.buildingKey;
     }
 
-    public stopBuilding() {
+    stopBuilding = () => {
         this.building = false;
         this.buildingKey = null;
         // this.buildingWalkable = null;
@@ -75,7 +84,7 @@ class Cursor {
         this.buildingTileMap = null;
     }
 
-    public setBuilding(key: MENU_ITEM) {
+    setBuilding = (key: MENU_ITEM) => {
         const target = BUILDINGS[key];
         if (target == null || target.tiles == null || target.tiles.length === 0) {
             return;
@@ -101,7 +110,7 @@ class Cursor {
         this.buildingRadius = Math.floor(target.tiles.length / 2);
     }
 
-    public setPosition(pos: Point) {
+    setPosition = (pos: Point) => {
         if (this.building) {
             const xDelta = pos[0] - this.position[0];
             const yDelta = pos[1] - this.position[1];
@@ -120,7 +129,7 @@ class Cursor {
         this.position = [pos[0], pos[1]];
     }
 
-    public getRadius() {
+    getRadius = () => {
         if (!this.building) {
             return 0;
         }
@@ -128,7 +137,7 @@ class Cursor {
         return this.buildingRadius;
     }
 
-    public getDrawData(pos?: Point, impassable?: boolean) {
+    getDrawData = (pos?: Point, impassable?: boolean) => {
         if (pos != null && this.building) {
             const targetX = pos[0] - this.position[0] + this.buildingRadius;
             const targetY = pos[1] - this.position[1] + this.buildingRadius;
@@ -148,6 +157,15 @@ class Cursor {
                 color,
                 "transparent",
             ];
+        }
+        if (pos != null && pos.length === 2) {
+            return [
+                pos[0],
+                pos[1],
+                this.character,
+                this.color,
+                "transparent",
+            ]
         }
         return [
             this.position[0],

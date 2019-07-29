@@ -31,8 +31,8 @@ class Game {
         this.zLevel = 0;
         this.gameGrid = {};
         this.noiseMaps = {};
-        this.strictMode = true;
-        this.paintOverwrite = true;
+        this.strictMode = DEFAULTS.STRICT_MODE;
+        this.paintOverwrite = DEFAULTS.PAINT_OVERWRITE;
 
         this.gridSize = [
             container.offsetWidth / TILE_W,
@@ -45,7 +45,7 @@ class Game {
         ];
     }
 
-    public destroy = () => {
+    destroy = () => {
         if (this.display != null) {
             this.display.getContainer().remove();
         }
@@ -53,18 +53,18 @@ class Game {
         this.display = null;
     }
 
-    public populateAllFloors = () => {
+    populateAllFloors = () => {
         for (const floor of Object.keys(this.gameGrid)) {
             this.populateFloor(Number(floor));
         }
     }
 
-    public setStrictMode = (strict: boolean) => {
+    setStrictMode = (strict: boolean) => {
         this.strictMode = strict;
         this.render();
     }
 
-    public populateFloor = (floor?: number) => {
+    populateFloor = (floor?: number) => {
         const targetFloor = floor || this.zLevel;
         if (this.noiseMaps[this.zLevel] == null) {
             this.noiseMaps[this.zLevel] = new OpenSimplexNoise(Date.now() * rng.getUniform());
@@ -96,16 +96,16 @@ class Game {
         this.populateAllNeighbors();
     }
 
-    public getCanvas() {
+    getCanvas = () => {
         return this.display.getContainer();
     }
 
-    public zUp(): number {
+    zUp = (): number => {
         //go up one z level
         return this.goToZLevel(this.zLevel + 1);
     }
 
-    public zDown(): number {
+    zDown = (): number => {
         //go down one z level
         return this.goToZLevel(this.zLevel - 1);
     }
@@ -117,7 +117,7 @@ class Game {
      * @param userSet If user set or programatically set
      * @returns {true} if a change occured (tiletype changed)
      */
-    public setTile(pos: Point, type: TileType, userSet?: boolean): boolean {
+    setTile = (pos: Point, type: TileType, userSet?: boolean): boolean => {
         if (this.gameGrid[this.zLevel][pos[0]][pos[1]].setType(type, userSet)) {
             this.dirtyTiles.push(pos);
             return true;
@@ -145,7 +145,7 @@ class Game {
         ];
     }
 
-    protected goToZLevel(level: number) {
+    protected goToZLevel = (level: number) => {
         if (!(level in this.gameGrid)) {
             this.populateFloor(level);
         }
@@ -157,7 +157,7 @@ class Game {
     /**
      * Gets a list of positions that are neighbors of a given range of tiles
      */
-    protected getNeighborsOfRange(range: IGridRange): Point[] {
+    protected getNeighborsOfRange = (range: IGridRange): Point[] => {
         //returns a border of positions around a specified range
         const dict = {};
         if (range.startY > 0) {
@@ -203,7 +203,7 @@ class Game {
      * Updates a single tile on the grid with neighbor information
      * @param pos Position to update
      */
-    protected updateNeighbors(pos: Point, floor?: number) {
+    protected updateNeighbors = (pos: Point, floor?: number) => {
         //populate neighbors, N,NE,E,SE,S,SW,W,NW
         const x = pos[0];
         const y = pos[1];
@@ -242,7 +242,7 @@ class Game {
      * Updates the 'neighbors' of all neighbors around a tile
      * @param pos Center of neighborhood
      */
-    protected updateNeighborhood(pos: Point) {
+    protected updateNeighborhood = (pos: Point) => {
         this.updateNeighbors(pos); //update the center item
         const thisType = this.gameGrid[this.zLevel][pos[0]][pos[1]].getType();
         if (pos[1] > 0) { //N
@@ -313,7 +313,7 @@ class Game {
         */
     }
 
-    protected populateAllNeighbors() {
+    protected populateAllNeighbors = () => {
         for (const floor of Object.keys(this.gameGrid)) {
             for (let x = 0; x < this.mapSize[0]; x++) {
                 for (let y = 0; y < this.mapSize[1]; y++) {

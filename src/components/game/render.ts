@@ -9,7 +9,7 @@ export class GameRender extends GameAnimator {
         this.init();
     }
 
-    public init = () => {
+    init = () => {
         this.updateGameSize(this.container);
 
         this.display = new Display({
@@ -36,30 +36,25 @@ export class GameRender extends GameAnimator {
      * @param coord MAP coordinate to render
      */
     protected renderPosition = (coord: Point) => {
+        const gridCoord = this.getGridCoord(coord);
         if (this.isTileAnimating(coord)) {
-            const parms = this.designator.getDrawData(coord);
-            const newCoord = this.getGridCoord([Number(parms[0]), Number(parms[1])]);
-            parms[0] = newCoord[0];
-            parms[1] = newCoord[1];
+            const parms = this.designator.getDrawData(gridCoord);
             this.display.draw.apply(this.display, parms);
         } else {
             let parms = null;
-            if (this.cursor.coordIsCursor(coord)) {
-                // render just cursor
-                parms = this.cursor.getDrawData(coord, !this.coordIsBuildable(coord));
+            const cursorPos = this.cursor.getPosition();
+            if (coord[0] === cursorPos[0] && coord[1] === cursorPos[1] && this.designator.isDesignating()) {
+                //parms = this.designator.getDrawData(gridCoord);
+                parms = this.cursor.getDrawData(coord, !this.coordIsBuildable(gridCoord));
+            // if (this.cursor.coordIsCursor(coord)) {
+            //     // render just cursor
+            //     parms = this.cursor.getDrawData(coord, !this.coordIsBuildable(coord));
             } else {
-                parms = this.gameGrid[this.zLevel][coord[0]][coord[1]].getDrawData(coord);
+                parms = this.gameGrid[this.zLevel][coord[0]][coord[1]].getDrawData(gridCoord);
             }
-            this.parseParms(parms);
+            // this.parseParms(parms);
             this.display.draw.apply(this.display, parms);
         }
-    }
-
-    protected parseParms = (parms: Array<number | string | string[]>) => {
-        const newCoord = this.getGridCoord([Number(parms[0]), Number(parms[1])]);
-        parms[0] = newCoord[0];
-        parms[1] = newCoord[1];
-        return parms;
     }
 
     /**
@@ -90,7 +85,7 @@ export class GameRender extends GameAnimator {
         }
     }
 
-    protected renderCursor() {
+    protected renderCursor = () => {
         for (const i of this.cursor.getRange()) {
             this.renderPosition(i);
         }

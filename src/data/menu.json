@@ -202,7 +202,7 @@
             "id": "stockpile"
         },
         {
-            "text": "Manage Buildings",
+            "text": "Inspect Buildings",
             "key": "q",
             "id": "inspect"
         }
