@@ -1,6 +1,7 @@
 type LayoutType = "hex" | "rect" | "tile" | "tile-gl" | "term";
 
 export interface IDisplayOptions {
+    canvasElement: null | HTMLCanvasElement;
     width: number;
     height: number;
     transpose: boolean;

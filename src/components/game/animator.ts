@@ -1,39 +1,30 @@
-import { Point } from "../constants";
-import { GameBuilder } from "./builder";
+import { toggleAnimation } from "../redux/camera/actions";
+import store from "../redux/store";
 
 /**
  * Requires CAMERA, CURSOR
  */
-export class GameAnimator extends GameBuilder {
-    protected animationToggle: boolean;
-    protected animationInterval: number;
+export class GameAnimator {
+    private animationToggle: boolean;
+    private animationInterval: number;
 
-    constructor(image: HTMLImageElement, container: HTMLElement) {
-        super(image, container);
+    constructor() {
         this.animationToggle = false;
-        this.animationInterval = window.setInterval(() => (this.toggleAnimation()), 250);
+        this.animationInterval = window.setInterval(() => (this.handleToggle()), 250);
+        // store.subscribe(this.getStoreData);
     }
 
-    protected isTileAnimating = (pos: Point): boolean => {
-        if (!this.animationToggle) {
-            return false;
-        }
-        return this.coordIsDesignating(pos);
-    }
+    // getStoreData = () => {
+    //     const newState = store.getState();
+    //     this.animationToggle = newState.camera.animationToggle;
+    // }
 
-    protected coordIsDesignating = (pos: Point): boolean => {
-        if (this.isDesignating()) {
-            const cursor = this.cursor.getPosition();
-            const bounds = this.designator.getRange(cursor);
-            return pos[0] >= bounds.startX && pos[1] >= bounds.startY && pos[0] <= bounds.endX && pos[1] <= bounds.endY;
-        }
+    isAnimating = () => this.animationToggle;
 
-        return false;
-    }
-
-    protected toggleAnimation = () => {
+    private handleToggle = () => {
+        // store.dispatch(toggleAnimation());
         this.animationToggle = !this.animationToggle;
-        this.renderDirty();
-        this.renderDesignated();
     }
 }
+
+export default GameAnimator;

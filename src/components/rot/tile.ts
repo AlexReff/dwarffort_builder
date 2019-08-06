@@ -8,9 +8,14 @@ import { DisplayData } from "../rot/types";
 export default class Tile extends Canvas {
     _colorCanvas: HTMLCanvasElement;
 
-    constructor() {
-        super();
+    constructor(canvas?: HTMLCanvasElement) {
+        super(canvas);
         this._colorCanvas = document.createElement("canvas");
+        // if (canvas) {
+        //     this._colorCanvas = canvas;
+        // } else {
+        //     this._colorCanvas = document.createElement("canvas");
+        // }
     }
 
     draw(data: DisplayData, clearBefore: boolean) {

@@ -4,8 +4,8 @@ import * as buildings from "../data/buildings.json";
 import * as items from "../data/menu.json";
 import { IMenuItem } from "./menu.js";
 
-import { CURSOR_BEHAVIOR, DIRECTION, KEYS, MENU_ITEM } from "./enums";
-export { DIRECTION, KEYS, MENU_ITEM };
+import { ACTION_TYPE, CURSOR_BEHAVIOR, DIRECTION, KEYS, MENU_ITEM } from "./enums";
+export { ACTION_TYPE, CURSOR_BEHAVIOR, DIRECTION, KEYS, MENU_ITEM };
 
 export interface IBuildingData {
     char: string;
@@ -28,7 +28,10 @@ export const DEFAULTS = {
     PAINT_OVERWRITE: true,
     MAP_MIN_W: 48 * 2,
     MAP_MIN_H: 48 * 2,
-    CURSOR_MODE: CURSOR_BEHAVIOR.MODERN,
+    CURSOR: {
+        MODE: CURSOR_BEHAVIOR.MODERN,
+        CHAR: ".",
+    },
     COLORS: {
         CURSOR_DEFAULT: "rgba(157,132,19,1)",
         CURSOR_PASSABLE: "rgba(0,255,0,1)",

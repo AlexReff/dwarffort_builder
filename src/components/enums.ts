@@ -1,10 +1,41 @@
 
-const enum CURSOR_BEHAVIOR {
+export const enum ACTION_TYPE {
+    INITIALIZE,
+    ZLEVEL_INC,
+    ZLEVEL_DEC,
+    ZLEVEL_GOTO,
+    ANIMATION_TOGGLE,
+    CAMERA_GOTO,
+    CAMERA_GRID_SETSIZE,
+    CAMERA_MAP_SETSIZE,
+    CURSOR_HIDE,
+    CURSOR_SHOW,
+    CURSOR_SETCHAR,
+    CURSOR_SETRADIUS,
+    CURSOR_MOVE,
+    CURSOR_BUILDING_START,
+    CURSOR_BUILDING_END,
+    DESIGNATOR_START,
+    DESIGNATOR_END,
+    HIGHLIGHT_START,
+    HIGHLIGHT_SET,
+    HIGHLIGHT_END,
+    MENU_SUBMENU,
+    MENU_ITEM,
+    MOUSE_MOVE,
+    MOUSE_LEFT_PRESSED,
+    MOUSE_OVER_GRID,
+    MOUSE_HOVER_GRID,
+    STRICT_ENABLED,
+    STRICT_DISABLED,
+}
+
+export const enum CURSOR_BEHAVIOR {
     CLASSIC, //classic df-style with 'x' on a tile
     MODERN, //builder style, drag+select, mouse-centric UI behavior
 }
 
-const enum DIRECTION {
+export const enum DIRECTION {
     N = 0,
     NE = 1,
     E = 2,
@@ -15,7 +46,7 @@ const enum DIRECTION {
     NW = 7,
 }
 
-const enum MENU_ITEM {
+export const enum MENU_ITEM {
     mine = "mine",
     wall = "wall",
     channel = "channel",
@@ -55,7 +86,7 @@ const enum MENU_ITEM {
     inspect = "inspect",
 }
 
-const enum KEYS {
+export const enum KEYS {
     /** Cancel key. */
     VK_CANCEL = 3,
     /** Help key. */
@@ -365,5 +396,3 @@ const enum KEYS {
     /** Linux support for this keycode was added in Gecko 4.0.	 */
     VK_SLEEP = 95,
 }
-
-export { CURSOR_BEHAVIOR, DIRECTION, MENU_ITEM, KEYS };

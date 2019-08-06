@@ -6,7 +6,10 @@
     "dependencies": {
         "lodash": "^4.17.15",
         "open-simplex-noise": "^1.6.0",
-        "preact": "^8.4.2"
+        "preact": "^10.0.0-rc.0",
+        "react-redux": "^7.1.0",
+        "redux": "^4.0.4",
+        "redux-thunk": "^2.3.0"
     },
     "devDependencies": {
         "@babel/cli": "^7.4.4",

@@ -1,15 +1,31 @@
 //libraries
 import * as _ from "lodash";
 import { Component, h, render } from "preact";
+import { connect, Provider } from "react-redux";
 //components
-import { BUILDINGS, DEBUG, DIRECTION, HEADER_H, KEYS, MENU_IDS, MENU_ITEM, MENU_KEYS, MENU_W, SUBMENUS, TILE_H, TILE_URL, TILE_W, DEFAULTS, Point } from "./components/constants";
+import { BUILDINGS, DEBUG, HEADER_H, KEYS, MENU_IDS, MENU_ITEM, MENU_KEYS, MENU_W, Point, SUBMENUS, TILE_H, TILE_URL, TILE_W } from "./components/constants";
 import { DebugMenu } from "./components/debug";
 import { CURSOR_BEHAVIOR } from "./components/enums";
-import { GameRender } from "./components/game/render";
+import { Game } from "./components/game";
+import GameHighlighter from "./components/game/highlighter";
 import { Menu } from "./components/menu";
-import { Tile, TileType } from "./components/tile";
+import { moveCursor } from "./components/redux/cursor/actions";
+import { endHighlight, setHighlightPos, startHighlight } from "./components/redux/highlighter/actions";
+import { goToSubmenu, selectMenuItem } from "./components/redux/menu/actions";
+import { mouseLeftPressed, mouseOverGrid } from "./components/redux/mouse/actions";
+import { setStrictMode } from "./components/redux/settings/actions";
+import store, { ReduxState } from "./components/redux/store";
+import Util from "./components/util";
 
 require("./css/index.scss");
+
+declare global {
+    // tslint:disable-next-line: interface-name
+    interface Window {
+        mouseX: number;
+        mouseY: number;
+    }
+}
 
 /*
 ? Add drag support to tilegrid
@@ -20,29 +36,91 @@ require("./css/index.scss");
 Add google analytics + simple text ads before public release?
 */
 
-// only things relevant to HTML state
-interface IFortressDesignerState {
+interface IRootReduxProps {
+    zLevel: number;
     currentMenu: string;
     currentMenuItem: MENU_ITEM;
-
-    debug: boolean;
     strictMode: boolean;
-    gridColumnLayout: number;
-    gridRowLayout: number;
-    mouseLeft: number;
-    mouseTop: number;
     mouseOverGrid: boolean;
     leftMouseDown: boolean;
-
     highlighting: boolean; // if user is click+drag on INSPECT
     highlightingStart: Point;
+    cursorMode: CURSOR_BEHAVIOR;
+    cursorBuilding: boolean;
+    inspecting: boolean;
+    isDesignating: boolean;
+}
 
-    zLevel: number;
-    hasChangedZLevel: boolean;
+interface IRootDispatchProps {
+    moveCursor: (pos: Point) => void;
+    selectMenu: (item: string) => void;
+    selectMenuItem: (item: MENU_ITEM) => void;
+    startHighlight: () => void;
+    mouseOverGrid: (val: boolean) => void;
+    mouseLeftPressed: (val: boolean) => void;
+    setHighlightPos: (pos: Point) => void;
+    endHighlight: () => void;
+    setStrictMode: (val: boolean) => void;
+}
+
+const mapStateToProps = (state: ReduxState): IRootReduxProps => {
+    return {
+        zLevel: state.camera.zLevel,
+        currentMenu: state.menu.currentMenu,
+        currentMenuItem: state.menu.currentMenuItem,
+        inspecting: state.menu.inspecting,
+        strictMode: state.settings.strictMode,
+        mouseOverGrid: state.mouse.mouseOverGrid,
+        leftMouseDown: state.mouse.leftMouseDown,
+        highlighting: state.highlighter.highlighting,
+        highlightingStart: state.highlighter.highlightingStart,
+        cursorMode: state.settings.cursorMode,
+        cursorBuilding: state.cursor.cursorBuilding,
+        isDesignating: state.designator.isDesignating,
+    };
+};
+
+const mapDispatchToProps = (dispatch: typeof store.dispatch): IRootDispatchProps => {
+    return {
+        moveCursor: (pos) => {
+            dispatch(moveCursor(pos));
+        },
+        selectMenuItem: (item) => {
+            dispatch(selectMenuItem(item));
+        },
+        selectMenu: (item) => {
+            dispatch(goToSubmenu(item));
+        },
+        startHighlight: () => {
+            dispatch(startHighlight());
+        },
+        mouseOverGrid: (val) => {
+            dispatch(mouseOverGrid(val));
+        },
+        mouseLeftPressed: (val) => {
+            dispatch(mouseLeftPressed(val));
+        },
+        setHighlightPos: (pos) => {
+            dispatch(setHighlightPos(pos));
+        },
+        endHighlight: () => {
+            dispatch(endHighlight());
+        },
+        setStrictMode: (val) => {
+            dispatch(setStrictMode(val));
+        },
+    };
+};
+
+// only things relevant to HTML state
+interface IFortressDesignerState {
+    debug: boolean;
+    gridColumnLayout: number;
+    gridRowLayout: number;
+
+    // hasChangedZLevel: boolean;
     windowResizing: boolean;
     gameLoading: boolean;
-    cursorMode: CURSOR_BEHAVIOR;
-    cursorFollowsMouse: boolean;
 
     /**
      * Only used to trigger react re-renders
@@ -50,13 +128,15 @@ interface IFortressDesignerState {
     refresh: boolean;
 }
 
-class FortressDesigner extends Component<{}, IFortressDesignerState> {
+class FortressDesigner extends Component<IRootReduxProps & IRootDispatchProps, IFortressDesignerState> {
     private gridElement: HTMLElement;
-    private canvasElement: HTMLElement;
+    // private canvasElement: HTMLElement;
     private headerElement: HTMLElement;
     private tileSheetImage: HTMLImageElement;
-    private game: GameRender;
+    private game: Game;
     private listenersOn: boolean;
+
+    private canvasRef: any;
 
     constructor() {
         super();
@@ -64,20 +144,11 @@ class FortressDesigner extends Component<{}, IFortressDesignerState> {
         this.listenersOn = false;
 
         this.setState({
-            currentMenu: "top",
-            currentMenuItem: null,
             debug: false,
-            zLevel: 0,
-            hasChangedZLevel: false,
-            mouseOverGrid: false,
             windowResizing: false,
             gameLoading: true,
-            leftMouseDown: false,
-            highlighting: false,
             gridColumnLayout: 0,
             gridRowLayout: 0,
-            strictMode: DEFAULTS.STRICT_MODE,
-            cursorMode: DEFAULTS.CURSOR_MODE,
         });
     }
 
@@ -101,19 +172,19 @@ class FortressDesigner extends Component<{}, IFortressDesignerState> {
 
     initGame = () => {
         if (this.game == null) {
-            this.game = new GameRender(this.tileSheetImage, this.gridElement);
+            this.game = new Game(this.tileSheetImage, this.gridElement, this.canvasRef);
         } else {
             this.game.init();
         }
 
-        this.canvasElement = this.game.getCanvas();
+        // this.canvasElement = this.game.getCanvas();
 
         if (!this.listenersOn) {
-            this.gridElement.addEventListener("click", this.handleGridClick);
+            // this.gridElement.addEventListener("click", this.handleGridClick);
             this.gridElement.addEventListener("mousemove", this.handleMouseMove);
             this.gridElement.addEventListener("mouseover", this.handleMouseOver);
             this.gridElement.addEventListener("mouseleave", this.handleMouseLeave);
-            this.gridElement.addEventListener("contextmenu", this.handleContextMenu);
+            // this.gridElement.addEventListener("contextmenu", this.handleContextMenu);
             this.gridElement.addEventListener("mousedown", this.handleMouseDown);
             this.gridElement.addEventListener("mouseup", this.handleMouseUp);
 
@@ -132,17 +203,17 @@ class FortressDesigner extends Component<{}, IFortressDesignerState> {
 
         this.game.destroy();
 
-        if (this.canvasElement != null) {
-            this.canvasElement.remove();
-            this.canvasElement = null;
-        }
+        // if (this.canvasElement != null) {
+        //     this.canvasElement.remove();
+        //     this.canvasElement = null;
+        // }
 
         if (this.listenersOn) {
-            this.gridElement.removeEventListener("click", this.handleGridClick);
+            // this.gridElement.removeEventListener("click", this.handleGridClick);
             this.gridElement.removeEventListener("mousemove", this.handleMouseMove);
             this.gridElement.removeEventListener("mouseover", this.handleMouseOver);
             this.gridElement.removeEventListener("mouseleave", this.handleMouseLeave);
-            this.gridElement.removeEventListener("contextmenu", this.handleContextMenu);
+            // this.gridElement.removeEventListener("contextmenu", this.handleContextMenu);
             this.gridElement.removeEventListener("mousedown", this.handleMouseDown);
             this.gridElement.removeEventListener("mouseup", this.handleMouseUp);
 
@@ -199,121 +270,107 @@ class FortressDesigner extends Component<{}, IFortressDesignerState> {
         this.destroyGame();
     }
 
-    handleContextMenu = (e: MouseEvent | TouchEvent) => {
-        e.preventDefault();
-        const pos = this.game.getMousePosition(e);
-        this.game.moveCursorTo(pos);
-        if (this.isInspecting()) {
-            //right-click inspect building/item
-        } else {
-            this.handleEnterRightClick();
-        }
-        return false;
-    }
-
-    /**
-     * Handles enter key + right clicks
-     */
-    handleEnterRightClick = () => {
-        if (this.game.handleEnterKey(this.state.currentMenuItem)) {
-            this.setState({
-                currentMenuItem: null,
-            });
-        }
-    }
-
-    handleGridClick = (e: MouseEvent | TouchEvent) => {
-        if (e instanceof MouseEvent && e.button !== 0) {
-            return;
-        }
-        e.preventDefault();
-
-        if (this.isInspecting()) {
-            //handle inspection
-        } else {
-            const pos = this.game.getMousePosition(e);
-            this.game.moveCursorTo(pos);
-            if (this.state.cursorMode === CURSOR_BEHAVIOR.MODERN) {
-                // if (this)
-                if (this.game.paint(this.state.currentMenuItem)) {
-                    this.setState({
-                        currentMenuItem: null,
-                    });
-                }
-            }
-            this.setState({
-                refresh: true,
-            });
-        }
-    }
-
     handleMouseMove = (e) => {
-        this.setState({
-            mouseLeft: e.clientX,
-            mouseTop: e.clientY,
-        }, () => {
-            if (this.state.currentMenuItem === MENU_ITEM.inspect) {
-                if (this.state.leftMouseDown) {
-                    this.setState({
-                        highlighting: true, //don't show inspect highlighter until mouse moves after click
-                    });
-                }
-            } else if (this.state.cursorMode === CURSOR_BEHAVIOR.MODERN) {
-                this.game.moveCursorTo(this.game.getMousePosition(e));
-                if (this.state.leftMouseDown) {
-                    if (this.game.paint(this.state.currentMenuItem)) {
-                        this.setState({
-                            currentMenuItem: null,
-                        });
-                    }
-                }
-            }
-        });
+        // this.props.moveMouse([e.clientX, e.clientY]);
+        window.mouseX = e.clientX;
+        window.mouseY = e.clientY;
+        // if (this.props.inspecting) {
+        //     if (this.props.leftMouseDown) {
+        //         // this.setState({
+        //         //     highlighting: true, //don't show inspect highlighter until mouse moves after click
+        //         // });
+        //         this.props.startHighlight();
+        //     }
+        // } else if (this.props.cursorMode === CURSOR_BEHAVIOR.MODERN || this.props.isDesignating) {
+        //     // const trg = this.game.getMousePosition(e);
+        //     const trg = [window.mouseX, window.mouseY] as Point;
+        //     // this.game.moveCursorTo(trg);
+        //     this.props.moveCursor(trg);
+        //     if (this.props.leftMouseDown) {
+        //         // if (this.game.paint(this.props.currentMenuItem)) {
+        //         //     // this.setState({
+        //         //     //     currentMenuItem: null,
+        //         //     // });
+        //         //     this.props.selectMenuItem(null);
+        //         // }
+        //     }
+        // }
+        // // this.setState({
+        // //     mouseLeft: e.clientX,
+        // //     mouseTop: e.clientY,
+        // // }, () => {
+        // //     if (this.game == null) {
+        // //         return;
+        // //     }
+        // //     if (this.props.inspecting) {
+        // //         if (this.props.leftMouseDown) {
+        // //             this.setState({
+        // //                 highlighting: true, //don't show inspect highlighter until mouse moves after click
+        // //             });
+        // //         }
+        // //     } else if (this.props.cursorMode === CURSOR_BEHAVIOR.MODERN || this.game.isDesignating()) {
+        // //         // const trg = this.game.getMousePosition(e);
+        // //         const trg = [window.mouseX, window.mouseY];
+        // //         this.game.moveCursorTo(trg);
+        // //         if (this.props.leftMouseDown) {
+        // //             if (this.game.paint(this.props.currentMenuItem)) {
+        // //                 this.setState({
+        // //                     currentMenuItem: null,
+        // //                 });
+        // //             }
+        // //         }
+        // //     }
+        // // });
     }
 
     handleMouseOver = (e) => {
-        this.setState({
-            mouseOverGrid: true,
-            mouseLeft: e.clientX,
-            mouseTop: e.clientY,
-        }, () => {
-            if (this.state.cursorMode === CURSOR_BEHAVIOR.MODERN) {
-                this.game.moveCursorTo(this.game.getMousePosition(e));
-            }
-        });
+        // this.props.moveMouse([e.clientX, e.clientY]);
+        window.mouseX = e.clientX;
+        window.mouseY = e.clientY;
+        this.props.mouseOverGrid(true);
+        // if (this.props.cursorMode === CURSOR_BEHAVIOR.MODERN) {
+        //     // this.props.moveCursor([window.mouseX, window.mouseY]);
+        //     const gridPos = this.getGridPosition(window.mouseX, window.mouseY);
+        //     const mapPos = Util.getMapCoord(gridPos);
+        //     this.props.moveCursor(mapPos);
+        // }
+        // this.setState({
+        //     mouseOverGrid: true,
+        //     mouseLeft: e.clientX,
+        //     mouseTop: e.clientY,
+        // }, () => {
+        //     if (this.props.cursorMode === CURSOR_BEHAVIOR.MODERN) {
+        //         //this.game.moveCursorTo(this.game.getMousePosition(e));
+        //         this.game.moveCursorTo([window.mouseX, window.mouseY]);
+        //     }
+        // });
     }
 
     handleMouseLeave = (e) => {
-        this.setState({
-            mouseOverGrid: false,
-        });
+        this.props.mouseOverGrid(false);
     }
 
     handleMouseDown = (e: MouseEvent) => {
         if (e.button === 0) {
-            if (this.isInspecting()) {
-                this.setState({
-                    leftMouseDown: true,
-                    highlightingStart: this.game.getMousePosition(e),
-                });
-            } else {
-                this.setState({
-                    leftMouseDown: true,
-                });
+            this.props.mouseLeftPressed(true);
+            if (this.props.inspecting) {
+                this.props.setHighlightPos([window.mouseX, window.mouseY]);
             }
         }
     }
 
     handleMouseUp = (e: MouseEvent) => {
         if (e.button === 0) {
-            if (this.state.highlighting) {
+            if (this.props.highlighting) {
                 // handle 'highlight selection'
             }
-            this.setState({
-                leftMouseDown: false,
-                highlighting: false,
-                highlightingStart: null,
-            });
+            this.props.mouseLeftPressed(false);
+            this.props.endHighlight();
+            // this.setState({
+            //     leftMouseDown: false,
+            //     highlighting: false,
+            //     highlightingStart: null,
+            // });
         }
     }
 
@@ -328,7 +385,7 @@ class FortressDesigner extends Component<{}, IFortressDesignerState> {
         switch (e.keyCode) {
             case KEYS.VK_RETURN:
                 e.preventDefault();
-                this.handleEnterRightClick();
+                // this.handleEnterRightClick();
                 break;
             case KEYS.VK_BACK_QUOTE:
             case KEYS.VK_TILDE:
@@ -342,70 +399,22 @@ class FortressDesigner extends Component<{}, IFortressDesignerState> {
                 e.preventDefault();
                 this.handleMenuEvent("escape");
                 break;
-            case KEYS.VK_UP:
-            case KEYS.VK_NUMPAD8:
-                //move north
-                e.preventDefault();
-                this.game.moveCursor(DIRECTION.N, e.shiftKey);
-                break;
-            case KEYS.VK_PAGE_UP:
-            case KEYS.VK_NUMPAD9:
-                //move ne
-                e.preventDefault();
-                this.game.moveCursor(DIRECTION.NE, e.shiftKey);
-                break;
-            case KEYS.VK_RIGHT:
-            case KEYS.VK_NUMPAD6:
-                //move east
-                e.preventDefault();
-                this.game.moveCursor(DIRECTION.E, e.shiftKey);
-                break;
-            case KEYS.VK_PAGE_DOWN:
-            case KEYS.VK_NUMPAD3:
-                //move se
-                e.preventDefault();
-                this.game.moveCursor(DIRECTION.SE, e.shiftKey);
-                break;
-            case KEYS.VK_DOWN:
-            case KEYS.VK_NUMPAD2:
-                //move south
-                e.preventDefault();
-                this.game.moveCursor(DIRECTION.S, e.shiftKey);
-                break;
-            case KEYS.VK_END:
-            case KEYS.VK_NUMPAD1:
-                //move sw
-                e.preventDefault();
-                this.game.moveCursor(DIRECTION.SW, e.shiftKey);
-                break;
-            case KEYS.VK_LEFT:
-            case KEYS.VK_NUMPAD4:
-                //move west
-                e.preventDefault();
-                this.game.moveCursor(DIRECTION.W, e.shiftKey);
-                break;
-            case KEYS.VK_HOME:
-            case KEYS.VK_NUMPAD7:
-                //move nw
-                e.preventDefault();
-                this.game.moveCursor(DIRECTION.NW, e.shiftKey);
-                break;
-            case KEYS.VK_PERIOD:
-            case KEYS.VK_GREATER_THAN:
-                this.setState({
-                    zLevel: this.game.zUp(),
-                    hasChangedZLevel: true,
-                });
-                break;
-            case KEYS.VK_COMMA:
-            case KEYS.VK_LESS_THAN:
-                this.setState({
-                    zLevel: this.game.zDown(),
-                    hasChangedZLevel: true,
-                });
-                break;
+            // case KEYS.VK_PERIOD:
+            // case KEYS.VK_GREATER_THAN:
+            //     this.setState({
+            //         // zLevel: this.game.zUp(),
+            //         // hasChangedZLevel: true,
+            //     });
+            //     break;
+            // case KEYS.VK_COMMA:
+            // case KEYS.VK_LESS_THAN:
+            //     this.setState({
+            //         // zLevel: this.game.zDown(),
+            //         // hasChangedZLevel: true,
+            //     });
+            //     break;
             default:
-                const key = this.state.currentMenu !== "top" ? this.state.currentMenu + ":" + e.key : e.key;
+                const key = this.props.currentMenu !== "top" ? this.props.currentMenu + ":" + e.key : e.key;
                 const hotkeyTarget = MENU_KEYS[key];
                 if (hotkeyTarget) {
                     e.preventDefault();
@@ -425,177 +434,136 @@ class FortressDesigner extends Component<{}, IFortressDesignerState> {
             return;
         }
 
-        if (e === "inspect") {
-            this.game.hideCursor();
-        } else {
-            this.game.showCursor();
-        }
+        // if (e === "inspect") {
+        //     this.game.hideCursor();
+        // } else {
+        //     this.game.showCursor();
+        // }
 
         if (e === "top") {
-            this.setState({
-                currentMenuItem: null,
-                currentMenu: "top",
-            });
+            // this.setState({
+            //     currentMenuItem: null,
+            //     currentMenu: "top",
+            // });
+            this.props.selectMenu("top");
             return;
         }
 
         if (SUBMENUS[e] != null) {
-            this.setState({
-                currentMenuItem: null,
-                currentMenu: SUBMENUS[e],
-            });
+            // this.setState({
+            //     currentMenuItem: null,
+            //     currentMenu: SUBMENUS[e],
+            // });
+            this.props.selectMenu(SUBMENUS[e]);
             return;
         }
 
         if (e === "escape") {
-            if (this.game.isBuilding()) {
-                this.setState({
-                    currentMenuItem: null,
-                });
-                this.game.stopBuilding();
-            } else if (this.game.isDesignating()) {
-                this.game.cancelDesignate();
-            } else if (this.state.currentMenuItem != null) {
-                this.setState({
-                    currentMenuItem: null,
-                });
+            // if (this.props.cursorBuilding) {
+            //     // this.setState({
+            //     //     currentMenuItem: null,
+            //     // });
+            //     // this.game.stopBuilding();
+            //     this.game.handleEscapeKey();
+            // } else if (this.game.isDesignating()) {
+            //     // this.game.cancelDesignate();
+            if (this.props.cursorBuilding || this.props.isDesignating) {
+                this.game.handleEscapeKey();
+            } else if (this.props.currentMenuItem != null) {
+                this.props.selectMenuItem(null);
             } else {
                 // go up one menu level
                 let newMenu = "";
-                const idx = this.state.currentMenu.lastIndexOf(":");
+                const idx = this.props.currentMenu.lastIndexOf(":");
                 if (idx > 0) {
-                    newMenu = this.state.currentMenu.substr(0, idx);
+                    newMenu = this.props.currentMenu.substr(0, idx);
                 } else {
                     newMenu = "top";
                 }
-                this.setState({
-                    currentMenu: newMenu,
-                    currentMenuItem: null,
-                });
+                this.props.selectMenu(newMenu);
             }
         } else {
-            if (this.state.currentMenuItem !== e) {
-                this.setState({
-                    currentMenuItem: e as MENU_ITEM,
-                });
+            if (this.props.currentMenuItem !== e) {
+                this.props.selectMenuItem(e as MENU_ITEM);
+                // this.setState({
+                //     currentMenuItem: e as MENU_ITEM,
+                // });
                 if (e in BUILDINGS) {
-                    this.game.setCursorToBuilding(e as MENU_ITEM);
+                    // this.game.setCursorToBuilding(e as MENU_ITEM);
                 }
             }
         }
     }
 
     handleStrictModeChange = (e: Event) => {
-        this.setState({
-            strictMode: (e.currentTarget as any).checked,
-        });
-        this.game.setStrictMode((e.currentTarget as any).checked);
+        // this.setState({
+        //     strictMode: (e.currentTarget as any).checked,
+        // });
+        this.props.setStrictMode((e.currentTarget as any).checked);
+        //this.game.setStrictMode((e.currentTarget as any).checked);
     }
 
-    isInspecting = () => {
-        return this.state.currentMenuItem != null && this.state.currentMenuItem === "inspect";
-    }
+    // getFooterDetails = (tile: Tile) => {
+    //     const result = [];
+    //     const pos = tile.getPosition();
+    //     result.push((
+    //         <div class="info-coord">{`[${pos[0]},${pos[1]}]`}</div>
+    //     ));
+    //     const type = tile.getType();
+    //     switch (type) {
+    //         case TileType.Building:
+    //             result.push((
+    //                 <div class="info-bldg">{tile.getBuildingName()} (Building)</div>
+    //             ));
+    //             break;
+    //         case TileType.Empty:
+    //             break;
+    //         default:
+    //             result.push((
+    //                 <div class="info-type">{TileType[type]}</div>
+    //             ));
+    //             break;
+    //     }
 
-    // getGridPosition = (clientX: number, clientY: number): [number, number] => {
-    //     //returns top-left coordinate for grid item based on mouse position
-    //     if (this.canvasElement != null) {
-    //         const bounds = this.canvasElement.getBoundingClientRect();
-    //         const maxHeight = this.canvasElement.offsetHeight - TILE_H + bounds.top;
-    //         const maxWidth = this.canvasElement.offsetWidth - TILE_W + bounds.left;
-    //         const leftPos = Math.max(0, Math.min(maxWidth, clientX - (clientX % TILE_W)));
-    //         const topPos = Math.max(0, Math.min(maxHeight, clientY - (clientY % TILE_H)));
-    //         return [leftPos, topPos];
+    //     return result;
+    // }
+
+    // renderFooterMouse = () => {
+    //     if (this.game == null) {
+    //         return;
+    //     }
+
+    //     if (!this.props.mouseOverGrid) {
+    //         return;
+    //     }
+
+    //     const tile = this.game.getTileAtMouse(window.mouseX, window.mouseY);
+    //     if (tile) {
+    //         return this.getFooterDetails(tile);
     //     }
     // }
 
-    getHighlighterStyle = () => {
-        if (!this.state.highlighting ||
-            !this.headerElement ||
-            !this.canvasElement ||
-            !this.state.mouseOverGrid ||
-            this.state.mouseLeft == null ||
-            this.state.mouseTop == null) {
-            return {
-                display: "none",
-            };
-        }
-        const targetPos = this.game.getMousePosition({ clientX: this.state.mouseLeft, clientY: this.state.mouseTop });
-        const bounds = this.canvasElement.getBoundingClientRect();
-        const camera = this.game.getCamera();
-        let width = TILE_W * (1 + Math.abs(targetPos[0] - this.state.highlightingStart[0]));
-        let height = TILE_H * (1 + Math.abs(targetPos[1] - this.state.highlightingStart[1]));
-
-        let left = bounds.left + TILE_W * (Math.min(targetPos[0], this.state.highlightingStart[0]) - camera[0]);
-        let top = bounds.top + TILE_H * (Math.min(targetPos[1], this.state.highlightingStart[1]) - camera[1]);
-        return {
-            width: `${width}px`,
-            height: `${height}px`,
-            left: left,
-            top: top,
-        };
-    }
-
-    getFooterDetails = (tile: Tile) => {
-        const result = [];
-        const pos = tile.getPosition();
-        result.push((
-            <div class="info-coord">{`[${pos[0]},${pos[1]}]`}</div>
-        ));
-        const type = tile.getType();
-        switch (type) {
-            case TileType.Building:
-                result.push((
-                    <div class="info-bldg">{tile.getBuildingName()} (Building)</div>
-                ));
-                break;
-            case TileType.Empty:
-                break;
-            default:
-                result.push((
-                    <div class="info-type">{TileType[type]}</div>
-                ));
-                break;
-        }
-
-        return result;
-    }
-
-    renderFooterMouse = () => {
-        if (this.game == null) {
-            return;
-        }
-
-        if (!this.state.mouseOverGrid) {
-            return;
-        }
-
-        const tile = this.game.getTileAtMouse(this.state.mouseLeft, this.state.mouseTop);
-        if (tile) {
-            return this.getFooterDetails(tile);
-        }
-    }
-
-    renderFooterCursor = () => {
-        if (this.game == null) {
-            return;
-        }
-        const result = [];
-        const tile: Tile = this.game.getTileAtCursor();
-        if (tile) {
-            result.push(this.getFooterDetails(tile));
-        }
-        if (this.game.isDesignating()) {
-            result.push((
-                <div class="info-status">Designating {MENU_IDS[this.state.currentMenuItem].text}</div>
-            ));
-        }
-        return result;
-    }
+    // renderFooterCursor = () => {
+    //     if (this.game == null) {
+    //         return;
+    //     }
+    //     const result = [];
+    //     const tile: Tile = this.game.getTileAtCursor();
+    //     if (tile) {
+    //         result.push(this.getFooterDetails(tile));
+    //     }
+    //     if (this.game.isDesignating()) {
+    //         result.push((
+    //             <div class="info-status">Designating {MENU_IDS[this.props.currentMenuItem].text}</div>
+    //         ));
+    //     }
+    //     return result;
+    // }
 
     renderBreadcrumbs = () => {
         const breadcrumbs = [];
-        if (this.state.currentMenu !== "top") {
-            const activeItem = MENU_KEYS[this.state.currentMenu];
+        if (this.props.currentMenu !== "top") {
+            const activeItem = MENU_KEYS[this.props.currentMenu];
             breadcrumbs.push(<a href="#" data-id={activeItem.key} onClick={(e) => this.breadcrumbHandler(e)}>{activeItem.text}</a>);
 
             // let parent = activeItem.parent;
@@ -633,19 +601,19 @@ class FortressDesigner extends Component<{}, IFortressDesignerState> {
         if (this.game == null) {
             return null;
         }
-        if (this.game.isDesignating()) {
+        if (this.props.isDesignating) {
             return (
-                <div>Designating {MENU_IDS[this.state.currentMenuItem].text}</div>
+                <div>Designating {MENU_IDS[this.props.currentMenuItem].text}</div>
             );
         }
-        if (this.state.currentMenuItem != null && this.state.currentMenuItem.length > 0) {
-            if (this.state.currentMenuItem in BUILDINGS) {
+        if (this.props.currentMenuItem != null && this.props.currentMenuItem.length > 0) {
+            if (this.props.currentMenuItem in BUILDINGS) {
                 return (
-                    <div>Placing {MENU_IDS[this.state.currentMenuItem].text}</div>
+                    <div>Placing {MENU_IDS[this.props.currentMenuItem].text}</div>
                 );
             }
             return (
-                <div>Designating {MENU_IDS[this.state.currentMenuItem].text}</div>
+                <div>Designating {MENU_IDS[this.props.currentMenuItem].text}</div>
             );
         }
         return <div></div>;
@@ -655,7 +623,8 @@ class FortressDesigner extends Component<{}, IFortressDesignerState> {
         return (
             <div id="page">
                 {DEBUG ? <DebugMenu isActive={state.debug} /> : null}
-                <div id="highlighter" class={state.highlighting ? "active" : null} style={this.getHighlighterStyle()}></div>
+                {/* <div id="highlighter" class={props.highlighting ? "active" : null} style={this.getHighlighterStyle()}></div> */}
+                <GameHighlighter />
                 <div id="wrapper" style={this.getWrapperCss()}>
                     <div id="header">
                         <div class="left"><a class="home-link" href="https://reff.dev/">reff.dev</a></div>
@@ -673,13 +642,14 @@ class FortressDesigner extends Component<{}, IFortressDesignerState> {
                         <div class="loading">
                             Loading...
                         </div>
+                        <canvas ref={ (e) => this.canvasRef = e }></canvas>
                     </div>
                     <div id="menu">
                         <div class="menu-breadcrumbs">
                             {this.renderBreadcrumbs()}
                         </div>
-                        <Menu highlightedItem={state.currentMenuItem}
-                            selectedMenu={state.currentMenu}
+                        <Menu highlightedItem={props.currentMenuItem}
+                            selectedMenu={props.currentMenu}
                             handleMenuEvent={this.handleMenuEvent} />
                         {this.renderMenuToolbar()}
                         <div class="menu-bottom">
@@ -687,7 +657,7 @@ class FortressDesigner extends Component<{}, IFortressDesignerState> {
                                 {this.renderMenuStatus()}
                             </div>
                             <div class="strict-mode">
-                                <input id="strictmode" checked={state.strictMode} type="checkbox" onChange={this.handleStrictModeChange} />
+                                <input id="strictmode" checked={props.strictMode} type="checkbox" onChange={this.handleStrictModeChange} />
                                 <label title="Toggle Strict Mode" for="strictmode">Strict Mode:</label>
                             </div>
                             <div class="copy">&copy; {new Date().getFullYear()} Alex Reff</div>
@@ -695,8 +665,8 @@ class FortressDesigner extends Component<{}, IFortressDesignerState> {
                     </div>
                     <footer id="footer">
                         <div class="inner">
-                            <div class="data-cursor">Cursor: {this.renderFooterCursor()}</div>
-                            <div class="data-mouse">Mouse: {this.renderFooterMouse()}</div>
+                            {/* <div class="data-cursor">Cursor: {this.renderFooterCursor()}</div>
+                            <div class="data-mouse">Mouse: {this.renderFooterMouse()}</div> */}
                         </div>
                     </footer>
                 </div>
@@ -705,7 +675,9 @@ class FortressDesigner extends Component<{}, IFortressDesignerState> {
     }
 }
 
-render(<FortressDesigner />, document.getElementById("body"));
+const ConnectedFortressDesigner = connect(mapStateToProps, mapDispatchToProps)(FortressDesigner);
+
+render(<Provider store={store}><ConnectedFortressDesigner /></Provider>, document.getElementById("body"));
 
 // onEnd(e: MouseEvent | TouchEvent) {
 //     e.preventDefault();

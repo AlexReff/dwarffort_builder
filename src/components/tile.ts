@@ -1,5 +1,5 @@
 // import * as _ from "lodash";
-import { DEC_TILES, DIRECTION, FLOOR_TILES, DEC_TILES_COLORS, IBuildingData, MENU_IDS, Point, WALL_TILES } from "./constants";
+import { DEC_TILES, DEC_TILES_COLORS, DIRECTION, FLOOR_TILES, IBuildingData, MENU_IDS, Point, WALL_TILES } from "./constants";
 import RNG from "./rot/rng";
 
 enum TileType {

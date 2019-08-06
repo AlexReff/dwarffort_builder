@@ -18,6 +18,7 @@ const BACKENDS = {
 };
 
 const DEFAULT_OPTIONS: IDisplayOptions = {
+    canvasElement: null,
     width: 80,
     height: 25,
     transpose: false,
@@ -42,12 +43,9 @@ const DEFAULT_OPTIONS: IDisplayOptions = {
  * @class Visual map display
  */
 export default class Display {
-
-    // static Rect = Rect;
-    // static Hex = Hex;
     static Tile = Tile;
     static TileGL = TileGL;
-    // static Term = Term;
+
     _data: { [pos: string]: DisplayData };
     _dirty: boolean | { [pos: string]: boolean };
     _options!: IDisplayOptions;
@@ -94,7 +92,11 @@ export default class Display {
         if (options.width || options.height || options.fontSize || options.fontFamily || options.spacing || options.layout) {
             if (options.layout) {
                 const ctor = BACKENDS[options.layout];
-                this._backend = new ctor();
+                if (options.canvasElement != null) {
+                    this._backend = new ctor(options.canvasElement);
+                } else {
+                    this._backend = new ctor();
+                }
             }
 
             this._backend.setOptions(this._options);

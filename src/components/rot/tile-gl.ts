@@ -23,11 +23,11 @@ export default class TileGL extends Backend {
     _program!: WebGLProgram;
     _uniforms: { [key: string]: WebGLUniformLocation | null };
 
-    constructor() {
+    constructor(canvas?: HTMLCanvasElement) {
         super();
         this._uniforms = {};
         try {
-            this._gl = this._initWebGL();
+            this._gl = this._initWebGL(canvas);
         } catch (e) {
             alert(e.message);
         }
@@ -165,8 +165,14 @@ export default class TileGL extends Backend {
         return this._normalizedEventToPosition(x, y);
     }
 
-    _initWebGL() {
-        const gl = document.createElement("canvas").getContext("webgl2", { preserveDrawingBuffer: true }) as WebGLRenderingContext;
+    _initWebGL(canvas?: HTMLCanvasElement) {
+        let gl: WebGLRenderingContext = null;
+        if (canvas != null) {
+            gl = canvas.getContext("webgl2", { preserveDrawingBuffer: true }) as WebGLRenderingContext;
+        } else {
+            gl = document.createElement("canvas").getContext("webgl2", { preserveDrawingBuffer: true }) as WebGLRenderingContext;
+        }
+
         (window as any).gl = gl;
         const program = createProgram(gl, VS, FS);
         gl.useProgram(program);

@@ -4,9 +4,13 @@ import { IDisplayOptions } from "../rot/types";
 export default abstract class Canvas extends Backend {
     _ctx: CanvasRenderingContext2D;
 
-    constructor() {
+    constructor(canvas?: HTMLCanvasElement) {
         super();
-        this._ctx = document.createElement("canvas").getContext("2d") as CanvasRenderingContext2D;
+        if (canvas != null) {
+            this._ctx = canvas.getContext("2d") as CanvasRenderingContext2D;
+        } else {
+            this._ctx = document.createElement("canvas").getContext("2d") as CanvasRenderingContext2D;
+        }
     }
 
     schedule(cb: () => void) { requestAnimationFrame(cb); }
