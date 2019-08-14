@@ -25,21 +25,21 @@ export function toggleAnimation() {
     };
 }
 
-export function CameraGoto(coord: Point) {
+export function moveCamera(coord: Point) {
     return {
         type: ACTION_TYPE.CAMERA_GOTO,
         coord,
     };
 }
 
-export function SetGridSize(size: Point) {
+export function setGridSize(size: Point) {
     return {
         type: ACTION_TYPE.CAMERA_GRID_SETSIZE,
         size,
     };
 }
 
-export function SetMapSize(size: Point) {
+export function setMapSize(size: Point) {
     return {
         type: ACTION_TYPE.CAMERA_MAP_SETSIZE,
         size,

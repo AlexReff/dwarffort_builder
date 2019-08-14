@@ -1,6 +1,6 @@
 import * as _ from "lodash";
 import { Component, h } from "preact";
-import { MENU_ITEM, MENU_ITEMS, MENU_KEYS, SUBMENU_MAX_H } from "./constants";
+import { BUILDINGS, MENU_IDS, MENU_ITEM, MENU_ITEMS, MENU_KEYS, SUBMENU_MAX_H, SUBMENUS } from "./constants";
 
 interface IMenuItem {
     "text": string;
@@ -11,9 +11,14 @@ interface IMenuItem {
 }
 
 interface IMenuProps {
-    highlightedItem: string;
-    selectedMenu: string;
-    handleMenuEvent: (e: string) => void;
+    currentMenu: string;
+    currentMenuItem: MENU_ITEM;
+    strictMode: boolean;
+    isDesignating: boolean;
+
+    selectMenu: (item: string) => void;
+    selectMenuItem: (item: MENU_ITEM) => void;
+    setStrictMode: (val: boolean) => void;
 }
 
 class Menu extends Component<IMenuProps, {}> {
@@ -21,35 +26,143 @@ class Menu extends Component<IMenuProps, {}> {
         super();
     }
 
-    render(props: IMenuProps, state: any) {
+    componentDidMount = () => {
+        window.addEventListener("keydown", this.handleKeyPress);
+    }
+
+    render = (props: IMenuProps, state: any) => {
         return (
-            <div class="menu-items" style={this.getMenuItemsCss()}>
-                {this.getChildMenu(MENU_ITEMS, "top")}
+            <div id="menu">
+                <div class="menu-breadcrumbs">
+                    {this.renderBreadcrumbs()}
+                </div>
+                <div class="menu-items" style={this.getMenuItemsCss()}>
+                    {this.getChildMenu(MENU_ITEMS, "top")}
+                </div>
+                {this.renderMenuToolbar()}
+                <div class="menu-bottom">
+                    <div class="menu-status">
+                        {this.renderMenuStatus()}
+                    </div>
+                    <div class="strict-mode">
+                        <input id="strictmode" checked={props.strictMode} type="checkbox" onChange={this.handleStrictModeChange} />
+                        <label title="Toggle Strict Mode" for="strictmode">Strict Mode:</label>
+                    </div>
+                    <div class="copy">&copy; {new Date().getFullYear()} Alex Reff</div>
+                </div>
             </div>
         );
     }
 
-    private getMenuItemsCss = () => {
+    renderBreadcrumbs = () => {
+        const breadcrumbs = [];
+        if (this.props.currentMenu !== "top") {
+            const activeItem = MENU_KEYS[this.props.currentMenu];
+            breadcrumbs.push(<a href="#" data-id={activeItem.key} onClick={(e) => this.breadcrumbHandler(e)}>{activeItem.text}</a>);
+
+            // let parent = activeItem.parent;
+            // while (parent != null) {
+            //     breadcrumbs.push(<a href="#" data-id={parent.key} onClick={(e) => this.breadcrumbHandler(e)}>{parent.text}</a>);
+            //     parent = parent.parent;
+            // }
+        }
+
+        breadcrumbs.push(<a href="#" data-id="top" title="Main Menu" onClick={(e) => this.breadcrumbHandler(e)}>☺</a>);
+        return breadcrumbs.reverse();
+    }
+
+    breadcrumbHandler = (e: Event) => {
+        e.preventDefault();
+        (e.currentTarget as HTMLElement).blur();
+        const key = (e.currentTarget as HTMLElement).dataset.id;
+        if (key === "top") {
+            this.handleMenuEvent("top");
+        } else if (MENU_KEYS[key] != null) {
+            this.handleMenuEvent(MENU_KEYS[key].id);
+        }
+    }
+
+    renderMenuStatus = () => {
+        if (this.props.isDesignating) {
+            return (
+                <div>Designating {MENU_IDS[this.props.currentMenuItem].text}</div>
+            );
+        }
+        if (this.props.currentMenuItem != null && this.props.currentMenuItem.length > 0) {
+            if (this.props.currentMenuItem in BUILDINGS) {
+                return (
+                    <div>Placing {MENU_IDS[this.props.currentMenuItem].text}</div>
+                );
+            }
+            return (
+                <div>Designating {MENU_IDS[this.props.currentMenuItem].text}</div>
+            );
+        }
+        return <div></div>;
+    }
+
+    renderMenuToolbar = () => {
+        // shows if a building is selected
+        return (
+            <div class="menu-toolbar">
+                TOOLBAR
+            </div>
+        );
+    }
+
+    handleMenuEvent = (e: string) => {
+        if (e === "top") {
+            this.props.selectMenu("top");
+            return;
+        }
+
+        if (SUBMENUS[e] != null) {
+            this.props.selectMenu(SUBMENUS[e]);
+            return;
+        }
+
+        if (this.props.currentMenuItem !== e) {
+            this.props.selectMenuItem(e as MENU_ITEM);
+            // if (e in BUILDINGS) {
+            //     // this.game.setCursorToBuilding(e as MENU_ITEM);
+            // }
+        }
+    }
+
+    handleStrictModeChange = (e: Event) => {
+        this.props.setStrictMode((e.currentTarget as any).checked);
+    }
+
+    handleKeyPress = (e: KeyboardEvent) => {
+        const key = this.props.currentMenu !== "top" ? this.props.currentMenu + ":" + e.key : e.key;
+        const hotkeyTarget = MENU_KEYS[key];
+        if (hotkeyTarget) {
+            e.preventDefault();
+            this.handleMenuEvent(MENU_KEYS[key].id);
+        }
+    }
+
+    getMenuItemsCss = () => {
         return {
             minHeight: (SUBMENU_MAX_H * 21) + 10,
         };
     }
 
-    private menuItemClickHandler = (e) => {
+    menuItemClickHandler = (e) => {
         e.preventDefault();
         this.menuItemHandler(e.currentTarget.id);
     }
 
-    private menuItemHandler = (key: string) => {
+    menuItemHandler = (key: string) => {
         if (key === "top") {
-            this.props.handleMenuEvent("top");
+            this.handleMenuEvent("top");
         } else if (MENU_KEYS[key] != null) {
-            this.props.handleMenuEvent(MENU_KEYS[key].id);
+            this.handleMenuEvent(MENU_KEYS[key].id);
         }
     }
 
     //render each individual menu with separate keys
-    private getChildMenu(items: IMenuItem[], group: string, prefix?: string) {
+    getChildMenu(items: IMenuItem[], group: string, prefix?: string) {
         if (typeof items === "undefined" ||
             items === null ||
             items.length === 0) {
@@ -69,7 +182,7 @@ class Menu extends Component<IMenuProps, {}> {
             stack.push((
                 <a onClick={(e) => this.menuItemClickHandler(e)}
                     title={i.text}
-                    class={"menu-item" + (this.props.highlightedItem != null && this.props.highlightedItem === i.id ? " active" : "")}
+                    class={"menu-item" + (this.props.currentMenuItem != null && this.props.currentMenuItem === i.id ? " active" : "")}
                     id={prefix + i.key}>{i.key}: {i.text}</a>
             ));
             if (i.children != null && i.children.length > 0) {
@@ -77,7 +190,7 @@ class Menu extends Component<IMenuProps, {}> {
             }
         }
 
-        const thisMenu: any[] = [<div class={"submenu" + (this.props.selectedMenu === group ? " active" : "")}>{stack}</div>];
+        const thisMenu: any[] = [<div class={"submenu" + (this.props.currentMenu === group ? " active" : "")}>{stack}</div>];
 
         return thisMenu.concat(childStack);
     }

@@ -57,7 +57,7 @@ canvas {
     pointer-events: none;
     border: 1px solid rgba(0,128,0,.7);
     display: none;
-    transition: .1s ease width height;
+    transition: .1s ease all;
 
     &.active {
         display: inline-block;

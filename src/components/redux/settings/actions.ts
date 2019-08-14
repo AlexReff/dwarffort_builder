@@ -6,12 +6,12 @@ export function setStrictMode(val: boolean) {
     };
 }
 
-export function Initialize(gridSize: Point, mapSize: Point, camera: Point /*, cursorPosition: Point */) {
+export function Initialize(gridSize: Point, mapSize: Point, camera: Point , cursorPosition: Point) {
     return {
         type: ACTION_TYPE.INITIALIZE,
         gridSize,
         mapSize,
         camera,
-        // cursorPosition,
+        cursorPosition,
     };
 }

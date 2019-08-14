@@ -79,10 +79,10 @@ module.exports = (env, argv) => {
             ])
         ],
         resolve: {
-            // alias: {
-            //     'react': 'preact/compat',
-            //     'react-dom': 'preact/compat',
-            // },
+            alias: {
+                'react': 'preact/compat',
+                'react-dom': 'preact/compat',
+            },
             extensions: [".ts", ".tsx", ".js", ".scss"]
         }
     };

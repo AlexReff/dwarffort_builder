@@ -3,24 +3,23 @@ import { hideCursor, moveCursor, setCursorCharacter, showCursor } from "../redux
 import { designatorEnd, designatorStart } from "../redux/designator/actions";
 import store, { getAllStoreData, getUpdatedStoreData } from "../redux/store";
 import { Tile, TileType } from "../tile";
-import Util from "../util";
 
 /**
  * Requires CAMERA, CURSOR
  */
 export class GameDesignator {
     //redux read-only
-    mapSize: Point;
-    gridSize: Point;
-    camera: Point;
-    cursorRadius: number;
-    cursorPosition: Point;
-    currentMenuItem: MENU_ITEM;
+    mapSize: Point = null;
+    gridSize: Point = null;
+    camera: Point = null;
+    cursorRadius: number = null;
+    cursorPosition: Point = null;
+    currentMenuItem: MENU_ITEM = null;
 
     //redux
-    isDesignating: boolean;
-    designatorStart: Point;
-    designatorRange: IGridRange;
+    isDesignating: boolean = null;
+    designatorStart: Point = null;
+    designatorRange: IGridRange = null;
 
     //local
     designatorTiles: Point[];
@@ -36,17 +35,18 @@ export class GameDesignator {
     getStoreData = () => {
         const oldData = getUpdatedStoreData(this, store);
 
-        if (typeof oldData.cursorPosition !== "undefined") {
-            if (this.isDesignating) {
-                const range = this.designatorRange;
-                this.designatorTiles = [];
-                for (let x = range.startX; x <= range.endX; x++) {
-                    for (let y = range.startY; y <= range.endY; y++) {
-                        this.designatorTiles.push([x, y]);
-                    }
-                }
-            }
-        }
+        // if (typeof oldData.cursorPosition !== "undefined") {
+        //     if (this.isDesignating) {
+        //         const range = this.designatorRange;
+        //         this.designatorTiles = [];
+        //         for (let x = range.startX; x <= range.endX; x++) {
+        //             for (let y = range.startY; y <= range.endY; y++) {
+        //                 this.designatorTiles.push([x, y]);
+        //             }
+        //         }
+        //     }
+        // }
+
         // const newState = store.getState();
         // if (newState.designator.isDesignating && (
         //     newState.cursor.cursorPosition[0] !== this.cursorPosition[0] ||
@@ -150,75 +150,4 @@ export class GameDesignator {
         this.designatorTiles = [];
         // this.render();
     }
-
-    // /**
-    //  * Called when a designation finishes, updates the relevant tiles to the new type
-    //  */
-    // designateRange = (range: IGridRange, item: MENU_ITEM) => {
-    //     //if we are mining floors, convert all empty neighbors to walls
-    //     switch (item) {
-    //         case MENU_ITEM.remove:
-    //             for (let x = range.startX; x <= range.endX; x++) {
-    //                 for (let y = range.startY; y <= range.endY; y++) {
-    //                     if (Util.coordIsBuilding([x, y])) {
-    //                         //skip this
-    //                         continue;
-    //                     }
-    //                     if (this.setTile([x, y], TileType.Empty, false)) {
-    //                         this.dirtyTiles.push([x, y]);
-    //                     }
-    //                 }
-    //             }
-    //             break;
-    //         case MENU_ITEM.wall:
-    //             // Just need to make walls
-    //             for (let x = range.startX; x <= range.endX; x++) {
-    //                 for (let y = range.startY; y <= range.endY; y++) {
-    //                     if (Util.coordIsBuilding([x, y])) {
-    //                         //skip this
-    //                         continue;
-    //                     }
-    //                     if (this.setTile([x, y], TileType.Wall, true)) {
-    //                         this.dirtyTiles.push([x, y]);
-    //                     }
-    //                 }
-    //             }
-    //             break;
-    //         case MENU_ITEM.mine:
-    //             // make everything highlighted a floor
-    //             for (let x = range.startX; x <= range.endX; x++) {
-    //                 for (let y = range.startY; y <= range.endY; y++) {
-    //                     if (Util.coordIsBuilding([x, y])) {
-    //                         //skip this
-    //                         continue;
-    //                     }
-    //                     if (this.setTile([x, y], TileType.Floor, true)) {
-    //                         this.dirtyTiles.push([x, y]);
-    //                     }
-    //                 }
-    //             }
-    //             // make all neighbors that are EMPTY into WALLs
-    //             const neighbors = this.getNeighborsOfRange(range);
-    //             neighbors.forEach((neighbor) => {
-    //                 if (Util.coordIsBuilding(neighbor)) {
-    //                     //skip this
-    //                     return;
-    //                 }
-    //                 const tile = this.gameGrid[this.zLevel][neighbor[0]][neighbor[1]];
-    //                 if (tile.isUserSet()) {
-    //                     //do not touch this tile
-    //                 } else {
-    //                     if (tile.getType() === TileType.Empty) {
-    //                         tile.setType(TileType.Wall, false);
-    //                         this.dirtyTiles.push([neighbor[0], neighbor[1]]);
-    //                     }
-    //                 }
-    //             });
-    //             break;
-    //         default:
-    //             return;
-    //     }
-
-    //     this.populateAllNeighbors();
-    // }
 }

@@ -73,6 +73,20 @@ class Tile {
         return this.building;
     }
 
+    isBuildable = (strictMode?: boolean) => {
+        const isBldg = this.isBuilding();
+
+        if (isBldg) {
+            return false;
+        }
+
+        if (strictMode === true) {
+            return this.getType() === TileType.Floor;
+        }
+
+        return true;
+    }
+
     getDrawData = (coord: Point) => {
         switch (this.tileType) {
             case TileType.Wall:
