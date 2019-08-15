@@ -24,17 +24,13 @@ export function moveCursor(pos: Point) {
     return (dispatch, getState) => {
         const { camera, cursor } = getState();
 
-        if (camera == null || cursor == null) {
-            // dispatch(moveCursorRaw(pos));
-            // console.log("Warning: Unsafe moveCursor detected @", pos);
-            return;
-        }
-
-        if (pos[0] < 0 || pos[1] < 0 ||
+        if (camera == null || cursor == null ||
+            pos[0] < 0 || pos[1] < 0 ||
             pos[0] > camera.mapSize[0] ||
             pos[1] > camera.mapSize[1]) {
             return;
         }
+        //ensure camera is moved to include cursor
         const newPos = camera.camera.slice() as Point;
         if (pos[0] - cursor.cursorDiameter < camera.camera[0]) {
             //MOVE NORTH
@@ -60,7 +56,7 @@ export function moveCursor(pos: Point) {
             newPos[1] = toMove;
         }
 
-        if (camera[0] !== newPos[0] || camera[1] !== newPos[1]) {
+        if (camera.camera[0] !== newPos[0] || camera.camera[1] !== newPos[1]) {
             dispatch(moveCamera(newPos));
         }
 
