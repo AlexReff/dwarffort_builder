@@ -4,12 +4,13 @@ import store, { getAllStoreData, getUpdatedStoreData } from "./redux/store";
 import { default as Display } from "./rot/display";
 
 import { BUILDINGS, CURSOR_BEHAVIOR, DEFAULTS, DIRECTION, IGridRange, KEYS, MENU_ITEM, Point, TILE_H, TILE_MAP, TILE_W } from "./constants";
+import { zLevelGoto } from "./redux/camera/actions";
 import { moveCursor } from "./redux/cursor/actions";
 import { designatorEnd, designatorStart } from "./redux/designator/actions";
-import { selectMenuItem } from "./redux/menu/actions";
 import { Initialize } from "./redux/settings/actions";
 import rng from "./rot/rng";
 import { Tile, TileType } from "./tile";
+import { selectMenuItem } from "./redux/menu/actions";
 
 export class Game {
     displayElement: HTMLElement;
@@ -26,6 +27,7 @@ export class Game {
     gridSize: Point = null; //size of the rendered game grid [width, height]
     mapSize: Point = null; //size of the full map (including non-rendered portions)
     cursorPosition: Point = null;
+    cursorDiameter: number = null;
     cursorRadius: number = null;
     camera: Point = null;
     zLevel: number = null;
@@ -79,8 +81,12 @@ export class Game {
     }
 
     getStoreData = () => {
-        //const oldData = getUpdatedStoreData(this, store);
-        getAllStoreData(this, store);
+        const oldData = getUpdatedStoreData(this, store);
+        // getAllStoreData(this, store);
+
+        if (oldData.zLevel != null) {
+            this.populateFloor(this.zLevel);
+        }
 
         if (this.initRan) {
             this.render();
@@ -146,9 +152,9 @@ export class Game {
     handleContextMenu = (e: MouseEvent | TouchEvent) => {
         e.preventDefault();
         const gridPos = this.display.eventToPosition(e);
-        // const mapPos = this.getMapCoord(gridPos);
-        this.cursorPosition = this.getMapCoord(gridPos);
-        this.moveCursorTo(this.cursorPosition);
+        const mapPos = this.getMapCoord(gridPos);
+        this.cursorPosition = mapPos.slice() as Point;
+        this.moveCursorTo(mapPos);
         if (this.inspecting) {
             //right-click inspect building/item
         } else {
@@ -163,6 +169,9 @@ export class Game {
         }
         if (this.cursorBuilding) {
             // return this.builder.tryPlaceBuilding();
+            if (this.tryPlaceBuilding()) {
+                store.dispatch(selectMenuItem(null));
+            }
         } else {
             // this.designator.handleDesignation();
             if (this.isDesignating) {
@@ -180,17 +189,21 @@ export class Game {
         // store.dispatch(selectMenuItem(null));
     }
 
-    // handleEscapeKey = () => {
-    //     //this.game.stopBuilding();
-    //     //this.game.cancelDesignate();
-    //     console.log("game::handleEscapeKey");
-    // }
+    cancelDesignate = () => {
+        store.dispatch(designatorEnd());
+    }
 
     handleKeyPress = (e: KeyboardEvent) => {
         if (e.getModifierState("Control")) {
             return; //don't override ctrl+btn browser hotkeys
         }
         switch (e.keyCode) {
+            case KEYS.VK_ESCAPE:
+                if (this.isDesignating) {
+                    e.preventDefault();
+                    this.cancelDesignate();
+                }
+                break;
             case KEYS.VK_RETURN:
                 e.preventDefault();
                 // this.handleEnterRightClick();
@@ -251,27 +264,37 @@ export class Game {
                 this.moveCursor(DIRECTION.NW, e.shiftKey);
                 this.render();
                 break;
-            // case KEYS.VK_PERIOD:
-            // case KEYS.VK_GREATER_THAN:
-            //     this.setState({
-            //         // zLevel: this.game.zUp(),
-            //         // hasChangedZLevel: true,
-            //     });
-            //     break;
-            // case KEYS.VK_COMMA:
-            // case KEYS.VK_LESS_THAN:
-            //     this.setState({
-            //         // zLevel: this.game.zDown(),
-            //         // hasChangedZLevel: true,
-            //     });
-            //     break;
+            case KEYS.VK_PERIOD:
+            case KEYS.VK_GREATER_THAN:
+                this.zUp();
+                break;
+            case KEYS.VK_COMMA:
+            case KEYS.VK_LESS_THAN:
+                this.zDown();
+                break;
             default:
                 break;
         }
     }
     //#endregion handlers
 
-    //#region populate floors&neighbors
+    //#region floors&neighbors
+    zUp = (): number => {
+        //go up one z level
+        return this.goToZLevel(this.zLevel + 1);
+    }
+
+    zDown = (): number => {
+        //go down one z level
+        return this.goToZLevel(this.zLevel - 1);
+    }
+
+    goToZLevel = (level: number) => {
+        //this.zLevel = level;
+        store.dispatch(zLevelGoto(level));
+        return level;
+    }
+
     populateAllFloors = () => {
         for (const floor of Object.keys(this.gameGrid)) {
             this.populateFloor(Number(floor));
@@ -499,51 +522,51 @@ export class Game {
 
         switch (dir) {
             case DIRECTION.N:
-                if (pos[1] - this.cursorRadius > 0) {
-                    pos[1] = Math.max(this.cursorRadius, pos[1] - distance);
+                if (pos[1] - this.cursorDiameter > 0) {
+                    pos[1] = Math.max(this.cursorDiameter, pos[1] - distance);
                 }
                 break;
             case DIRECTION.NE:
-                if (pos[1] - this.cursorRadius > 0 ||
-                    pos[0] + this.cursorRadius < this.mapSize[0] - 1) {
-                    pos[0] = Math.min(this.mapSize[0] - 1 - this.cursorRadius, pos[0] + distance);
-                    pos[1] = Math.max(this.cursorRadius, pos[1] - distance);
+                if (pos[1] - this.cursorDiameter > 0 ||
+                    pos[0] + this.cursorDiameter < this.mapSize[0] - 1) {
+                    pos[0] = Math.min(this.mapSize[0] - 1 - this.cursorDiameter, pos[0] + distance);
+                    pos[1] = Math.max(this.cursorDiameter, pos[1] - distance);
                 }
                 break;
             case DIRECTION.E:
-                if (pos[0] + this.cursorRadius < this.mapSize[0] - 1) {
-                    pos[0] = Math.min(this.mapSize[0] - 1 - this.cursorRadius + 0, pos[0] + distance);
+                if (pos[0] + this.cursorDiameter < this.mapSize[0] - 1) {
+                    pos[0] = Math.min(this.mapSize[0] - 1 - this.cursorDiameter + 0, pos[0] + distance);
                 }
                 break;
             case DIRECTION.SE:
-                if (pos[0] + this.cursorRadius < this.mapSize[0] - 1 ||
-                    pos[1] + this.cursorRadius < this.mapSize[1] - 1) {
-                    pos[0] = Math.min(this.mapSize[0] - 1 - this.cursorRadius, pos[0] + distance);
-                    pos[1] = Math.min(this.mapSize[1] - 1 - this.cursorRadius, pos[1] + distance);
+                if (pos[0] + this.cursorDiameter < this.mapSize[0] - 1 ||
+                    pos[1] + this.cursorDiameter < this.mapSize[1] - 1) {
+                    pos[0] = Math.min(this.mapSize[0] - 1 - this.cursorDiameter, pos[0] + distance);
+                    pos[1] = Math.min(this.mapSize[1] - 1 - this.cursorDiameter, pos[1] + distance);
                 }
                 break;
             case DIRECTION.S:
-                if (pos[1] + this.cursorRadius < this.mapSize[1] - 1) {
-                    pos[1] = Math.min(this.mapSize[1] - 1 - this.cursorRadius, pos[1] + distance);
+                if (pos[1] + this.cursorDiameter < this.mapSize[1] - 1) {
+                    pos[1] = Math.min(this.mapSize[1] - 1 - this.cursorDiameter, pos[1] + distance);
                 }
                 break;
             case DIRECTION.SW:
-                if (pos[0] - this.cursorRadius > 0 ||
-                    pos[1] + this.cursorRadius < this.mapSize[1] - 1) {
-                    pos[0] = Math.max(this.cursorRadius, pos[0] - 1);
-                    pos[1] = Math.min(this.mapSize[1] - 1 - this.cursorRadius, pos[1] + distance);
+                if (pos[0] - this.cursorDiameter > 0 ||
+                    pos[1] + this.cursorDiameter < this.mapSize[1] - 1) {
+                    pos[0] = Math.max(this.cursorDiameter, pos[0] - 1);
+                    pos[1] = Math.min(this.mapSize[1] - 1 - this.cursorDiameter, pos[1] + distance);
                 }
                 break;
             case DIRECTION.W:
-                if (pos[0] - this.cursorRadius > 0) {
-                    pos[0] = Math.max(this.cursorRadius, pos[0] - distance);
+                if (pos[0] - this.cursorDiameter > 0) {
+                    pos[0] = Math.max(this.cursorDiameter, pos[0] - distance);
                 }
                 break;
             case DIRECTION.NW:
-                if (pos[0] - this.cursorRadius > 0 ||
-                    pos[1] - this.cursorRadius > 0) {
-                    pos[0] = Math.max(this.cursorRadius, pos[0] - distance);
-                    pos[1] = Math.max(this.cursorRadius, pos[1] - distance);
+                if (pos[0] - this.cursorDiameter > 0 ||
+                    pos[1] - this.cursorDiameter > 0) {
+                    pos[0] = Math.max(this.cursorDiameter, pos[0] - distance);
+                    pos[1] = Math.max(this.cursorDiameter, pos[1] - distance);
                 }
                 break;
             default:
@@ -555,15 +578,14 @@ export class Game {
     }
 
     moveCursorTo = (targetPos: Point) => {
-        if ((this.cursorPosition[0] === targetPos[0] && this.cursorPosition[1] === targetPos[1]) || //already there
-            (targetPos[0] < 0 || targetPos[1] < 0 || //out of bounds
-                targetPos[0] > this.mapSize[0] - 1 ||
-                targetPos[1] > this.mapSize[1] - 1)) {
+        if (targetPos[0] < 0 || targetPos[1] < 0 ||
+            targetPos[0] >= this.mapSize[0] ||
+            targetPos[1] >= this.mapSize[1]) {
             return;
         }
 
-        targetPos[0] = Math.max(this.cursorRadius, Math.min(this.mapSize[0] - 1 - this.cursorRadius, targetPos[0]));
-        targetPos[1] = Math.max(this.cursorRadius, Math.min(this.mapSize[1] - 1 - this.cursorRadius, targetPos[1]));
+        targetPos[0] = Math.max(this.cursorDiameter, Math.min(this.mapSize[0] - 1 - this.cursorDiameter, targetPos[0]));
+        targetPos[1] = Math.max(this.cursorDiameter, Math.min(this.mapSize[1] - 1 - this.cursorDiameter, targetPos[1]));
 
         store.dispatch(moveCursor(targetPos) as any);
 
@@ -663,7 +685,6 @@ export class Game {
 
         this.populateAllNeighbors();
     }
-    //#endregion
 
     /**
      * Sets a tile to a specific type and return whether or not anything changed
@@ -680,6 +701,54 @@ export class Game {
 
         return false;
     }
+    //#endregion
+
+    //#region builder
+
+    /**
+     * Attempts to place a building
+     * @returns {true} if a building was placed
+     */
+    tryPlaceBuilding = (): boolean => {
+        if (!this.cursorBuilding) {
+            return;
+        }
+        const tiles = BUILDINGS[this.currentMenuItem].tiles;
+
+        //check if we can build here
+        for (let y = 0; y < tiles.length; y++) {
+            for (let x = 0; x < tiles[0].length; x++) {
+                const targetTile = this.gameGrid[this.zLevel][this.cursorPosition[0] - this.cursorRadius + x][this.cursorPosition[1] - this.cursorRadius + y];
+                if (!targetTile.isBuildable(this.strictMode)) {
+                    return false;
+                }
+            }
+        }
+        for (let y = 0; y < tiles.length; y++) {
+            for (let x = 0; x < tiles[0].length; x++) {
+                const targetTile = this.gameGrid[this.zLevel][this.cursorPosition[0] - this.cursorRadius + x][this.cursorPosition[1] - this.cursorRadius + y];
+                targetTile.setBuilding(this.currentMenuItem, tiles[y][x]);
+                // this.buildings[`${tile.pos[0]}:${tile.pos[1]}`] = {
+                //     buildingKey: tileKey as MENU_ITEM,
+                //     buildingCenter: center,
+                // };
+            }
+        }
+        // for (const tileKey of Object.keys(tiles)) {
+        //     const tile = tiles[tileKey];
+        //     this.gameGrid[this.zLevel][tile.pos[0]][tile.pos[1]].setBuilding(key, tile.tile);
+        //     this.buildings[`${tile.pos[0]}:${tile.pos[1]}`] = {
+        //         buildingKey: tileKey as MENU_ITEM,
+        //         buildingCenter: center,
+        //     };
+        //     this.updateNeighborhood([tile.pos[0], tile.pos[1]]);
+        // }
+        // this.cursor.stopBuilding();
+        // this.designator.endDesignating();
+        // this.render();
+        return true;
+    }
+    //#endregion
 
     //#region render
     /**
@@ -691,8 +760,9 @@ export class Game {
         if (this.isTileAnimating(coord)) {
             parms = this.getDesignatorDrawData(coord);
         } else {
-            if (Math.abs(coord[0] - this.cursorPosition[0]) <= Math.floor(this.cursorRadius / 2.0) &&
-                Math.abs(coord[1] - this.cursorPosition[1]) <= Math.floor(this.cursorRadius / 2.0)) {
+            const radi = Math.floor(this.cursorDiameter / 2.0);
+            if (Math.abs(coord[0] - this.cursorPosition[0]) <= radi &&
+                Math.abs(coord[1] - this.cursorPosition[1]) <= radi) {
                 parms = this.getCursorDrawData(coord);
             } else {
                 parms = this.gameGrid[this.zLevel][coord[0]][coord[1]].getDrawData(coord);
@@ -740,13 +810,16 @@ export class Game {
         if (!this.animationToggle) {
             return false;
         }
-        return this.coordIsDesignating(pos);
+        return this.isCoordDesignating(pos);
     }
 
-    coordIsDesignating = (pos: Point): boolean => {
+    isCoordDesignating = (pos: Point): boolean => {
         if (this.isDesignating) {
             const bounds = this.getDesignatorRange();
-            return pos[0] >= bounds.startX && pos[1] >= bounds.startY && pos[0] <= bounds.endX && pos[1] <= bounds.endY;
+            return pos[0] >= bounds.startX &&
+                pos[1] >= bounds.startY &&
+                pos[0] <= bounds.endX &&
+                pos[1] <= bounds.endY;
         }
 
         return false;
@@ -840,25 +913,6 @@ export class Game {
     //     } else {
     //         return true;
     //     }
-    // }
-
-    // zUp = (): number => {
-    //     //go up one z level
-    //     return this.goToZLevel(this.zLevel + 1);
-    // }
-
-    // zDown = (): number => {
-    //     //go down one z level
-    //     return this.goToZLevel(this.zLevel - 1);
-    // }
-
-    // goToZLevel = (level: number) => {
-    //     if (!(level in this.gameGrid)) {
-    //         this.populateFloor(level);
-    //     }
-    //     this.zLevel = level;
-    //     // this.render();
-    //     return this.zLevel;
     // }
 
     // renderCursor = () => {

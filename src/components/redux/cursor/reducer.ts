@@ -4,16 +4,16 @@ export interface ICursorState {
     cursorVisible: boolean;
     cursorBuilding: boolean;
     cursorPosition: Point;
+    cursorDiameter: number;
     cursorRadius: number;
-    // buildingRange: Point[];
 }
 
 const initialState: ICursorState = {
     cursorVisible: true,
     cursorBuilding: false,
     cursorPosition: [0, 0] as Point,
+    cursorDiameter: 0 as number,
     cursorRadius: 0 as number,
-    // buildingRange: null as Point[],
 };
 
 export default (state = initialState, action) => {
@@ -28,16 +28,15 @@ export default (state = initialState, action) => {
             return {
                 ...state,
                 cursorBuilding: false,
-                cursorRadius: 0,
+                cursorDiameter: 0,
             };
         }
         case ACTION_TYPE.MENU_ITEM: {
             return {
                 ...state,
                 cursorBuilding: action.val != null && BUILDINGS[action.val] != null,
-                cursorRadius: action.val != null && BUILDINGS[action.val] != null ? BUILDINGS[action.val].tiles.length : 0,
-                // currentMenuItem: action.val,
-                // inspecting: action.val != null && action.val === "inspect",
+                cursorDiameter: action.val != null && BUILDINGS[action.val] != null ? BUILDINGS[action.val].tiles.length : 0,
+                cursorRadius: action.val != null && BUILDINGS[action.val] != null ? Math.floor(BUILDINGS[action.val].tiles.length / 2.0) : 0,
             };
         }
         case ACTION_TYPE.CURSOR_HIDE: {
@@ -52,10 +51,11 @@ export default (state = initialState, action) => {
                 cursorVisible: true,
             };
         }
-        case ACTION_TYPE.CURSOR_SETRADIUS: {
+        case ACTION_TYPE.CURSOR_SETDIAMETER: {
             return {
                 ...state,
-                cursorRadius: action.radius,
+                cursorDiameter: action.cursorDiameter,
+                cursorRadius: action.cursorDiameter != null && action.cursorDiameter > 0 ? Math.floor(action.cursorDiameter / 2.0) : 0,
             };
         }
         case ACTION_TYPE.CURSOR_MOVE: {

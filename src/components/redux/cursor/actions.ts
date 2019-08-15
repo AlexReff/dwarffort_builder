@@ -36,26 +36,26 @@ export function moveCursor(pos: Point) {
             return;
         }
         const newPos = camera.camera.slice() as Point;
-        if (pos[0] - cursor.cursorRadius < camera.camera[0]) {
+        if (pos[0] - cursor.cursorDiameter < camera.camera[0]) {
             //MOVE NORTH
-            const dist = Math.ceil((camera.camera[0] - pos[0] + cursor.cursorRadius) / 10) * 10;
+            const dist = Math.ceil((camera.camera[0] - pos[0] + cursor.cursorDiameter) / 10) * 10;
             const toMove = Math.max(0, camera.camera[0] - dist);
             newPos[0] = toMove;
-        } else if (pos[0] + cursor.cursorRadius >= camera.camera[0] + camera.gridSize[0]) {
+        } else if (pos[0] + cursor.cursorDiameter >= camera.camera[0] + camera.gridSize[0]) {
             //MOVE SOUTH
-            const dist = Math.ceil((pos[0] + cursor.cursorRadius - camera.camera[0] - (camera.gridSize[0] - 1)) / 10) * 10;
+            const dist = Math.ceil((pos[0] + cursor.cursorDiameter - camera.camera[0] - (camera.gridSize[0] - 1)) / 10) * 10;
             const toMove = Math.min(camera.mapSize[0] - camera.gridSize[0], camera.camera[0] + dist);
             newPos[0] = toMove;
         }
 
-        if (pos[1] - cursor.cursorRadius < camera.camera[1]) {
+        if (pos[1] - cursor.cursorDiameter < camera.camera[1]) {
             //MOVE WEST
-            const dist = Math.ceil((camera.camera[1] - pos[1] + cursor.cursorRadius) / 10) * 10;
+            const dist = Math.ceil((camera.camera[1] - pos[1] + cursor.cursorDiameter) / 10) * 10;
             const toMove = Math.max(0, camera.camera[1] - dist);
             newPos[1] = toMove;
-        } else if (pos[1] + cursor.cursorRadius >= camera.camera[1] + camera.gridSize[1]) {
+        } else if (pos[1] + cursor.cursorDiameter >= camera.camera[1] + camera.gridSize[1]) {
             //MOVE EAST
-            const dist = Math.ceil((pos[1] + cursor.cursorRadius - camera.camera[1] - (camera.gridSize[1] - 1)) / 10) * 10;
+            const dist = Math.ceil((pos[1] + cursor.cursorDiameter - camera.camera[1] - (camera.gridSize[1] - 1)) / 10) * 10;
             const toMove = Math.min(camera.mapSize[1] - camera.gridSize[1], camera.camera[1] + dist);
             newPos[1] = toMove;
         }
@@ -68,10 +68,10 @@ export function moveCursor(pos: Point) {
     };
 }
 
-export function setCursorRadius(radi: number) {
+export function setCursorDiameter(diam: number) {
     return {
-        type: ACTION_TYPE.CURSOR_SETRADIUS,
-        cursorRadius: radi,
+        type: ACTION_TYPE.CURSOR_SETDIAMETER,
+        cursorDiameter: diam,
     };
 }
 
