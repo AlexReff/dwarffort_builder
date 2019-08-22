@@ -1,25 +1,38 @@
 import * as _ from "lodash";
 import { Component, h } from "preact";
-import { BUILDINGS, MENU_IDS, MENU_ITEM, MENU_ITEMS, MENU_KEYS, SUBMENU_MAX_H, SUBMENUS } from "./constants";
-
-interface IMenuItem {
-    "text": string;
-    "key": string;
-    "id": MENU_ITEM;
-    "children"?: IMenuItem[];
-    "parent"?: IMenuItem;
-}
+import { connect } from "react-redux";
+import { BUILDINGS, IInspectTarget, IMenuItem, MENU_IDS, MENU_ITEM, MENU_ITEMS, MENU_KEYS, SUBMENU_MAX_H, SUBMENUS } from "./constants";
+import { selectMenu, selectMenuItem } from "./redux/menu/actions";
+import { setStrictMode } from "./redux/settings/actions";
+import { ReduxState } from "./redux/store";
 
 interface IMenuProps {
     currentMenu: string;
     currentMenuItem: MENU_ITEM;
-    strictMode: boolean;
+    inspecting: boolean;
+    inspectedBuildings: IInspectTarget[];
     isDesignating: boolean;
+    strictMode: boolean;
 
-    selectMenu: (item: string) => void;
-    selectMenuItem: (item: MENU_ITEM) => void;
+    selectMenu: (id: string) => void;
+    selectMenuItem: (id: string) => void;
     setStrictMode: (val: boolean) => void;
 }
+
+const mapStateToProps = (state: ReduxState) => ({
+    currentMenu: state.menu.currentMenu,
+    currentMenuItem: state.menu.currentMenuItem,
+    inspecting: state.inspect.inspecting,
+    inspectedBuildings: state.inspect.inspectedBuildings,
+    isDesignating: state.designator.isDesignating,
+    strictMode: state.settings.strictMode,
+});
+
+const mapDispatchToProps = (dispatch) => ({
+    selectMenu: (id) => dispatch(selectMenu(id)),
+    selectMenuItem: (id) => dispatch(selectMenuItem(id)),
+    setStrictMode: (val) => dispatch(setStrictMode(val)),
+});
 
 class Menu extends Component<IMenuProps, {}> {
     constructor(props: IMenuProps) {
@@ -103,29 +116,24 @@ class Menu extends Component<IMenuProps, {}> {
 
     renderMenuToolbar = () => {
         // shows if a building is selected
-        return (
+        return (this.props.inspectedBuildings != null ?
             <div class="menu-toolbar">
-                TOOLBAR
+                {this.props.inspectedBuildings.map((m) => (
+                    <div>
+                        {m.display_name}
+                    </div>
+                ))}
             </div>
-        );
+            : null);
     }
 
     handleMenuEvent = (e: string) => {
         if (e === "top") {
             this.props.selectMenu("top");
-            return;
-        }
-
-        if (SUBMENUS[e] != null) {
+        } else if (SUBMENUS[e] != null) {
             this.props.selectMenu(SUBMENUS[e]);
-            return;
-        }
-
-        if (this.props.currentMenuItem !== e) {
+        } else if (this.props.currentMenuItem !== e) {
             this.props.selectMenuItem(e as MENU_ITEM);
-            // if (e in BUILDINGS) {
-            //     // this.game.setCursorToBuilding(e as MENU_ITEM);
-            // }
         }
     }
 
@@ -196,4 +204,6 @@ class Menu extends Component<IMenuProps, {}> {
     }
 }
 
-export { Menu, IMenuItem };
+// export { Menu };
+
+export default connect(mapStateToProps, mapDispatchToProps)(Menu);

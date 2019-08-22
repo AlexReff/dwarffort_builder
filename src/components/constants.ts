@@ -2,12 +2,11 @@ const styles = require(".././css/_variables.scss");
 
 import * as buildings from "../data/buildings.json";
 import * as items from "../data/menu.json";
-import { IMenuItem } from "./menu.js";
 
 import { ACTION_TYPE, CURSOR_BEHAVIOR, DIRECTION, KEYS, MENU_ITEM } from "./enums";
 export { ACTION_TYPE, CURSOR_BEHAVIOR, DIRECTION, KEYS, MENU_ITEM };
 
-export interface IBuildingData {
+export interface IBuildingTileData {
     char: string;
     bg: string;
     fg: string;
@@ -22,6 +21,20 @@ export interface IGridRange {
 }
 
 export type Point = [number, number];
+
+export interface IMenuItem {
+    "text": string;
+    "key": string;
+    "id": MENU_ITEM;
+    "children"?: IMenuItem[];
+    "parent"?: IMenuItem;
+}
+
+export interface IInspectTarget {
+    "display_name": string;
+    /** `${zLevel}:${x}:${y}` */
+    "key": string;
+}
 
 export const DEFAULTS = {
     STRICT_MODE: true,
@@ -46,7 +59,12 @@ export const MENU_W: number = Number(styles.menuWidth);
 export const HEADER_H: number = Number(styles.headerHeight);
 
 // Building Data
-export const BUILDINGS: { [key: string]: { "tiles": IBuildingData[][] } } = buildings as any;
+export const BUILDINGS: {
+    [key: string]: {
+        "display_name": string,
+        "tiles": IBuildingTileData[][],
+    },
+} = buildings as any;
 
 // Tile Data
 export const TILE_W = styles.tileWidth;

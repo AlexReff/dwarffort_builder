@@ -1,10 +1,14 @@
 import { Component, h } from "preact";
 import { connect } from "react-redux";
-import { Point, TILE_H, TILE_W } from "../constants";
+import { Point, TILE_H, TILE_W } from "./constants";
+import { inspectTileAtPos } from "./redux/inspect/actions";
+import { ReduxState } from "./redux/store";
 
 interface IGameHighlighterProps {
     canvasRef: any;
+    //redux
     inspecting: boolean;
+    inspectTile: (x, y) => void;
 }
 
 interface IGameHighlighterState {
@@ -13,6 +17,21 @@ interface IGameHighlighterState {
     mouseDown: boolean;
     showHighlighter: boolean;
 }
+
+const mapStateToProps = (state: ReduxState) => ({
+    // currentMenu: state.menu.currentMenu,
+    // currentMenuItem: state.menu.currentMenuItem,
+    inspecting: state.inspect.inspecting,
+    // isDesignating: state.designator.isDesignating,
+    // strictMode: state.settings.strictMode,
+});
+
+const mapDispatchToProps = (dispatch) => ({
+    inspectTile: (x, y) => dispatch(inspectTileAtPos(x, y)),
+    // selectMenu: (id) => dispatch(selectMenu(id)),
+    // selectMenuItem: (id) => dispatch(selectMenuItem(id)),
+    // setStrictMode: (val) => dispatch(setStrictMode(val)),
+});
 
 class GameHighlighter extends Component<IGameHighlighterProps, any> {
     componentDidMount = () => {
@@ -50,6 +69,16 @@ class GameHighlighter extends Component<IGameHighlighterProps, any> {
         if (this.props.canvasRef != null) {
             const path = e.composedPath();
             if (path.some((p: any) => p.nodeName != null && p.nodeName.toLowerCase() === "canvas")) {
+                const eTarg: any = "touches" in e ? e.touches : e;
+                if (this.props.inspecting) {
+                    if (this.state.showHighlighter) {
+                        //handle area selection
+                        console.log("inspect drag");
+                    } else {
+                        //handle single-click on item
+                        this.props.inspectTile(eTarg.clientX, eTarg.clientY);
+                    }
+                }
                 this.setState({
                     mouseDown: false,
                     showHighlighter: false,
@@ -59,7 +88,12 @@ class GameHighlighter extends Component<IGameHighlighterProps, any> {
     }
 
     getHighlighterStyle = () => {
-        if (this.props.canvasRef == null || !this.state.mouseDown) {
+        if (this.props.canvasRef == null ||
+            !this.state.mouseDown ||
+            this.state.currentPosition == null ||
+            this.state.currentPosition.length !== 2 ||
+            this.state.highlightingStart == null ||
+            this.state.highlightingStart.length !== 2) {
             return {};
         }
         const width = +TILE_W + Math.abs(this.state.currentPosition[0] - this.state.highlightingStart[0]);
@@ -95,9 +129,6 @@ class GameHighlighter extends Component<IGameHighlighterProps, any> {
     }
 }
 
-// export default connect(
-//     null,
-//     {},
-// )(GameHighlighter);
+// export default GameHighlighter;
 
-export default GameHighlighter;
+export default connect(mapStateToProps, mapDispatchToProps)(GameHighlighter);

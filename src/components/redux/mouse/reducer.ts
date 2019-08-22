@@ -1,5 +1,5 @@
 import { ACTION_TYPE, Point } from "../../constants";
-import { Tile } from "../../tile";
+import { Tile } from "../../game/tile";
 
 export interface IMouseState {
     mouseOverGrid: boolean;

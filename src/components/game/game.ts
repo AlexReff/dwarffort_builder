@@ -1,18 +1,19 @@
 // import * as _ from "lodash";
 import { default as OpenSimplexNoise } from "open-simplex-noise";
-import store, { getAllStoreData, getUpdatedStoreData } from "./redux/store";
-import { default as Display } from "./rot/display";
+import store, { getUpdatedStoreData, IFlatReduxState } from "../redux/store";
+import { default as Display } from "../rot/display";
 
-import { BUILDINGS, CURSOR_BEHAVIOR, DEFAULTS, DIRECTION, IGridRange, KEYS, MENU_ITEM, Point, TILE_H, TILE_MAP, TILE_W } from "./constants";
-import { zLevelGoto } from "./redux/camera/actions";
-import { moveCursor } from "./redux/cursor/actions";
-import { designatorEnd, designatorStart } from "./redux/designator/actions";
-import { Initialize } from "./redux/settings/actions";
-import rng from "./rot/rng";
+import { BUILDINGS, CURSOR_BEHAVIOR, DEFAULTS, DIRECTION, IGridRange, IInspectTarget, KEYS, MENU_ITEM, Point, TILE_H, TILE_MAP, TILE_W } from "../constants";
+import { zLevelGoto } from "../redux/camera/actions";
+import { moveCursor } from "../redux/cursor/actions";
+import { designatorEnd, designatorStart } from "../redux/designator/actions";
+import { inspectTileClear, inspectTiles } from "../redux/inspect/actions";
+import { goPrevSubmenu, selectMenuItem } from "../redux/menu/actions";
+import { Initialize } from "../redux/settings/actions";
+import rng from "../rot/rng";
 import { Tile, TileType } from "./tile";
-import { selectMenuItem } from "./redux/menu/actions";
 
-export class Game {
+class Game implements IFlatReduxState {
     displayElement: HTMLElement;
     canvasRef: any;
     display: Display;
@@ -22,6 +23,11 @@ export class Game {
     initRan: boolean;
     animationToggle: boolean;
     animationInterval: number;
+
+    /** Bldg info, key=center */
+    buildingList: { [key: number]: string };
+    /** All tiles that have a building, key=coord, val=center */
+    buildingTiles: { [key: string]: string };
 
     //redux
     gridSize: Point = null; //size of the rendered game grid [width, height]
@@ -36,9 +42,19 @@ export class Game {
     cursorBuilding: boolean = null;
     designatorStart: Point = null;
     buildingRange: Point[] = null;
+    coordToInspect: Point = null;
     inspecting: boolean = null;
+    inspectedBuildings: string[] = null;
     currentMenuItem: MENU_ITEM = null;
     cursorMode: CURSOR_BEHAVIOR = null;
+    cursorVisible: boolean = null;
+    highlighting: boolean = null;
+    highlightingStart: [number, number] = null;
+    currentMenu: string = null;
+    mouseOverGrid: boolean = null;
+    leftMouseDown: boolean = null;
+    mouseMapCoord: [number, number] = null;
+    mouseTile: Tile = null;
 
     //#region init
     constructor(image: HTMLImageElement, container: HTMLElement, canvas: any) {
@@ -46,6 +62,8 @@ export class Game {
         this.animationToggle = false;
         this.tileSheetImage = image;
         this.gameGrid = {};
+        this.buildingList = {};
+        this.buildingTiles = {};
         this.noiseMaps = {};
         this.strictMode = DEFAULTS.STRICT_MODE;
         this.canvasRef = canvas;
@@ -82,10 +100,26 @@ export class Game {
 
     getStoreData = () => {
         const oldData = getUpdatedStoreData(this, store);
-        // getAllStoreData(this, store);
 
         if (oldData.zLevel != null) {
             this.populateFloor(this.zLevel);
+        }
+
+        // an inspect request has been issued at the given screen coordinates
+        if (typeof oldData.coordToInspect !== "undefined" &&
+            this.coordToInspect !== null &&
+            this.coordToInspect.length === 2) {
+            const gridPos = this.display.eventToPosition({ clientX: this.coordToInspect[0], clientY: this.coordToInspect[1] });
+            const pos = this.getMapCoord(gridPos);
+            const bldgKey = `${this.zLevel}:${pos[0]}:${pos[1]}`;
+            const targets: IInspectTarget[] = [];
+            if (bldgKey in this.buildingTiles) {
+                targets.push({
+                    display_name: this.buildingList[this.buildingTiles[bldgKey]],
+                    key: bldgKey,
+                });
+            }
+            store.dispatch(inspectTiles(targets));
         }
 
         if (this.initRan) {
@@ -151,42 +185,37 @@ export class Game {
     //right click
     handleContextMenu = (e: MouseEvent | TouchEvent) => {
         e.preventDefault();
-        const gridPos = this.display.eventToPosition(e);
-        const mapPos = this.getMapCoord(gridPos);
-        this.cursorPosition = mapPos.slice() as Point;
-        this.moveCursorTo(mapPos);
         if (this.inspecting) {
-            //right-click inspect building/item
+            //
         } else {
+            const gridPos = this.display.eventToPosition(e);
+            const mapPos = this.getMapCoord(gridPos);
+            this.cursorPosition = mapPos.slice() as Point;
+            this.moveCursorTo(mapPos);
             this.handleEnterRightClick();
         }
-        return false;
     }
 
     handleEnterRightClick = () => {
-        if (this.currentMenuItem == null) {
-            return;
-        }
-        if (this.cursorBuilding) {
-            // return this.builder.tryPlaceBuilding();
-            if (this.tryPlaceBuilding()) {
-                store.dispatch(selectMenuItem(null));
-            }
+        if (this.inspecting) {
+            //right-click inspect building/item
         } else {
-            // this.designator.handleDesignation();
-            if (this.isDesignating) {
-                // this.finishDesignate();
-                this.designateRange();
-                store.dispatch(designatorEnd());
-            } else {
-                // this.beginDesignate();
-                // this.designatorStart = this.cursorPosition.slice() as Point;
-                // store.dispatch(designatorStart(this.designatorStart));
-                store.dispatch(designatorStart(this.cursorPosition));
+            if (this.currentMenuItem == null) {
+                return;
             }
-            // return false;
+            if (this.cursorBuilding) {
+                if (this.tryPlaceBuilding()) {
+                    store.dispatch(selectMenuItem(null));
+                }
+            } else {
+                if (this.isDesignating) {
+                    this.designateRange();
+                    store.dispatch(designatorEnd());
+                } else {
+                    store.dispatch(designatorStart(this.cursorPosition));
+                }
+            }
         }
-        // store.dispatch(selectMenuItem(null));
     }
 
     cancelDesignate = () => {
@@ -199,14 +228,19 @@ export class Game {
         }
         switch (e.keyCode) {
             case KEYS.VK_ESCAPE:
+                e.preventDefault();
                 if (this.isDesignating) {
-                    e.preventDefault();
                     this.cancelDesignate();
+                } else if (this.currentMenuItem != null) {
+                    store.dispatch(selectMenuItem(null));
+                } else {
+                    // go up one menu level
+                    store.dispatch(goPrevSubmenu() as any);
                 }
                 break;
             case KEYS.VK_RETURN:
                 e.preventDefault();
-                // this.handleEnterRightClick();
+                this.handleEnterRightClick();
                 break;
             case KEYS.VK_UP:
             case KEYS.VK_NUMPAD8:
@@ -410,57 +444,17 @@ export class Game {
         const thisType = this.gameGrid[this.zLevel][pos[0]][pos[1]].getType();
         if (pos[1] > 0) { //N
             if (this.gameGrid[this.zLevel][pos[0]][pos[1] - 1].setNeighbor(DIRECTION.S, thisType)) {
-                // // this.dirtyTiles.push([pos[0], pos[1] - 1]);
+                // this.dirtyTiles.push([pos[0], pos[1] - 1]);
             }
         }
         if (pos[0] < this.mapSize[0] - 1) { //E
             if (this.gameGrid[this.zLevel][pos[0] + 1][pos[1]].setNeighbor(DIRECTION.W, thisType)) {
-                // // this.dirtyTiles.push([pos[0] + 1, pos[1]]);
-            }
-        }
-        if (pos[1] < this.mapSize[1] - 1) { //S
-            if (this.gameGrid[this.zLevel][pos[0]][pos[1] + 1].setNeighbor(DIRECTION.N, thisType)) {
-                // // this.dirtyTiles.push([pos[0], pos[1] + 1]);
-            }
-        }
-        if (pos[0] > 0) { //W
-            if (this.gameGrid[this.zLevel][pos[0] - 1][pos[1]].setNeighbor(DIRECTION.E, thisType)) {
-                // // this.dirtyTiles.push([pos[0] - 1, pos[1]]);
-            }
-        }
-        /*
-        if (pos[1] > 0) { //N
-            if (this.gameGrid[this.zLevel][pos[0]][pos[1] - 1].setNeighbor(DIRECTION.S, thisType)) {
-                // this.dirtyTiles.push([pos[0], pos[1] - 1]);
-            }
-
-            if (pos[0] < this.mapSize[1] - 1) { //NE
-                if (this.gameGrid[this.zLevel][pos[0] + 1][pos[1] - 1].setNeighbor(DIRECTION.SW, thisType)) {
-                    // this.dirtyTiles.push([pos[0] + 1, pos[1] - 1]);
-                }
-            }
-
-            if (pos[0] > 0) { //NW
-                if (this.gameGrid[this.zLevel][pos[0] - 1][pos[1] - 1].setNeighbor(DIRECTION.SE, thisType)) {
-                    // this.dirtyTiles.push([pos[0] - 1, pos[1] - 1]);
-                }
+                // this.dirtyTiles.push([pos[0] + 1, pos[1]]);
             }
         }
         if (pos[1] < this.mapSize[1] - 1) { //S
             if (this.gameGrid[this.zLevel][pos[0]][pos[1] + 1].setNeighbor(DIRECTION.N, thisType)) {
                 // this.dirtyTiles.push([pos[0], pos[1] + 1]);
-            }
-
-            if (pos[0] < this.mapSize[0] - 1) { //SE
-                if (this.gameGrid[this.zLevel][pos[0] + 1][pos[1] + 1].setNeighbor(DIRECTION.NW, thisType)) {
-                    // this.dirtyTiles.push([pos[0] + 1, pos[1] + 1]);
-                }
-            }
-
-            if (pos[0] > 0) { //SW
-                if (this.gameGrid[this.zLevel][pos[0] - 1][pos[1] + 1].setNeighbor(DIRECTION.NE, thisType)) {
-                    // this.dirtyTiles.push([pos[0] - 1, pos[1] + 1]);
-                }
             }
         }
         if (pos[0] > 0) { //W
@@ -468,12 +462,6 @@ export class Game {
                 // this.dirtyTiles.push([pos[0] - 1, pos[1]]);
             }
         }
-        if (pos[0] < this.mapSize[1] - 1) { //E
-            if (this.gameGrid[this.zLevel][pos[0] + 1][pos[1]].setNeighbor(DIRECTION.W, thisType)) {
-                // this.dirtyTiles.push([pos[0] + 1, pos[1]]);
-            }
-        }
-        */
     }
 
     populateAllNeighbors = () => {
@@ -573,7 +561,6 @@ export class Game {
                 return;
         }
 
-        // this.moveCameraToIncludePoint(pos);
         this.moveCursorTo(pos);
     }
 
@@ -587,19 +574,7 @@ export class Game {
         targetPos[0] = Math.max(this.cursorDiameter, Math.min(this.mapSize[0] - 1 - this.cursorDiameter, targetPos[0]));
         targetPos[1] = Math.max(this.cursorDiameter, Math.min(this.mapSize[1] - 1 - this.cursorDiameter, targetPos[1]));
 
-        store.dispatch(moveCursor(targetPos) as any);
-
-        // if (this.designator.isDesignating()) {
-        //     const range = this.designator.getRange(targetPos);
-        //     for (let x = range.startX; x <= range.endX; x++) {
-        //         for (let y = range.startY; y <= range.endY; y++) {
-        //             this.designatorTiles.push([x, y]);
-        //         }
-        //     }
-        // }
-
-        // this.moveCameraToIncludePoint(targetPos);
-        // this.render();
+        store.dispatch(moveCursor(targetPos));
     }
     //#endregion cursor
 
@@ -711,9 +686,13 @@ export class Game {
      */
     tryPlaceBuilding = (): boolean => {
         if (!this.cursorBuilding) {
-            return;
+            return false;
         }
-        const tiles = BUILDINGS[this.currentMenuItem].tiles;
+        const thisBuilding = BUILDINGS[this.currentMenuItem];
+        if (thisBuilding == null) {
+            return false;
+        }
+        const tiles = thisBuilding.tiles;
 
         //check if we can build here
         for (let y = 0; y < tiles.length; y++) {
@@ -724,28 +703,22 @@ export class Game {
                 }
             }
         }
+
+        const centerKey = `${this.zLevel}:${this.cursorPosition[0]}:${this.cursorPosition[1]}`;
+        this.buildingList[centerKey] = thisBuilding.display_name;
+
         for (let y = 0; y < tiles.length; y++) {
             for (let x = 0; x < tiles[0].length; x++) {
-                const targetTile = this.gameGrid[this.zLevel][this.cursorPosition[0] - this.cursorRadius + x][this.cursorPosition[1] - this.cursorRadius + y];
+                const targX = this.cursorPosition[0] - this.cursorRadius + x;
+                const targY = this.cursorPosition[1] - this.cursorRadius + y;
+                const targetTile = this.gameGrid[this.zLevel][targX][targY];
                 targetTile.setBuilding(this.currentMenuItem, tiles[y][x]);
-                // this.buildings[`${tile.pos[0]}:${tile.pos[1]}`] = {
-                //     buildingKey: tileKey as MENU_ITEM,
-                //     buildingCenter: center,
-                // };
+                this.buildingTiles[`${this.zLevel}:${targX}:${targY}`] = centerKey;
             }
         }
-        // for (const tileKey of Object.keys(tiles)) {
-        //     const tile = tiles[tileKey];
-        //     this.gameGrid[this.zLevel][tile.pos[0]][tile.pos[1]].setBuilding(key, tile.tile);
-        //     this.buildings[`${tile.pos[0]}:${tile.pos[1]}`] = {
-        //         buildingKey: tileKey as MENU_ITEM,
-        //         buildingCenter: center,
-        //     };
-        //     this.updateNeighborhood([tile.pos[0], tile.pos[1]]);
-        // }
-        // this.cursor.stopBuilding();
-        // this.designator.endDesignating();
-        // this.render();
+
+        // store.dispatch();
+
         return true;
     }
     //#endregion
@@ -761,7 +734,8 @@ export class Game {
             parms = this.getDesignatorDrawData(coord);
         } else {
             const radi = Math.floor(this.cursorDiameter / 2.0);
-            if (Math.abs(coord[0] - this.cursorPosition[0]) <= radi &&
+            if (!this.inspecting &&
+                Math.abs(coord[0] - this.cursorPosition[0]) <= radi &&
                 Math.abs(coord[1] - this.cursorPosition[1]) <= radi) {
                 parms = this.getCursorDrawData(coord);
             } else {
@@ -784,25 +758,7 @@ export class Game {
                 this.renderPosition([x, y]);
             }
         }
-        // // this.dirtyTiles = [];
-        // this.needsRender = false;
     }
-
-    // /**
-    //  * Re-draws only 'dirty' tiles
-    //  */
-    // renderDirty = () => {
-    //     if (// this.dirtyTiles == null || // this.dirtyTiles.length === 0) {
-    //         return;
-    //     }
-    //     const dirty = new Array<Point>();
-    //     while (// this.dirtyTiles.length > 0) {
-    //         dirty.push(// this.dirtyTiles.pop());
-    //     }
-    //     for (const coord of dirty) {
-    //         this.renderPosition(coord);
-    //     }
-    // }
     //#endregion render
 
     //#region helpers
@@ -875,78 +831,4 @@ export class Game {
     //#endregion
 }
 
-    // handleMouseDown = (e: MouseEvent) => {
-    //     if (e.button === 0) {
-    //         this.mouseLeftPressed(true);
-    //         if (this.inspecting) {
-    //             this.setHighlightPos([window.mouseX, window.mouseY]);
-    //         }
-    //     }
-    // }
-
-    // handleMouseUp = (e: MouseEvent) => {
-    //     if (e.button === 0) {
-    //         if (this.highlighting) {
-    //             // handle 'highlight selection'
-    //         }
-    //         this.mouseLeftPressed(false);
-    //         this.endHighlight();
-    //         // this.setState({
-    //         //     leftMouseDown: false,
-    //         //     highlighting: false,
-    //         //     highlightingStart: null,
-    //         // });
-    //     }
-    // }
-
-    // coordIsBuildable = (coord: Point): boolean => {
-    //     const isBldg = this.gameGrid[this.zLevel][coord[0]][coord[1]].isBuilding();
-    //     if (isBldg) {
-    //         return false;
-    //     }
-    //     if (this.strictMode) {
-    //         const tileType = this.gameGrid[this.zLevel][coord[0]][coord[1]].getType();
-    //         if (tileType === TileType.Floor) {
-    //             return true;
-    //         }
-    //         return false;
-    //     } else {
-    //         return true;
-    //     }
-    // }
-
-    // renderCursor = () => {
-    //     for (const i of this.buildingRange) {
-    //         this.renderPosition(i);
-    //     }
-    // }
-
-    // renderDesignated = () => {
-    //     if (this.designatorTiles == null || this.designatorTiles.length === 0) {
-    //         return;
-    //     }
-    //     for (const coord of this.designatorTiles) {
-    //         this.renderPosition(coord);
-    //     }
-    // }
-
-    // updateGameSize = (container: HTMLElement) => {
-    //     if (this.gridSize != null && this.gridSize.length === 2) {
-    //         store.dispatch(SetGridSize([
-    //             Math.max(this.gridSize[0], Math.floor(container.offsetWidth / TILE_W)),
-    //             Math.max(this.gridSize[1], Math.floor(container.offsetHeight / TILE_H)),
-    //         ]));
-    //     } else {
-    //         store.dispatch(SetGridSize([
-    //             Math.floor(container.offsetWidth / TILE_W),
-    //             Math.floor(container.offsetHeight / TILE_H),
-    //         ]));
-    //     }
-
-    //     store.dispatch(SetMapSize([
-    //         Math.max(this.mapSize[0], this.gridSize[0]),
-    //         Math.max(this.mapSize[1], this.gridSize[1]),
-    //     ]));
-
-    //     this.needsRender = true;
-    // }
+export { Game };

@@ -1,5 +1,6 @@
 {
     "leatherworks": {
+        "display_name": "Leatherworks",
         "tiles": [
             [
                 {
@@ -49,6 +50,7 @@
         ]
     },
     "quern": {
+        "display_name": "Quern",
         "tiles": [
             [
                 {
@@ -61,6 +63,7 @@
         ]
     },
     "millstone": {
+        "display_name": "Millstone",
         "tiles": [
             [
                 {
@@ -73,6 +76,7 @@
         ]
     },
     "loom": {
+        "display_name": "Loom",
         "tiles": [
             [
                 {
@@ -117,6 +121,7 @@
         ]
     },
     "clothier": {
+        "display_name": "Clothier's shop",
         "tiles": [
             [
                 {
@@ -161,6 +166,7 @@
         ]
     },
     "bowyer": {
+        "display_name": "Bowyer's workshop",
         "tiles": [
             [
                 {
@@ -210,6 +216,7 @@
         ]
     },
     "carpenter": {
+        "display_name": "Carpenter's workshop",
         "tiles": [
             [
                 {},
@@ -259,6 +266,7 @@
         ]
     },
     "forge": {
+        "display_name": "Forge",
         "tiles": [
             [
                 {
@@ -303,6 +311,7 @@
         ]
     },
     "magmaforge": {
+        "display_name": "Magma Forge",
         "tiles": [
             [
                 {
@@ -347,6 +356,7 @@
         ]
     },
     "jeweler": {
+        "display_name": "Jeweler's workshop",
         "tiles": [
             [
                 {},
@@ -401,6 +411,7 @@
         ]
     },
     "mason": {
+        "display_name": "Mason's workshop",
         "tiles": [
             [
                 {
@@ -450,6 +461,7 @@
         ]
     },
     "butcher": {
+        "display_name": "Butcher's shop",
         "tiles": [
             [
                 {},
@@ -489,6 +501,7 @@
         ]
     },
     "tanner": {
+        "display_name": "Tanner's shop",
         "tiles": [
             [
                 {
@@ -528,6 +541,7 @@
         ]
     },
     "craftsdwarf": {
+        "display_name": "Craftsdwarf's workshop",
         "tiles": [
             [
                 {},
@@ -577,6 +591,7 @@
         ]
     },
     "siege": {
+        "display_name": "Siege workshop",
         "tiles": [
             [
                 {},
@@ -671,6 +686,7 @@
         ]
     },
     "mechanic": {
+        "display_name": "Mechanic's workshop",
         "tiles": [
             [
                 {
@@ -715,6 +731,7 @@
         ]
     },
     "still": {
+        "display_name": "Still",
         "tiles": [
             [
                 {
@@ -769,6 +786,7 @@
         ]
     },
     "farmers": {
+        "display_name": "Farmer's workshop",
         "tiles": [
             [
                 {},
@@ -813,6 +831,7 @@
         ]
     },
     "kitchen": {
+        "display_name": "Kitchen",
         "tiles": [
             [
                 {
@@ -862,6 +881,7 @@
         ]
     },
     "fishery": {
+        "display_name": "Fishery",
         "tiles": [
             [
                 {
@@ -901,6 +921,7 @@
         ]
     },
     "ashery": {
+        "display_name": "Ashery",
         "tiles": [
             [
                 {},
@@ -945,6 +966,7 @@
         ]
     },
     "dyer": {
+        "display_name": "Dyer's shop",
         "tiles": [
             [
                 {},
@@ -984,6 +1006,7 @@
         ]
     },
     "soap": {
+        "display_name": "Soap maker's workshop",
         "tiles": [
             [
                 {
@@ -1023,6 +1046,7 @@
         ]
     },
     "screw": {
+        "display_name": "Screw Press",
         "tiles": [
             [
                 {
@@ -1035,6 +1059,7 @@
         ]
     },
     "bed": {
+        "display_name": "Bed",
         "tiles": [
             [
                 {
@@ -1047,6 +1072,7 @@
         ]
     },
     "chair": {
+        "display_name": "Chair/Throne",
         "tiles": [
             [
                 {
@@ -1059,6 +1085,7 @@
         ]
     },
     "door": {
+        "display_name": "Door",
         "tiles": [
             [
                 {

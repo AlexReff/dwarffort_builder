@@ -1,6 +1,6 @@
 // import * as _ from "lodash";
-import { DEC_TILES, DEC_TILES_COLORS, DIRECTION, FLOOR_TILES, IBuildingData, MENU_IDS, Point, WALL_TILES } from "./constants";
-import RNG from "./rot/rng";
+import { DEC_TILES, DEC_TILES_COLORS, DIRECTION, FLOOR_TILES, IBuildingTileData, MENU_IDS, Point, WALL_TILES } from "./../constants";
+import RNG from "./../rot/rng";
 
 enum TileType {
     Empty,
@@ -20,7 +20,7 @@ class Tile {
     private bgColor: string;
 
     private buildingKey: string;
-    private buildingData: IBuildingData;
+    private buildingData: IBuildingTileData;
 
     private position: Point;
 
@@ -108,7 +108,7 @@ class Tile {
         ];
     }
 
-    setBuilding = (key: string, data: IBuildingData) => {
+    setBuilding = (key: string, data: IBuildingTileData) => {
         this.tileType = TileType.Building;
         this.building = true;
         this.buildingKey = key;

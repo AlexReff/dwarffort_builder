@@ -1,5 +1,5 @@
-import { Point, TILE_H, TILE_MAP, TILE_W } from "../constants";
-import Display from "../rot/display";
+// import { Point, TILE_H, TILE_MAP, TILE_W } from "../src/components/constants";
+// import Display from "../src/components/rot/display";
 
 // export class GameRender {
 
