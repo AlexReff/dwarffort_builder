@@ -1,7 +1,8 @@
 import * as _ from "lodash";
 import { Component, h } from "preact";
 import { connect } from "react-redux";
-import { BUILDINGS, IInspectTarget, IMenuItem, MENU_IDS, MENU_ITEM, MENU_ITEMS, MENU_KEYS, SUBMENU_MAX_H, SUBMENUS } from "./constants";
+import { BUILDINGS, IInspectTarget, IMenuItem, MENU_IDS, MENU_ITEM, MENU_ITEMS, MENU_KEYS, Point, SUBMENU_MAX_H, SUBMENUS } from "./constants";
+import { inspectTileAtMapCoord } from "./redux/inspect/actions";
 import { selectMenu, selectMenuItem } from "./redux/menu/actions";
 import { setStrictMode } from "./redux/settings/actions";
 import { ReduxState } from "./redux/store";
@@ -17,6 +18,7 @@ interface IMenuProps {
     selectMenu: (id: string) => void;
     selectMenuItem: (id: string) => void;
     setStrictMode: (val: boolean) => void;
+    inspectTileAtMapCoord: (coord: Point) => void;
 }
 
 const mapStateToProps = (state: ReduxState) => ({
@@ -32,6 +34,7 @@ const mapDispatchToProps = (dispatch) => ({
     selectMenu: (id) => dispatch(selectMenu(id)),
     selectMenuItem: (id) => dispatch(selectMenuItem(id)),
     setStrictMode: (val) => dispatch(setStrictMode(val)),
+    inspectTileAtMapCoord: (coord) => dispatch(inspectTileAtMapCoord(coord)),
 });
 
 class Menu extends Component<IMenuProps, {}> {
@@ -116,15 +119,24 @@ class Menu extends Component<IMenuProps, {}> {
 
     renderMenuToolbar = () => {
         // shows if a building is selected
-        return (this.props.inspectedBuildings != null ?
+        if (this.props.inspectedBuildings == null) {
+            return null;
+        }
+        const self = this;
+        return (
             <div class="menu-toolbar">
                 {this.props.inspectedBuildings.map((m) => (
-                    <div>
+                    <a href="#" onClick={this.handleInspectClick.bind(self, m.key)}>
                         {m.display_name}
-                    </div>
+                    </a>
                 ))}
             </div>
-            : null);
+        );
+    }
+
+    handleInspectClick = (key, e) => {
+        e.preventDefault();
+        this.props.inspectTileAtMapCoord(key);
     }
 
     handleMenuEvent = (e: string) => {

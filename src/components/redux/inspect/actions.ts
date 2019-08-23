@@ -15,6 +15,14 @@ export function inspectTileAtPos(xCoord: number, yCoord: number) {
     };
 }
 
+/** Requests an inspect on a single item given a mouse coordinate */
+export function inspectTileAtMapCoord(coord: Point) {
+    return {
+        type: ACTION_TYPE.INSPECT_TILE_AT_MAPCOORD,
+        coord,
+    };
+}
+
 /** Populates the inspected building array */
 export function inspectTiles(tiles: IInspectTarget[]) {
     return {
@@ -24,8 +32,10 @@ export function inspectTiles(tiles: IInspectTarget[]) {
 }
 
 /** Request to inspect a range of buildings given mouse bounds */
-export function inspectTileRange(xStart: number, xEnd: number, yStart: number, yEnd: number) {
-    return (dispatch, getState) => {
-        //
+export function inspectTileRange(first: Point, second: Point) {
+    return {
+        type: ACTION_TYPE.INSPECT_TILERANGE,
+        first,
+        second,
     };
 }

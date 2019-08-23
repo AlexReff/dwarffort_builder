@@ -4,6 +4,7 @@ import store, { getUpdatedStoreData, IFlatReduxState } from "../redux/store";
 import { default as Display } from "../rot/display";
 
 import { BUILDINGS, CURSOR_BEHAVIOR, DEFAULTS, DIRECTION, IGridRange, IInspectTarget, KEYS, MENU_ITEM, Point, TILE_H, TILE_MAP, TILE_W } from "../constants";
+import { setBuildingListData } from "../redux/building/actions";
 import { zLevelGoto } from "../redux/camera/actions";
 import { moveCursor } from "../redux/cursor/actions";
 import { designatorEnd, designatorStart } from "../redux/designator/actions";
@@ -24,12 +25,11 @@ class Game implements IFlatReduxState {
     animationToggle: boolean;
     animationInterval: number;
 
-    /** Bldg info, key=center */
-    buildingList: { [key: number]: string };
-    /** All tiles that have a building, key=coord, val=center */
-    buildingTiles: { [key: string]: string };
-
     //redux
+    /** Bldg info, key=center, value=display_name */
+    buildingList: { [key: number]: IInspectTarget } = {};
+    /** All tiles that have a building, key=coord, val=centerKey */
+    buildingTiles: { [key: string]: string } = {};
     gridSize: Point = null; //size of the rendered game grid [width, height]
     mapSize: Point = null; //size of the full map (including non-rendered portions)
     cursorPosition: Point = null;
@@ -43,8 +43,11 @@ class Game implements IFlatReduxState {
     designatorStart: Point = null;
     buildingRange: Point[] = null;
     coordToInspect: Point = null;
+    coordRangeToInspect: [Point, Point] = null;
+    inspectTileAtMapCoord: Point = null;
     inspecting: boolean = null;
-    inspectedBuildings: string[] = null;
+    inspectedBuildings: IInspectTarget[] = null;
+    mapCoordToInspect: string = null;
     currentMenuItem: MENU_ITEM = null;
     cursorMode: CURSOR_BEHAVIOR = null;
     cursorVisible: boolean = null;
@@ -62,8 +65,6 @@ class Game implements IFlatReduxState {
         this.animationToggle = false;
         this.tileSheetImage = image;
         this.gameGrid = {};
-        this.buildingList = {};
-        this.buildingTiles = {};
         this.noiseMaps = {};
         this.strictMode = DEFAULTS.STRICT_MODE;
         this.canvasRef = canvas;
@@ -105,22 +106,7 @@ class Game implements IFlatReduxState {
             this.populateFloor(this.zLevel);
         }
 
-        // an inspect request has been issued at the given screen coordinates
-        if (typeof oldData.coordToInspect !== "undefined" &&
-            this.coordToInspect !== null &&
-            this.coordToInspect.length === 2) {
-            const gridPos = this.display.eventToPosition({ clientX: this.coordToInspect[0], clientY: this.coordToInspect[1] });
-            const pos = this.getMapCoord(gridPos);
-            const bldgKey = `${this.zLevel}:${pos[0]}:${pos[1]}`;
-            const targets: IInspectTarget[] = [];
-            if (bldgKey in this.buildingTiles) {
-                targets.push({
-                    display_name: this.buildingList[this.buildingTiles[bldgKey]],
-                    key: bldgKey,
-                });
-            }
-            store.dispatch(inspectTiles(targets));
-        }
+        this.handleInspectRequests(oldData);
 
         if (this.initRan) {
             this.render();
@@ -164,6 +150,69 @@ class Game implements IFlatReduxState {
     handleAnimToggle = () => {
         this.animationToggle = !this.animationToggle;
         this.render();
+    }
+
+    handleInspectRequests = (oldData: Partial<IFlatReduxState>) => {
+        // an inspect request at the given screen coordinates
+        if (typeof oldData.coordToInspect !== "undefined" &&
+            this.coordToInspect !== null &&
+            this.coordToInspect.length === 2) {
+            const gridPos = this.display.eventToPosition({ clientX: this.coordToInspect[0], clientY: this.coordToInspect[1] });
+            const pos = this.getMapCoord(gridPos);
+            const bldgKey = `${this.zLevel}:${pos[0]}:${pos[1]}`;
+            const targets: IInspectTarget[] = [];
+            if (bldgKey in this.buildingTiles) {
+                targets.push(this.buildingList[this.buildingTiles[bldgKey]]);
+            }
+            store.dispatch(inspectTiles(targets));
+        }
+
+        // an inspect request for a specific item (map coord)
+        if (typeof oldData.mapCoordToInspect !== "undefined" &&
+            this.mapCoordToInspect !== null &&
+            this.mapCoordToInspect.length > 0) {
+            const targets: IInspectTarget[] = [];
+            if (this.mapCoordToInspect in this.buildingTiles) {
+                targets.push(this.buildingList[this.buildingTiles[this.mapCoordToInspect]]);
+            }
+            store.dispatch(inspectTiles(targets));
+        }
+
+        // an inspect request over a range of screen coordinates
+        if (typeof oldData.coordRangeToInspect !== "undefined" &&
+            this.coordRangeToInspect !== null &&
+            this.coordRangeToInspect.length === 2 &&
+            this.coordRangeToInspect[0].length === 2 &&
+            this.coordRangeToInspect[1].length === 2) {
+
+            const first = this.display.eventToPosition({ clientX: this.coordRangeToInspect[0][0], clientY: this.coordRangeToInspect[0][1] });
+            const second = this.display.eventToPosition({ clientX: this.coordRangeToInspect[1][0], clientY: this.coordRangeToInspect[1][1] });
+
+            if (first != null && second != null) {
+                const mFirst = this.getMapCoord(first);
+                const mSecond = this.getMapCoord(second);
+                const keys = {};
+                const xStart = Math.min(mFirst[0], mSecond[0]);
+                const yStart = Math.min(mFirst[1], mSecond[1]);
+                const xEnd = Math.max(mFirst[0], mSecond[0]);
+                const yEnd = Math.max(mFirst[1], mSecond[1]);
+                for (let x = xStart; x <= xEnd; x++) {
+                    for (let y = yStart; y <= yEnd; y++) {
+                        const thisKey = `${this.zLevel}:${x}:${y}`;
+                        if (thisKey in this.buildingTiles) {
+                            keys[this.buildingTiles[thisKey]] = this.buildingList[this.buildingTiles[thisKey]];
+                        }
+                    }
+                }
+                if (Object.keys(keys).length > 0) {
+                    const targets: IInspectTarget[] = [];
+                    for (const key of Object.keys(keys)) {
+                        targets.push(keys[key]);
+                    }
+                    store.dispatch(inspectTiles(targets));
+                }
+            }
+        }
     }
 
     //left click
@@ -229,13 +278,19 @@ class Game implements IFlatReduxState {
         switch (e.keyCode) {
             case KEYS.VK_ESCAPE:
                 e.preventDefault();
-                if (this.isDesignating) {
+                if (this.inspecting) {
+                    if (this.inspectedBuildings != null) {
+                        store.dispatch(inspectTileClear());
+                    } else {
+                        store.dispatch(selectMenuItem(null));
+                    }
+                } else if (this.isDesignating) {
                     this.cancelDesignate();
                 } else if (this.currentMenuItem != null) {
                     store.dispatch(selectMenuItem(null));
                 } else {
                     // go up one menu level
-                    store.dispatch(goPrevSubmenu() as any);
+                    store.dispatch(goPrevSubmenu());
                 }
                 break;
             case KEYS.VK_RETURN:
@@ -705,19 +760,30 @@ class Game implements IFlatReduxState {
         }
 
         const centerKey = `${this.zLevel}:${this.cursorPosition[0]}:${this.cursorPosition[1]}`;
-        this.buildingList[centerKey] = thisBuilding.display_name;
 
+        const edges: [Point, Point] = [[this.mapSize[0] + 1, this.mapSize[1] + 1], [-1, -1]];
         for (let y = 0; y < tiles.length; y++) {
             for (let x = 0; x < tiles[0].length; x++) {
                 const targX = this.cursorPosition[0] - this.cursorRadius + x;
                 const targY = this.cursorPosition[1] - this.cursorRadius + y;
+                edges[0][0] = Math.min(edges[0][0], targX);
+                edges[0][1] = Math.min(edges[0][1], targY);
+                edges[1][0] = Math.max(edges[1][0], targX);
+                edges[1][1] = Math.max(edges[1][1], targY);
                 const targetTile = this.gameGrid[this.zLevel][targX][targY];
                 targetTile.setBuilding(this.currentMenuItem, tiles[y][x]);
                 this.buildingTiles[`${this.zLevel}:${targX}:${targY}`] = centerKey;
             }
         }
 
-        // store.dispatch();
+        this.buildingList[centerKey] = {
+            display_name: thisBuilding.display_name,
+            key: centerKey,
+            mapPosRange: edges,
+            zLevel: this.zLevel,
+        };
+
+        store.dispatch(setBuildingListData(this.buildingList, this.buildingTiles));
 
         return true;
     }

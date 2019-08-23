@@ -50,20 +50,6 @@ canvas {
     display: block;
 }
 
-#highlighter {
-    box-sizing: border-box;
-    position: absolute;
-    z-index: 2;
-    pointer-events: none;
-    border: 1px solid rgba(0,128,0,.7);
-    display: none;
-    transition: .1s ease all;
-
-    &.active {
-        display: inline-block;
-    }
-}
-
 #debug-menu {
     position: fixed;
     top: $header-height-px;
@@ -149,4 +135,4 @@ canvas {
     }
 }
 
-@import 'header', 'menu', 'grid', 'footer';
+@import 'header', 'menu', 'grid', 'highlighter', 'inspect', 'footer';

@@ -1,5 +1,7 @@
 import { applyMiddleware, combineReducers, createStore, Dispatch } from "redux";
 import thunk, { ThunkMiddleware } from "redux-thunk";
+import { setBuildingListData } from "./building/actions";
+import building, { IBuildingState } from "./building/reducer";
 import { moveCamera, setGridSize, setMapSize, toggleAnimation, zLevelDown, zLevelGoto, zLevelUp } from "./camera/actions";
 import camera, { ICameraState } from "./camera/reducer";
 import { hideCursor, moveCursorRaw, setCursorBuilding, setCursorCharacter, setCursorDiameter, showCursor } from "./cursor/actions";
@@ -8,7 +10,7 @@ import { designatorEnd, designatorStart } from "./designator/actions";
 import designator, { IDesignatorState } from "./designator/reducer";
 import { endHighlight, setHighlightPos, startHighlight } from "./highlighter/actions";
 import highlighter, { IHighlighterState } from "./highlighter/reducer";
-import { inspectTileAtPos, inspectTileClear, inspectTileRange, inspectTiles } from "./inspect/actions";
+import { inspectTileAtMapCoord, inspectTileAtPos, inspectTileClear, inspectTileRange, inspectTiles } from "./inspect/actions";
 import inspect, { IInspectState } from "./inspect/reducer";
 import { selectMenu, selectMenuItem } from "./menu/actions";
 import menu, { IMenuState } from "./menu/reducer";
@@ -16,6 +18,7 @@ import { Initialize, setStrictMode } from "./settings/actions";
 import settings, { ISettingsState } from "./settings/reducer";
 
 export const ALL_REDUCERS = {
+    building,
     camera,
     cursor,
     designator,
@@ -49,7 +52,10 @@ type NON_THUNK_ACTIONS =
     ReturnType<typeof setStrictMode> |
     ReturnType<typeof inspectTileClear> |
     ReturnType<typeof inspectTileAtPos> |
+    ReturnType<typeof inspectTileAtMapCoord> |
     ReturnType<typeof inspectTiles> |
+    ReturnType<typeof inspectTileRange> |
+    ReturnType<typeof setBuildingListData> |
     ReturnType<typeof Initialize>;
 
 const COMBINED_REDUCERS = combineReducers(ALL_REDUCERS);

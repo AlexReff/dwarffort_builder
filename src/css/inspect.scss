@@ -1,0 +1,14 @@
+@import './variables';
+
+.building_inspect {
+    position: absolute;
+    display: block;
+    box-sizing: border-box;
+    cursor: pointer;
+    border: 1px solid transparent;
+    z-index: 2;
+
+    &.inspecting {
+        border-color: green;
+    }
+}

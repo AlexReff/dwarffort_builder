@@ -34,6 +34,8 @@ export interface IInspectTarget {
     "display_name": string;
     /** `${zLevel}:${x}:${y}` */
     "key": string;
+    "zLevel": number;
+    "mapPosRange": [Point, Point];
 }
 
 export const DEFAULTS = {

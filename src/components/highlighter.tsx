@@ -1,39 +1,49 @@
 import { Component, h } from "preact";
 import { connect } from "react-redux";
-import { Point, TILE_H, TILE_W } from "./constants";
-import { inspectTileAtPos } from "./redux/inspect/actions";
+import { IInspectTarget, Point, TILE_H, TILE_W } from "./constants";
+import { IBuildingState } from "./redux/building/reducer";
+import { inspectTileAtMapCoord, inspectTileAtPos, inspectTileRange } from "./redux/inspect/actions";
 import { ReduxState } from "./redux/store";
 
 interface IGameHighlighterProps {
     canvasRef: any;
     //redux
+    camera: Point;
     inspecting: boolean;
-    inspectTile: (x, y) => void;
+    buildingList: IBuildingState["buildingList"];
+    inspectedBuildings: IInspectTarget[];
+    zLevel: number;
+    inspectTileAtPos: (x, y) => void;
+    inspectTileAtMapCoord: (coord) => void;
+    inspectTileRange: (first, second) => void;
 }
 
 interface IGameHighlighterState {
     highlightingStart: Point;
     currentPosition: Point;
     mouseDown: boolean;
+    mouseDownCoord: Point;
     showHighlighter: boolean;
 }
 
 const mapStateToProps = (state: ReduxState) => ({
-    // currentMenu: state.menu.currentMenu,
-    // currentMenuItem: state.menu.currentMenuItem,
+    camera: state.camera.camera,
     inspecting: state.inspect.inspecting,
-    // isDesignating: state.designator.isDesignating,
-    // strictMode: state.settings.strictMode,
+    inspectedBuildings: state.inspect.inspectedBuildings,
+    buildingList: state.building.buildingList,
+    zLevel: state.camera.zLevel,
 });
 
 const mapDispatchToProps = (dispatch) => ({
-    inspectTile: (x, y) => dispatch(inspectTileAtPos(x, y)),
+    inspectTileAtPos: (x, y) => dispatch(inspectTileAtPos(x, y)),
+    inspectTileRange: (first, second) => dispatch(inspectTileRange(first, second)),
+    inspectTileAtMapCoord: (coord) => dispatch(inspectTileAtMapCoord(coord)),
     // selectMenu: (id) => dispatch(selectMenu(id)),
     // selectMenuItem: (id) => dispatch(selectMenuItem(id)),
     // setStrictMode: (val) => dispatch(setStrictMode(val)),
 });
 
-class GameHighlighter extends Component<IGameHighlighterProps, any> {
+class GameHighlighter extends Component<IGameHighlighterProps, IGameHighlighterState> {
     componentDidMount = () => {
         window.addEventListener("mousemove", this.handleMouseMove);
         window.addEventListener("mousedown", this.handleMouseDown);
@@ -58,6 +68,7 @@ class GameHighlighter extends Component<IGameHighlighterProps, any> {
                 const targ: any = "touches" in e ? e.touches : e;
                 this.setState({
                     mouseDown: true,
+                    mouseDownCoord: [targ.clientX, targ.clientY],
                     showHighlighter: false,
                     highlightingStart: this.getHighlighterGridPosition(targ.clientX, targ.clientY),
                 });
@@ -73,14 +84,15 @@ class GameHighlighter extends Component<IGameHighlighterProps, any> {
                 if (this.props.inspecting) {
                     if (this.state.showHighlighter) {
                         //handle area selection
-                        console.log("inspect drag");
+                        this.props.inspectTileRange(this.state.mouseDownCoord, this.state.currentPosition);
                     } else {
                         //handle single-click on item
-                        this.props.inspectTile(eTarg.clientX, eTarg.clientY);
+                        this.props.inspectTileAtPos(eTarg.clientX, eTarg.clientY);
                     }
                 }
                 this.setState({
                     mouseDown: false,
+                    mouseDownCoord: null,
                     showHighlighter: false,
                 });
             }
@@ -122,10 +134,52 @@ class GameHighlighter extends Component<IGameHighlighterProps, any> {
         }
     }
 
-    render = (props, state) => {
-        return (
+    getInspectTiles = (): any[] => {
+        if (this.props.inspectedBuildings == null ||
+            this.props.canvasRef == null) {
+            return null;
+        }
+        const result = [];
+        for (const key of Object.keys(this.props.buildingList)) {
+            const item = this.props.buildingList[key];
+            const bounds = this.props.canvasRef.getBoundingClientRect();
+            const width = +TILE_W + (+TILE_W * Math.abs(item.mapPosRange[1][0] - item.mapPosRange[0][0]));
+            const height = +TILE_H + (+TILE_H * Math.abs(item.mapPosRange[1][1] - item.mapPosRange[0][1]));
+            const leftGrid = Math.min(item.mapPosRange[1][0], item.mapPosRange[0][0]) - this.props.camera[0];
+            const topGrid = Math.min(item.mapPosRange[1][1], item.mapPosRange[0][1]) - this.props.camera[1];
+            const left = bounds.left + (+TILE_W * leftGrid);
+            const top = bounds.top + (+TILE_H * topGrid);
+            const style = {
+                width: `${width}px`,
+                height: `${height}px`,
+                left: `${left}px`,
+                top: `${top}px`,
+            };
+
+            let thisClass = "building_inspect";
+            if (this.props.inspectedBuildings.some((m) => m.key === item.key)) {
+                thisClass += " active";
+            }
+            const handleClick = (e: TouchEvent | MouseEvent) => {
+                e.preventDefault();
+                this.props.inspectTileAtMapCoord(item.key);
+            };
+            result.push((
+                <a class={thisClass} title={item.display_name} onClick={handleClick} style={style}></a>
+            ));
+        }
+        return result;
+    }
+
+    render = (props: IGameHighlighterProps, state: IGameHighlighterState) => {
+        let stack = [];
+        stack.push((
             <div id="highlighter" class={state.showHighlighter ? "active" : null} style={this.getHighlighterStyle()}></div>
-        );
+        ));
+
+        stack = stack.concat(this.getInspectTiles());
+
+        return stack;
     }
 }
 
