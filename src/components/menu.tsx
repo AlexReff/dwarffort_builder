@@ -1,19 +1,26 @@
 import * as _ from "lodash";
 import { Component, h } from "preact";
 import { connect } from "react-redux";
-import { BUILDINGS, IInspectTarget, IMenuItem, MENU_IDS, MENU_ITEM, MENU_ITEMS, MENU_KEYS, Point, SUBMENU_MAX_H, SUBMENUS } from "./constants";
+import { BUILDINGS, IMenuItem, MENU_IDS, MENU_ITEM, MENU_ITEMS, MENU_KEYS, Point, SUBMENU_MAX_H, SUBMENUS } from "./constants";
+import { IBuildingState } from "./redux/building/reducer";
+import { IDesignatorState } from "./redux/designator/reducer";
 import { inspectTileAtMapCoord } from "./redux/inspect/actions";
+import { IInspectState } from "./redux/inspect/reducer";
 import { selectMenu, selectMenuItem } from "./redux/menu/actions";
+import { IMenuState } from "./redux/menu/reducer";
 import { setStrictMode } from "./redux/settings/actions";
+import { ISettingsState } from "./redux/settings/reducer";
 import { ReduxState } from "./redux/store";
 
 interface IMenuProps {
-    currentMenu: string;
-    currentMenuItem: MENU_ITEM;
-    inspecting: boolean;
-    inspectedBuildings: IInspectTarget[];
-    isDesignating: boolean;
-    strictMode: boolean;
+    currentMenu: IMenuState["currentMenu"];
+    currentMenuItem: IMenuState["currentMenuItem"];
+    inspecting: IInspectState["inspecting"];
+    inspectedBuildings: IInspectState["inspectedBuildings"];
+    isDesignating: IDesignatorState["isDesignating"];
+    strictMode: ISettingsState["strictMode"];
+    buildingList: IBuildingState["buildingList"];
+    buildingIds: IBuildingState["buildingIds"];
 
     selectMenu: (id: string) => void;
     selectMenuItem: (id: string) => void;
@@ -28,13 +35,15 @@ const mapStateToProps = (state: ReduxState) => ({
     inspectedBuildings: state.inspect.inspectedBuildings,
     isDesignating: state.designator.isDesignating,
     strictMode: state.settings.strictMode,
+    buildingList: state.building.buildingList,
+    buildingIds: state.building.buildingIds,
 });
 
 const mapDispatchToProps = (dispatch) => ({
     selectMenu: (id) => dispatch(selectMenu(id)),
     selectMenuItem: (id) => dispatch(selectMenuItem(id)),
     setStrictMode: (val) => dispatch(setStrictMode(val)),
-    inspectTileAtMapCoord: (coord) => dispatch(inspectTileAtMapCoord(coord)),
+    inspectTileAtMapCoord: (coord, add) => dispatch(inspectTileAtMapCoord(coord, add)),
 });
 
 class Menu extends Component<IMenuProps, {}> {
@@ -123,11 +132,12 @@ class Menu extends Component<IMenuProps, {}> {
             return null;
         }
         const self = this;
+        let bldgs = [...this.props.inspectedBuildings];
         return (
             <div class="menu-toolbar">
-                {this.props.inspectedBuildings.map((m) => (
-                    <a href="#" onClick={this.handleInspectClick.bind(self, m.key)}>
-                        {m.display_name}
+                {bldgs.reverse().map((m) => (
+                    <a href="#" onClick={this.handleInspectClick.bind(self, m)}>
+                        {BUILDINGS[this.props.buildingIds[m]].display_name}
                     </a>
                 ))}
             </div>
@@ -136,7 +146,8 @@ class Menu extends Component<IMenuProps, {}> {
 
     handleInspectClick = (key, e) => {
         e.preventDefault();
-        this.props.inspectTileAtMapCoord(key);
+        const coord: Point = key.substr(key.indexOf(":") + 1).split(":").map((m) => +m);
+        this.props.inspectTileAtMapCoord(coord);
     }
 
     handleMenuEvent = (e: string) => {

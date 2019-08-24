@@ -1,14 +1,16 @@
-import { ACTION_TYPE, IInspectTarget, Point } from "../../constants";
+import { ACTION_TYPE, Point } from "../../constants";
 
 export interface IInspectState {
+    addCoord: boolean;
     coordToInspect: Point;
     coordRangeToInspect: [Point, Point];
     mapCoordToInspect: string;
     inspecting: boolean;
-    inspectedBuildings: IInspectTarget[]; //list of building names currently selected
+    inspectedBuildings: string[]; //list of building names currently selected
 }
 
 const initialState: IInspectState = {
+    addCoord: false,
     coordToInspect: null,
     coordRangeToInspect: null,
     mapCoordToInspect: null,
@@ -30,30 +32,25 @@ export default (state = initialState, action) => {
                 inspecting: action.val != null && action.val === "inspect",
             };
         }
-        case ACTION_TYPE.INSPECT_TILE_CLEAR: {
-            return {
-                ...state,
-                coordToInspect: null,
-                coordRangeToInspect: null,
-                mapCoordToInspect: null,
-            };
-        }
         case ACTION_TYPE.INSPECT_TILE_AT_POS: {
             return {
                 ...state,
                 coordToInspect: action.val,
+                addCoord: action.add,
             };
         }
         case ACTION_TYPE.INSPECT_TILE_AT_MAPCOORD: {
             return {
                 ...state,
                 mapCoordToInspect: action.coord,
+                addCoord: action.add,
             };
         }
         case ACTION_TYPE.INSPECT_TILERANGE: {
             return {
                 ...state,
                 coordRangeToInspect: [action.first, action.second],
+                addCoord: action.add,
             };
         }
         case ACTION_TYPE.INSPECT_CLEAR: {
@@ -68,10 +65,11 @@ export default (state = initialState, action) => {
         case ACTION_TYPE.INSPECT_TILES: {
             return {
                 ...state,
-                inspectedBuildings: action.val,
+                inspectedBuildings: [...action.val],
                 coordToInspect: null,
                 coordRangeToInspect: null,
                 mapCoordToInspect: null,
+                inspecting: true,
             };
         }
         default:

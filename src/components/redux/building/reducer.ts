@@ -1,13 +1,21 @@
-import { ACTION_TYPE, IInspectTarget, Point } from "../../constants";
+import { ACTION_TYPE, Point } from "../../constants";
 
 export interface IBuildingState {
-    buildingList: { [key: number]: IInspectTarget };
+    /** a list of building KEYS: `zLevel:x:y` */
+    buildingList: string[];
+    /** the map bounds of the building */
+    buildingBounds: { [key: number]: [Point, Point] };
+    /** key: all tiles that have a building | value: buildingList::key */
     buildingTiles: { [key: string]: string };
+    /** buildingList::key to BUILDINGS::key mapping */
+    buildingIds: { [key: string]: string };
 }
 
 const initialState: IBuildingState = {
-    buildingList: {},
+    buildingList: [],
+    buildingBounds: {},
     buildingTiles: {},
+    buildingIds: {},
 };
 
 export default (state = initialState, action) => {
@@ -15,8 +23,10 @@ export default (state = initialState, action) => {
         case ACTION_TYPE.BUILDING_LIST_SET: {
             return {
                 ...state,
-                buildingList: action.list,
-                buildingTiles: action.tiles,
+                buildingList: [...action.list],
+                buildingTiles: {...action.tiles},
+                buildingIds: {...action.ids},
+                buildingBounds: {...action.bounds},
             };
         }
         default:

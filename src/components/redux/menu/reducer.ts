@@ -25,6 +25,13 @@ export default (state = initialState, action) => {
                 currentMenuItem: action.val,
             };
         }
+        case ACTION_TYPE.INSPECT_TILES: {
+            return {
+                ...state,
+                currentMenu: "top",
+                currentMenuItem: "inspect",
+            };
+        }
         default:
             return state;
     }

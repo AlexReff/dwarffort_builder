@@ -1,14 +1,14 @@
 //libraries
 import * as _ from "lodash";
 import { Component, h, render } from "preact";
-import { connect, Provider } from "react-redux";
+import { Provider } from "react-redux";
 //components
-import { DEBUG, HEADER_H, KEYS, MENU_ITEM, MENU_W, TILE_URL, TILE_W } from "./components/constants";
+import { DEBUG, HEADER_H, KEYS, MENU_W, TILE_URL, TILE_W } from "./components/constants";
 import { DebugMenu } from "./components/debug";
 import { Game } from "./components/game/game";
 import GameHighlighter from "./components/highlighter";
 import Menu from "./components/menu";
-import store, { ReduxState } from "./components/redux/store";
+import store from "./components/redux/store";
 
 require("./css/index.scss");
 
@@ -58,7 +58,7 @@ class FortressDesigner extends Component<{}, IFortressDesignerState> {
         if (this.game == null) {
             this.game = new Game(this.tileSheetImage, this.gridElement, this.canvasRef);
         } else {
-            this.game.init();
+            this.game.init(this.gridElement);
         }
 
         this.setState({

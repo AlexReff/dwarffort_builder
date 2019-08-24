@@ -74,6 +74,12 @@ export default (state = initialState, action) => {
                 ...state,
                 cursorBuilding: false,
             };
+        case ACTION_TYPE.INSPECT_TILES: {
+            return {
+                ...state,
+                cursorVisible: action.val != null && action.val.length > 0 ? false : state.cursorVisible,
+            };
+        }
         default:
             return state;
     }

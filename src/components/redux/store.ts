@@ -10,7 +10,7 @@ import { designatorEnd, designatorStart } from "./designator/actions";
 import designator, { IDesignatorState } from "./designator/reducer";
 import { endHighlight, setHighlightPos, startHighlight } from "./highlighter/actions";
 import highlighter, { IHighlighterState } from "./highlighter/reducer";
-import { inspectTileAtMapCoord, inspectTileAtPos, inspectTileClear, inspectTileRange, inspectTiles } from "./inspect/actions";
+import { inspectTileAtMapCoord, inspectTileAtPos, inspectTileRange, inspectTiles, inspectClear } from "./inspect/actions";
 import inspect, { IInspectState } from "./inspect/reducer";
 import { selectMenu, selectMenuItem } from "./menu/actions";
 import menu, { IMenuState } from "./menu/reducer";
@@ -50,7 +50,7 @@ type NON_THUNK_ACTIONS =
     ReturnType<typeof selectMenu> |
     ReturnType<typeof selectMenuItem> |
     ReturnType<typeof setStrictMode> |
-    ReturnType<typeof inspectTileClear> |
+    ReturnType<typeof inspectClear> |
     ReturnType<typeof inspectTileAtPos> |
     ReturnType<typeof inspectTileAtMapCoord> |
     ReturnType<typeof inspectTiles> |
@@ -62,7 +62,15 @@ const COMBINED_REDUCERS = combineReducers(ALL_REDUCERS);
 
 export type ReduxState = ReturnType<typeof COMBINED_REDUCERS>;
 
-export type IFlatReduxState = ICameraState & ICursorState & IDesignatorState & IInspectState & IHighlighterState & IMenuState & ISettingsState;
+export type IFlatReduxState =
+    IBuildingState &
+    ICameraState &
+    ICursorState &
+    IDesignatorState &
+    IHighlighterState &
+    IInspectState &
+    IMenuState &
+    ISettingsState;
 
 export default createStore(COMBINED_REDUCERS, applyMiddleware(thunk as ThunkMiddleware<ReduxState, NON_THUNK_ACTIONS>));
 

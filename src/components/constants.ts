@@ -30,16 +30,8 @@ export interface IMenuItem {
     "parent"?: IMenuItem;
 }
 
-export interface IInspectTarget {
-    "display_name": string;
-    /** `${zLevel}:${x}:${y}` */
-    "key": string;
-    "zLevel": number;
-    "mapPosRange": [Point, Point];
-}
-
 export const DEFAULTS = {
-    STRICT_MODE: true,
+    STRICT_MODE: false,
     PAINT_OVERWRITE: true,
     MAP_MIN_W: 48 * 2,
     MAP_MIN_H: 48 * 2,

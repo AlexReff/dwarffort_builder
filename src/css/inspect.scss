@@ -8,7 +8,15 @@
     border: 1px solid transparent;
     z-index: 2;
 
+    .inspecting & {
+        border-color: rgba(yellow, .5);
+    }
+
     &.inspecting {
-        border-color: green;
+        border-color: rgba(green, .5);
+    }
+
+    .dragging & {
+        pointer-events: none;
     }
 }
