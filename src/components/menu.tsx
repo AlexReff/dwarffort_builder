@@ -1,7 +1,7 @@
 import * as _ from "lodash";
 import { Component, h } from "preact";
 import { connect } from "react-redux";
-import { BUILDINGS, IMenuItem, MENU_IDS, MENU_ITEM, MENU_ITEMS, MENU_KEYS, Point, SUBMENU_MAX_H, SUBMENUS } from "./constants";
+import { BUILDINGS, IMenuItem, MENU_IDS, MENU_ITEM, MENU_ITEMS, MENU_KEYS, Point, SUBMENU_MAX_H, SUBMENUS, KEYS } from "./constants";
 import { IBuildingState } from "./redux/building/reducer";
 import { IDesignatorState } from "./redux/designator/reducer";
 import { inspectTileAtMapCoord } from "./redux/inspect/actions";
@@ -25,7 +25,7 @@ interface IMenuProps {
     selectMenu: (id: string) => void;
     selectMenuItem: (id: string) => void;
     setStrictMode: (val: boolean) => void;
-    inspectTileAtMapCoord: (coord: Point) => void;
+    inspectTileAtMapCoord: (coord: Point, add: boolean) => void;
 }
 
 const mapStateToProps = (state: ReduxState) => ({
@@ -46,13 +46,21 @@ const mapDispatchToProps = (dispatch) => ({
     inspectTileAtMapCoord: (coord, add) => dispatch(inspectTileAtMapCoord(coord, add)),
 });
 
-class Menu extends Component<IMenuProps, {}> {
+interface IGameMenuState {
+    shiftDown: boolean;
+}
+
+class Menu extends Component<IMenuProps, IGameMenuState> {
     constructor(props: IMenuProps) {
         super();
+        this.setState({
+            shiftDown: false,
+        });
     }
 
     componentDidMount = () => {
-        window.addEventListener("keydown", this.handleKeyPress);
+        window.addEventListener("keydown", this.handleKeyDown);
+        window.addEventListener("keyup", this.handleKeyUp);
     }
 
     render = (props: IMenuProps, state: any) => {
@@ -128,11 +136,12 @@ class Menu extends Component<IMenuProps, {}> {
 
     renderMenuToolbar = () => {
         // shows if a building is selected
-        if (this.props.inspectedBuildings == null) {
+        if (this.props.inspectedBuildings == null ||
+            this.props.inspectedBuildings.length === 0) {
             return null;
         }
         const self = this;
-        let bldgs = [...this.props.inspectedBuildings];
+        const bldgs = [...this.props.inspectedBuildings];
         return (
             <div class="menu-toolbar">
                 {bldgs.reverse().map((m) => (
@@ -147,7 +156,7 @@ class Menu extends Component<IMenuProps, {}> {
     handleInspectClick = (key, e) => {
         e.preventDefault();
         const coord: Point = key.substr(key.indexOf(":") + 1).split(":").map((m) => +m);
-        this.props.inspectTileAtMapCoord(coord);
+        this.props.inspectTileAtMapCoord(coord, this.state.shiftDown);
     }
 
     handleMenuEvent = (e: string) => {
@@ -164,12 +173,25 @@ class Menu extends Component<IMenuProps, {}> {
         this.props.setStrictMode((e.currentTarget as any).checked);
     }
 
-    handleKeyPress = (e: KeyboardEvent) => {
+    handleKeyDown = (e: KeyboardEvent) => {
         const key = this.props.currentMenu !== "top" ? this.props.currentMenu + ":" + e.key : e.key;
         const hotkeyTarget = MENU_KEYS[key];
         if (hotkeyTarget) {
             e.preventDefault();
             this.handleMenuEvent(MENU_KEYS[key].id);
+        }
+        if (e.keyCode === KEYS.VK_SHIFT) {
+            this.setState({
+                shiftDown: true,
+            });
+        }
+    }
+
+    handleKeyUp = (e: KeyboardEvent) => {
+        if (e.keyCode === KEYS.VK_SHIFT) {
+            this.setState({
+                shiftDown: false,
+            });
         }
     }
 

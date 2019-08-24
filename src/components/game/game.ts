@@ -209,6 +209,8 @@ class Game implements IFlatReduxState {
             if (bldgKey in this.buildingTiles) {
                 this.inspectBuildings([this.buildingTiles[bldgKey]]);
                 return;
+            } else {
+                this.inspectBuildings([]);
             }
         }
 

@@ -24,12 +24,14 @@ export default (state = initialState, action) => {
             return {
                 ...state,
                 inspecting: false,
+                inspectedBuildings: [],
             };
         }
         case ACTION_TYPE.MENU_ITEM: {
             return {
                 ...state,
                 inspecting: action.val != null && action.val === "inspect",
+                inspectedBuildings: action.val == null || action.val !== "inspect" ? state.inspectedBuildings : [],
             };
         }
         case ACTION_TYPE.INSPECT_TILE_AT_POS: {
