@@ -45,6 +45,14 @@ class Tile {
         return this.character;
     }
 
+    getBuildingKey = () => {
+        return this.buildingKey;
+    }
+
+    getBuildingData = () => {
+        return this.buildingData;
+    }
+
     getColor = () => {
         return this.fgColor;
     }

@@ -1,4 +1,4 @@
-import { applyMiddleware, combineReducers, createStore, Dispatch } from "redux";
+import { applyMiddleware, combineReducers, createStore } from "redux";
 import thunk, { ThunkMiddleware } from "redux-thunk";
 import { setBuildingListData } from "./building/actions";
 import building, { IBuildingState } from "./building/reducer";
@@ -10,7 +10,7 @@ import { designatorEnd, designatorStart } from "./designator/actions";
 import designator, { IDesignatorState } from "./designator/reducer";
 import { endHighlight, setHighlightPos, startHighlight } from "./highlighter/actions";
 import highlighter, { IHighlighterState } from "./highlighter/reducer";
-import { inspectTileAtMapCoord, inspectTileAtPos, inspectTileRange, inspectTiles, inspectClear } from "./inspect/actions";
+import { inspectClear, inspectMoveSelectionRequest, inspectRequestAtMapCoord, inspectRequestAtPos, inspectRequestRange, inspectTiles, inspectMoveSelectionRequestClear } from "./inspect/actions";
 import inspect, { IInspectState } from "./inspect/reducer";
 import { selectMenu, selectMenuItem } from "./menu/actions";
 import menu, { IMenuState } from "./menu/reducer";
@@ -51,10 +51,12 @@ type NON_THUNK_ACTIONS =
     ReturnType<typeof selectMenuItem> |
     ReturnType<typeof setStrictMode> |
     ReturnType<typeof inspectClear> |
-    ReturnType<typeof inspectTileAtPos> |
-    ReturnType<typeof inspectTileAtMapCoord> |
+    ReturnType<typeof inspectRequestAtPos> |
+    ReturnType<typeof inspectRequestAtMapCoord> |
     ReturnType<typeof inspectTiles> |
-    ReturnType<typeof inspectTileRange> |
+    ReturnType<typeof inspectRequestRange> |
+    ReturnType<typeof inspectMoveSelectionRequest> |
+    ReturnType<typeof inspectMoveSelectionRequestClear> |
     ReturnType<typeof setBuildingListData> |
     ReturnType<typeof Initialize>;
 

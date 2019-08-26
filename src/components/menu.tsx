@@ -4,7 +4,7 @@ import { connect } from "react-redux";
 import { BUILDINGS, IMenuItem, MENU_IDS, MENU_ITEM, MENU_ITEMS, MENU_KEYS, Point, SUBMENU_MAX_H, SUBMENUS, KEYS } from "./constants";
 import { IBuildingState } from "./redux/building/reducer";
 import { IDesignatorState } from "./redux/designator/reducer";
-import { inspectTileAtMapCoord } from "./redux/inspect/actions";
+import { inspectRequestAtMapCoord } from "./redux/inspect/actions";
 import { IInspectState } from "./redux/inspect/reducer";
 import { selectMenu, selectMenuItem } from "./redux/menu/actions";
 import { IMenuState } from "./redux/menu/reducer";
@@ -43,7 +43,7 @@ const mapDispatchToProps = (dispatch) => ({
     selectMenu: (id) => dispatch(selectMenu(id)),
     selectMenuItem: (id) => dispatch(selectMenuItem(id)),
     setStrictMode: (val) => dispatch(setStrictMode(val)),
-    inspectTileAtMapCoord: (coord, add) => dispatch(inspectTileAtMapCoord(coord, add)),
+    inspectTileAtMapCoord: (coord, add) => dispatch(inspectRequestAtMapCoord(coord, add)),
 });
 
 interface IGameMenuState {
@@ -137,18 +137,23 @@ class Menu extends Component<IMenuProps, IGameMenuState> {
     renderMenuToolbar = () => {
         // shows if a building is selected
         if (this.props.inspectedBuildings == null ||
-            this.props.inspectedBuildings.length === 0) {
+            this.props.inspectedBuildings.length === 0 ||
+            this.props.buildingIds == null) {
             return null;
         }
         const self = this;
         const bldgs = [...this.props.inspectedBuildings];
         return (
             <div class="menu-toolbar">
-                {bldgs.reverse().map((m) => (
-                    <a href="#" onClick={this.handleInspectClick.bind(self, m)}>
-                        {BUILDINGS[this.props.buildingIds[m]].display_name}
-                    </a>
-                ))}
+                {bldgs./*reverse().*/map((m) => {
+                    if (m in this.props.buildingIds) {
+                        return (
+                            <a href="#" onClick={this.handleInspectClick.bind(self, m)}>
+                                {BUILDINGS[this.props.buildingIds[m]].display_name}
+                            </a>
+                        );
+                    }
+                })}
             </div>
         );
     }

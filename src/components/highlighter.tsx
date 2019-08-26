@@ -3,7 +3,7 @@ import { connect } from "react-redux";
 import { KEYS, Point, TILE_H, TILE_W } from "./constants";
 import { IBuildingState } from "./redux/building/reducer";
 import { ICameraState } from "./redux/camera/reducer";
-import { inspectTileAtMapCoord, inspectTileAtPos, inspectTileRange } from "./redux/inspect/actions";
+import { inspectMoveSelectionRequest, inspectRequestAtMapCoord, inspectRequestAtPos, inspectRequestRange } from "./redux/inspect/actions";
 import { IInspectState } from "./redux/inspect/reducer";
 import { ReduxState } from "./redux/store";
 
@@ -16,10 +16,12 @@ interface IGameHighlighterProps {
     buildingBounds: IBuildingState["buildingBounds"];
     inspectedBuildings: IInspectState["inspectedBuildings"];
     zLevel: ICameraState["zLevel"];
+    mapSize: ICameraState["mapSize"];
     //redux dispatch
-    inspectTileAtPos: typeof inspectTileAtPos;
-    inspectTileAtMapCoord: typeof inspectTileAtMapCoord;
-    inspectTileRange: typeof inspectTileRange;
+    inspectTileAtPos: typeof inspectRequestAtPos;
+    inspectTileAtMapCoord: typeof inspectRequestAtMapCoord;
+    inspectTileRange: typeof inspectRequestRange;
+    inspectMoveSelectionRequest: typeof inspectMoveSelectionRequest;
 }
 
 interface IGameHighlighterState {
@@ -29,6 +31,11 @@ interface IGameHighlighterState {
     mouseDownCoord: Point;
     showHighlighter: boolean;
     shiftDown: boolean;
+    toolbarMoveDragging: boolean;
+    dragStartX: number;
+    dragStartY: number;
+    mouseX: number;
+    mouseY: number;
 }
 
 const mapStateToProps = (state: ReduxState) => ({
@@ -38,19 +45,29 @@ const mapStateToProps = (state: ReduxState) => ({
     buildingList: state.building.buildingList,
     buildingBounds: state.building.buildingBounds,
     zLevel: state.camera.zLevel,
+    mapSize: state.camera.mapSize,
 });
 
 const mapDispatchToProps = (dispatch) => ({
-    inspectTileAtPos: (x, y, add) => dispatch(inspectTileAtPos(x, y, add)),
-    inspectTileRange: (first, second, add) => dispatch(inspectTileRange(first, second, add)),
-    inspectTileAtMapCoord: (coord, shift) => dispatch(inspectTileAtMapCoord(coord, shift)),
+    inspectTileAtPos: (x, y, add) => dispatch(inspectRequestAtPos(x, y, add)),
+    inspectTileRange: (first, second, add) => dispatch(inspectRequestRange(first, second, add)),
+    inspectTileAtMapCoord: (coord, shift) => dispatch(inspectRequestAtMapCoord(coord, shift)),
+    inspectMoveSelectionRequest: (payload) => dispatch(inspectMoveSelectionRequest(payload)),
 });
 
 class GameHighlighter extends Component<IGameHighlighterProps, IGameHighlighterState> {
+    allInspectStartLeft: number;
+    allInspectStartTop: number;
+    allInspectLeft: number;
+    allInspectTop: number;
+
     constructor() {
         super();
         this.setState({
+            mouseDown: false,
+            showHighlighter: false,
             shiftDown: false,
+            toolbarMoveDragging: false,
         });
     }
 
@@ -85,6 +102,8 @@ class GameHighlighter extends Component<IGameHighlighterProps, IGameHighlighterS
             this.setState((prevState: IGameHighlighterState) => ({
                 showHighlighter: prevState.showHighlighter ? true : prevState.mouseDown && (prevState.highlightingStart[0] !== newPos[0] || prevState.highlightingStart[1] !== newPos[1]),
                 currentPosition: newPos,
+                mouseX: targ.clientX,
+                mouseY: targ.clientY,
             }));
         }
     }
@@ -164,15 +183,21 @@ class GameHighlighter extends Component<IGameHighlighterProps, IGameHighlighterS
 
     getInspectTiles = () => {
         if (this.props.canvasRef == null ||
+            this.props.mapSize == null ||
             this.props.buildingList == null) {
             return null;
         }
 
         const result = [];
 
+        let minX = +TILE_W * (this.props.mapSize[0] * 2);
+        let minY = +TILE_H * (this.props.mapSize[1] * 2);
+        let maxX = -1, maxY = -1;
+        let hasInspectTargets = false;
+        const canvasBounds = this.props.canvasRef.getBoundingClientRect();
+
         for (const key of Object.values(this.props.buildingList)) {
             const range = this.props.buildingBounds[key];
-            const canvasBounds = this.props.canvasRef.getBoundingClientRect();
 
             const width = +TILE_W + (+TILE_W * Math.abs(range[1][0] - range[0][0]));
             const height = +TILE_H + (+TILE_H * Math.abs(range[1][1] - range[0][1]));
@@ -191,11 +216,17 @@ class GameHighlighter extends Component<IGameHighlighterProps, IGameHighlighterS
             };
 
             let thisClass = "building_inspect";
+
             if (this.props.inspectedBuildings != null) {
                 for (let x = range[0][0]; x <= range[1][0]; x++) {
                     for (let y = range[0][1]; y <= range[1][1]; y++) {
                         if (this.props.inspectedBuildings.some((m) => m === `${this.props.zLevel}:${x}:${y}`)) {
                             thisClass += " inspecting";
+                            minX = Math.min(minX, left);
+                            minY = Math.min(minY, top);
+                            maxX = Math.max(maxX, left + width);
+                            maxY = Math.max(maxY, top + height);
+                            hasInspectTargets = true;
                             x = range[1][0]; //break both loops
                             break;
                         }
@@ -213,6 +244,56 @@ class GameHighlighter extends Component<IGameHighlighterProps, IGameHighlighterS
             ));
         }
 
+        if (hasInspectTargets) {
+            const width = maxX - minX;
+            let allStyleLeft = minX;
+            let allStyleTop = minY;
+            if (this.state.toolbarMoveDragging) {
+                allStyleLeft = +TILE_W + this.state.mouseX - ((this.state.mouseX - canvasBounds.left) % +TILE_W) - width;
+                allStyleTop = +TILE_H + this.state.mouseY - ((this.state.mouseY - canvasBounds.top) % +TILE_H);
+            }
+            const allStyle = {
+                width: `${width}px`,
+                height: `${maxY - minY}px`,
+                left: `${allStyleLeft}px`,
+                top: `${allStyleTop}px`,
+            };
+
+            this.allInspectStartLeft = minX,
+            this.allInspectStartTop = minY,
+            this.allInspectLeft = allStyleLeft,
+            this.allInspectTop = allStyleTop,
+
+            result.push((
+                <div class="all_inspect" style={allStyle}></div>
+            ));
+
+            let toolbarStyle = {};
+            if (this.state.toolbarMoveDragging) {
+                toolbarStyle = {
+                    left: `${maxX - +TILE_W - (this.state.dragStartX - this.state.mouseX)}px`,
+                    top: `${minY - (this.state.dragStartY - this.state.mouseY)}px`,
+                };
+            } else {
+                toolbarStyle = {
+                    left: `${maxX - +TILE_W}px`,
+                    top: `${minY}px`,
+                };
+            }
+
+            result.push((
+                <div class="toolbar_wrapper" style={toolbarStyle}>
+                    <div class="inspect_toolbar">
+                        <div class="toolbar_move" onMouseDown={this.handleMoveMouseDown} onMouseUp={this.handleMoveMouseUp}>
+                            <a class="drag_inner_target">
+                                <i class="fas fa-arrows-alt"></i>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            ));
+        }
+
         let wrapperClass = "inspect_wrapper";
         if (this.props.inspecting) {
             wrapperClass += " inspecting";
@@ -226,6 +307,34 @@ class GameHighlighter extends Component<IGameHighlighterProps, IGameHighlighterS
                 {result}
             </div>
         );
+    }
+
+    handleMoveMouseDown = (e: MouseEvent) => {
+        if (e.button !== 0) {
+            return;
+        }
+        e.preventDefault();
+        this.setState({
+            toolbarMoveDragging: true,
+            dragStartX: e.clientX,
+            dragStartY: e.clientY,
+            mouseX: e.clientX,
+            mouseY: e.clientY,
+        });
+    }
+
+    handleMoveMouseUp = (e: MouseEvent) => {
+        if (e.button !== 0) {
+            return;
+        }
+        e.preventDefault();
+        this.props.inspectMoveSelectionRequest({
+            diffX: this.allInspectLeft - this.allInspectStartLeft,
+            diffY: this.allInspectTop - this.allInspectStartTop,
+        });
+        this.setState({
+            toolbarMoveDragging: false,
+        });
     }
 
     render = (props: IGameHighlighterProps, state: IGameHighlighterState) => {

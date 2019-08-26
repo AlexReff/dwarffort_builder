@@ -1,22 +1,48 @@
 @import './variables';
 
+$toolbar_z: 3;
+$individual_inspect_z: 2;
+$all_inspect_z: 1;
+
 .building_inspect {
     position: absolute;
     display: block;
     box-sizing: border-box;
     cursor: pointer;
     border: 1px solid transparent;
-    z-index: 2;
+    z-index: $individual_inspect_z;
 
     .inspecting & {
         border-color: rgba(yellow, .5);
     }
 
     &.inspecting {
-        border-color: rgba(green, .5);
+        border-color: rgba(green, 1);
     }
 
     .dragging & {
         pointer-events: none;
+    }
+}
+
+.all_inspect {
+    box-sizing: border-box;
+    top: -100vh;
+    left: -100vw;
+    position: absolute;
+    border: 1px solid rgba(cyan, 1);
+    z-index: $all_inspect_z;
+    pointer-events: none;
+}
+
+.toolbar_wrapper {
+    position: absolute;
+    transform: translateY(-100%);
+    z-index: $toolbar_z;
+}
+
+.inspect_toolbar {
+    .drag_inner_target {
+        cursor: move;
     }
 }

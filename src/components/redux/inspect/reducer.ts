@@ -7,6 +7,10 @@ export interface IInspectState {
     mapCoordToInspect: string;
     inspecting: boolean;
     inspectedBuildings: string[]; //list of building names currently selected
+    inspectMoveRequestPayload: {
+        diffX: number,
+        diffY: number,
+    };
 }
 
 const initialState: IInspectState = {
@@ -16,6 +20,7 @@ const initialState: IInspectState = {
     mapCoordToInspect: null,
     inspecting: false,
     inspectedBuildings: null,
+    inspectMoveRequestPayload: null,
 };
 
 export default (state = initialState, action) => {
@@ -72,6 +77,25 @@ export default (state = initialState, action) => {
                 coordRangeToInspect: null,
                 mapCoordToInspect: null,
                 inspecting: true,
+            };
+        }
+        case ACTION_TYPE.INSPECT_MOVE_SELECTION_REQUEST: {
+            return {
+                ...state,
+                inspectMoveRequestPayload: action.payload,
+            };
+        }
+        case ACTION_TYPE.INSPECT_MOVE_SELECTION_CLEAR: {
+            return {
+                ...state,
+                inspectMoveRequestPayload: null,
+            };
+        }
+        case ACTION_TYPE.INSPECT_MOVE_SELECTION_FINISH: {
+            return {
+                ...state,
+                inspectedBuildings: action.inspected,
+                inspectMoveRequestPayload: null,
             };
         }
         default:

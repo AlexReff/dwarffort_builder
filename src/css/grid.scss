@@ -15,6 +15,7 @@
 
     .loading {
         z-index: -1;
+        pointer-events: none;
     }
 }
 // .grid-tile {

@@ -29,6 +29,15 @@ export default (state = initialState, action) => {
                 buildingBounds: {...action.bounds},
             };
         }
+        case ACTION_TYPE.INSPECT_MOVE_SELECTION_FINISH: {
+            return {
+                ...state,
+                buildingList: [...action.list],
+                buildingTiles: {...action.tiles},
+                buildingIds: {...action.ids},
+                buildingBounds: {...action.bounds},
+            };
+        }
         default:
             return state;
     }

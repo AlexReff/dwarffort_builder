@@ -3,7 +3,7 @@ import { default as OpenSimplexNoise } from "open-simplex-noise";
 import store, { getUpdatedStoreData, IFlatReduxState } from "../redux/store";
 import { default as Display } from "../rot/display";
 
-import { BUILDINGS, DEFAULTS, DIRECTION, IGridRange, KEYS, MENU_ITEM, Point, TILE_H, TILE_MAP, TILE_W } from "../constants";
+import { BUILDINGS, DEFAULTS, DIRECTION, IBuildingTileData, IGridRange, KEYS, MENU_ITEM, Point, TILE_H, TILE_MAP, TILE_W } from "../constants";
 import { setBuildingListData } from "../redux/building/actions";
 import { IBuildingState } from "../redux/building/reducer";
 import { zLevelGoto } from "../redux/camera/actions";
@@ -13,7 +13,7 @@ import { ICursorState } from "../redux/cursor/reducer";
 import { designatorEnd, designatorStart } from "../redux/designator/actions";
 import { IDesignatorState } from "../redux/designator/reducer";
 import { IHighlighterState } from "../redux/highlighter/reducer";
-import { inspectClear, inspectTiles } from "../redux/inspect/actions";
+import { inspectClear, inspectMoveSelectionRequestClear, inspectMoveSelectionRequestFinish, inspectTiles } from "../redux/inspect/actions";
 import { IInspectState } from "../redux/inspect/reducer";
 import { goPrevSubmenu, selectMenuItem } from "../redux/menu/actions";
 import { IMenuState } from "../redux/menu/reducer";
@@ -61,6 +61,7 @@ class Game implements IFlatReduxState {
     coordRangeToInspect: IInspectState["coordRangeToInspect"] = null;
     inspecting: IInspectState["inspecting"] = null;
     inspectedBuildings: IInspectState["inspectedBuildings"] = null;
+    inspectMoveRequestPayload: IInspectState["inspectMoveRequestPayload"] = null;
     mapCoordToInspect: IInspectState["mapCoordToInspect"] = null;
     currentMenu: IMenuState["currentMenu"] = null;
     currentMenuItem: IMenuState["currentMenuItem"] = null;
@@ -115,6 +116,8 @@ class Game implements IFlatReduxState {
         }
 
         this.handleInspectRequests(oldData);
+
+        this.handleInspectMoveRequests(oldData);
 
         if (this.initRan && this.display != null) {
             this.render();
@@ -262,6 +265,111 @@ class Game implements IFlatReduxState {
         }
     }
 
+    handleInspectMoveRequests = (oldData: Partial<IFlatReduxState>) => {
+        if (typeof oldData.inspectMoveRequestPayload === "undefined" ||
+            this.inspectMoveRequestPayload == null ||
+            this.inspectedBuildings == null ||
+            this.inspectedBuildings.length === 0) {
+            return;
+        }
+
+        const xGridDiff = Math.floor(this.inspectMoveRequestPayload.diffX / +TILE_W);
+        const yGridDiff = Math.floor(this.inspectMoveRequestPayload.diffY / +TILE_H);
+
+        if (xGridDiff === 0 && yGridDiff === 0) {
+            store.dispatch(inspectMoveSelectionRequestClear());
+            return;
+        }
+
+        const inspectTilePile = [];
+        for (const key of this.inspectedBuildings) {
+            for (const tile of Object.keys(this.buildingTiles)) {
+                if (this.buildingTiles[tile] === key) {
+                    inspectTilePile.push([tile, key]);
+                }
+            }
+        }
+
+        //check move validity
+        const shiftedTilePile = [];
+        for (const tile of inspectTilePile) {
+            //tile[0] = tilePos, tile[1] = centerKey
+            //`${zLevel}:${x}:${y}`;
+            const parts = tile[0].split(":");
+            const newPos = `${parts[0]}:${+parts[1] + xGridDiff}:${+parts[2] + yGridDiff}`;
+            shiftedTilePile.push(newPos);
+            if (newPos in this.buildingTiles) {
+                if (inspectTilePile.some((m) => m[0] === newPos)) {
+                    continue;
+                }
+                if (this.buildingTiles[newPos] !== tile[1]) {
+                    return false; //another building is already here!
+                }
+            }
+        }
+
+        //clear tiles from gameGrid and store the building data for later
+        const oldBuildings: { [key: string]: string } = {};
+        for (const tile of inspectTilePile) {
+            const parts = tile[0].split(":");
+            const target = this.gameGrid[parts[0]][parts[1]][parts[2]];
+            oldBuildings[tile[0]] = target.getBuildingKey();
+            const targetType = this.strictMode ? TileType.Floor : TileType.Empty;
+            target.setType(targetType, false);
+        }
+
+        this.buildingList = this.buildingList.filter((m) => {
+            return !Object.keys(oldBuildings).some((n) => m === n);
+        });
+
+        const newBuildingTiles = {};
+        for (const key of Object.keys(this.buildingTiles)) {
+            if (!this.inspectedBuildings.includes(key)) {
+                const parts = key.split(":");
+                const newKey = `${parts[0]}:${+parts[1] + xGridDiff}:${+parts[2] + yGridDiff}`;
+                const valParts = this.buildingTiles[key].split(":");
+                const newVal = `${valParts[0]}:${+valParts[1] + xGridDiff}:${+valParts[2] + yGridDiff}`;
+                newBuildingTiles[newKey] = newVal;
+            }
+        }
+
+        this.buildingTiles = newBuildingTiles;
+
+        const oldBuildingIds = {};
+        const newBuildingIds = {};
+        for (const key of Object.keys(this.buildingIds)) {
+            if (this.inspectedBuildings.includes(key)) {
+                oldBuildingIds[key] = this.buildingIds[key];
+            } else {
+                newBuildingIds[key] = this.buildingIds[key];
+            }
+        }
+
+        this.buildingIds = newBuildingIds;
+
+        const newBuildingBounds = {};
+        for (const key of Object.keys(this.buildingBounds)) {
+            if (!this.inspectedBuildings.includes(key)) {
+                newBuildingBounds[key] = this.buildingBounds[key];
+            }
+        }
+
+        this.buildingBounds = newBuildingBounds;
+
+        this.inspectedBuildings = this.inspectedBuildings.map((m) => {
+            const parts = m.split(":");
+            const newPos = `${parts[0]}:${+parts[1] + xGridDiff}:${+parts[2] + yGridDiff}`;
+            return newPos;
+        });
+
+        store.dispatch(inspectMoveSelectionRequestFinish(this.inspectedBuildings, this.buildingList, this.buildingTiles, this.buildingIds, this.buildingBounds));
+
+        for (const key of Object.keys(oldBuildingIds)) {
+            const parts = key.split(":");
+            this.tryPlaceBuilding(oldBuildingIds[key], [+parts[1] + xGridDiff, +parts[2] + yGridDiff]);
+        }
+    }
+
     //left click
     handleGridClick = (e: MouseEvent | TouchEvent) => {
         if (e instanceof MouseEvent && e.button !== 0) {
@@ -300,7 +408,7 @@ class Game implements IFlatReduxState {
                 return;
             }
             if (this.cursorBuilding) {
-                if (this.tryPlaceBuilding()) {
+                if (this.tryPlaceBuildingAtCursor()) {
                     store.dispatch(selectMenuItem(null));
                 }
             } else {
@@ -782,44 +890,54 @@ class Game implements IFlatReduxState {
 
     //#region builder
 
+    tryPlaceBuildingAtCursor = () => {
+        if (!this.cursorBuilding ||
+            this.currentMenuItem == null ||
+            this.cursorPosition == null) {
+            return false;
+        }
+        return this.tryPlaceBuilding(this.currentMenuItem, this.cursorPosition);
+    }
+
     /**
      * Attempts to place a building
      * @returns {true} if a building was placed
      */
-    tryPlaceBuilding = (): boolean => {
-        if (!this.cursorBuilding) {
+    tryPlaceBuilding = (key: string, center: Point): boolean => {
+        if (key == null || center == null) {
             return false;
         }
-        const thisBuilding = BUILDINGS[this.currentMenuItem];
+        const thisBuilding = BUILDINGS[key];
         if (thisBuilding == null) {
             return false;
         }
         const tiles = thisBuilding.tiles;
+        const radius = Math.floor(tiles.length / 2.0);
 
         //check if we can build here
         for (let y = 0; y < tiles.length; y++) {
             for (let x = 0; x < tiles[0].length; x++) {
-                const targetTile = this.gameGrid[this.zLevel][this.cursorPosition[0] - this.cursorRadius + x][this.cursorPosition[1] - this.cursorRadius + y];
+                const targetTile = this.gameGrid[this.zLevel][center[0] - radius + x][center[1] - radius + y];
                 if (!targetTile.isBuildable(this.strictMode)) {
                     return false;
                 }
             }
         }
 
-        const centerKey = `${this.zLevel}:${this.cursorPosition[0]}:${this.cursorPosition[1]}`;
-        this.buildingIds[centerKey] = this.currentMenuItem;
+        const centerKey = `${this.zLevel}:${center[0]}:${center[1]}`;
+        this.buildingIds[centerKey] = key;
 
         const edges: [Point, Point] = [[this.mapSize[0] + 1, this.mapSize[1] + 1], [-1, -1]];
         for (let y = 0; y < tiles.length; y++) {
             for (let x = 0; x < tiles[0].length; x++) {
-                const targX = this.cursorPosition[0] - this.cursorRadius + x;
-                const targY = this.cursorPosition[1] - this.cursorRadius + y;
+                const targX = center[0] - radius + x;
+                const targY = center[1] - radius + y;
                 edges[0][0] = Math.min(edges[0][0], targX);
                 edges[0][1] = Math.min(edges[0][1], targY);
                 edges[1][0] = Math.max(edges[1][0], targX);
                 edges[1][1] = Math.max(edges[1][1], targY);
                 const targetTile = this.gameGrid[this.zLevel][targX][targY];
-                targetTile.setBuilding(this.currentMenuItem, tiles[y][x]);
+                targetTile.setBuilding(key, tiles[y][x]);
                 this.buildingTiles[`${this.zLevel}:${targX}:${targY}`] = centerKey;
             }
         }
