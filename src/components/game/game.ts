@@ -299,16 +299,14 @@ class Game implements IFlatReduxState {
             const newPos = `${parts[0]}:${+parts[1] + xGridDiff}:${+parts[2] + yGridDiff}`;
             shiftedTilePile.push(newPos);
             if (newPos in this.buildingTiles) {
-                if (inspectTilePile.some((m) => m[0] === newPos)) {
-                    continue;
-                }
-                if (this.buildingTiles[newPos] !== tile[1]) {
-                    return false; //another building is already here!
+                if (!inspectTilePile.some((m) => m[0] === newPos) && //not inspected
+                    this.buildingTiles[newPos] !== tile[1]) { //in our way!
+                    return false; //can't complete this move
                 }
             }
         }
 
-        //clear tiles from gameGrid and store the building data for later
+        //clear tiles from gameGrid and store the building data
         const oldBuildings: { [key: string]: string } = {};
         for (const tile of inspectTilePile) {
             const parts = tile[0].split(":");
@@ -318,22 +316,18 @@ class Game implements IFlatReduxState {
             target.setType(targetType, false);
         }
 
+        //remove this building from list
         this.buildingList = this.buildingList.filter((m) => {
             return !Object.keys(oldBuildings).some((n) => m === n);
         });
 
-        const newBuildingTiles = {};
-        for (const key of Object.keys(this.buildingTiles)) {
-            if (!this.inspectedBuildings.includes(key)) {
-                const parts = key.split(":");
-                const newKey = `${parts[0]}:${+parts[1] + xGridDiff}:${+parts[2] + yGridDiff}`;
-                const valParts = this.buildingTiles[key].split(":");
-                const newVal = `${valParts[0]}:${+valParts[1] + xGridDiff}:${+valParts[2] + yGridDiff}`;
-                newBuildingTiles[newKey] = newVal;
+        //remove old tiles for moved building
+        this.buildingTiles = Object.keys(this.buildingTiles).reduce((map, mapKey) => {
+            if (!this.inspectedBuildings.includes(this.buildingTiles[mapKey])) {
+                map[mapKey] = this.buildingTiles[mapKey];
             }
-        }
-
-        this.buildingTiles = newBuildingTiles;
+            return map;
+        }, {});
 
         const oldBuildingIds = {};
         const newBuildingIds = {};
