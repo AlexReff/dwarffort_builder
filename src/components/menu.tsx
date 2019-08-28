@@ -1,7 +1,7 @@
 import * as _ from "lodash";
 import { Component, h } from "preact";
 import { connect } from "react-redux";
-import { BUILDINGS, IMenuItem, MENU_IDS, MENU_ITEM, MENU_ITEMS, MENU_KEYS, Point, SUBMENU_MAX_H, SUBMENUS, KEYS } from "./constants";
+import { BUILDINGS, KEYS, MENU, Point, SUBMENU_MAX_H } from "./constants";
 import { IBuildingState } from "./redux/building/reducer";
 import { IDesignatorState } from "./redux/designator/reducer";
 import { inspectRequestAtMapCoord } from "./redux/inspect/actions";
@@ -51,7 +51,7 @@ interface IGameMenuState {
 }
 
 class Menu extends Component<IMenuProps, IGameMenuState> {
-    constructor(props: IMenuProps) {
+    constructor() {
         super();
         this.setState({
             shiftDown: false,
@@ -63,14 +63,14 @@ class Menu extends Component<IMenuProps, IGameMenuState> {
         window.addEventListener("keyup", this.handleKeyUp);
     }
 
-    render = (props: IMenuProps, state: any) => {
+    render = (props: IMenuProps) => {
         return (
             <div id="menu">
                 <div class="menu-breadcrumbs">
                     {this.renderBreadcrumbs()}
                 </div>
                 <div class="menu-items" style={this.getMenuItemsCss()}>
-                    {this.getChildMenu(MENU_ITEMS, "top")}
+                    {this.getMenu()}
                 </div>
                 {this.renderMenuToolbar()}
                 <div class="menu-bottom">
@@ -90,7 +90,7 @@ class Menu extends Component<IMenuProps, IGameMenuState> {
     renderBreadcrumbs = () => {
         const breadcrumbs = [];
         if (this.props.currentMenu !== "top") {
-            const activeItem = MENU_KEYS[this.props.currentMenu];
+            const activeItem = MENU.ITEMS[this.props.currentMenu];
             breadcrumbs.push(<a href="#" data-id={activeItem.key} onClick={(e) => this.breadcrumbHandler(e)}>{activeItem.text}</a>);
 
             // let parent = activeItem.parent;
@@ -108,27 +108,23 @@ class Menu extends Component<IMenuProps, IGameMenuState> {
         e.preventDefault();
         (e.currentTarget as HTMLElement).blur();
         const key = (e.currentTarget as HTMLElement).dataset.id;
-        if (key === "top") {
-            this.handleMenuEvent("top");
-        } else if (MENU_KEYS[key] != null) {
-            this.handleMenuEvent(MENU_KEYS[key].id);
-        }
+        this.handleMenuEvent(key);
     }
 
     renderMenuStatus = () => {
         if (this.props.isDesignating) {
             return (
-                <div>Designating {MENU_IDS[this.props.currentMenuItem].text}</div>
+                <div>Designating {MENU.ITEMS[this.props.currentMenuItem].text}</div>
             );
         }
         if (this.props.currentMenuItem != null && this.props.currentMenuItem.length > 0) {
-            if (this.props.currentMenuItem in BUILDINGS) {
+            if (this.props.currentMenuItem in BUILDINGS.IDS) {
                 return (
-                    <div>Placing {MENU_IDS[this.props.currentMenuItem].text}</div>
+                    <div>Placing {BUILDINGS.IDS[this.props.currentMenuItem].display_name}</div>
                 );
             }
             return (
-                <div>Designating {MENU_IDS[this.props.currentMenuItem].text}</div>
+                <div>Designating {MENU.ITEMS[this.props.currentMenuItem].text}</div>
             );
         }
         return <div></div>;
@@ -141,15 +137,13 @@ class Menu extends Component<IMenuProps, IGameMenuState> {
             this.props.buildingIds == null) {
             return null;
         }
-        const self = this;
-        const bldgs = [...this.props.inspectedBuildings];
         return (
             <div class="menu-toolbar">
-                {bldgs./*reverse().*/map((m) => {
+                {this.props.inspectedBuildings.map((m) => {
                     if (m in this.props.buildingIds) {
                         return (
-                            <a href="#" onClick={this.handleInspectClick.bind(self, m)}>
-                                {BUILDINGS[this.props.buildingIds[m]].display_name}
+                            <a href="#" onClick={() => this.handleInspectClick.bind(this, m)}>
+                                {BUILDINGS.IDS[this.props.buildingIds[m]].display_name}
                             </a>
                         );
                     }
@@ -165,25 +159,28 @@ class Menu extends Component<IMenuProps, IGameMenuState> {
     }
 
     handleMenuEvent = (e: string) => {
-        if (e === "top") {
-            this.props.selectMenu("top");
-        } else if (SUBMENUS[e] != null) {
-            this.props.selectMenu(SUBMENUS[e]);
-        } else if (this.props.currentMenuItem !== e) {
-            this.props.selectMenuItem(e as MENU_ITEM);
+        if (e == null || e.length === 0) {
+            return;
         }
+        this.props.selectMenuItem(e);
     }
 
     handleStrictModeChange = (e: Event) => {
-        this.props.setStrictMode((e.currentTarget as any).checked);
+        this.props.setStrictMode((e.currentTarget as HTMLInputElement).checked);
     }
 
     handleKeyDown = (e: KeyboardEvent) => {
-        const key = this.props.currentMenu !== "top" ? this.props.currentMenu + ":" + e.key : e.key;
-        const hotkeyTarget = MENU_KEYS[key];
-        if (hotkeyTarget) {
+        let key = "";
+        if (this.props.currentMenu !== "top") {
+            key = MENU.ITEMS[this.props.currentMenu].parsedKey + ":";
+        }
+        key += e.key;
+        if (key in MENU.KEYS) {
             e.preventDefault();
-            this.handleMenuEvent(MENU_KEYS[key].id);
+            this.handleMenuEvent(MENU.KEYS[key].id);
+        } else if (key in BUILDINGS.KEYS) {
+            e.preventDefault();
+            this.handleMenuEvent(BUILDINGS.KEYS[key].id);
         }
         if (e.keyCode === KEYS.VK_SHIFT) {
             this.setState({
@@ -206,54 +203,49 @@ class Menu extends Component<IMenuProps, IGameMenuState> {
         };
     }
 
-    menuItemClickHandler = (e) => {
+    menuItemClickHandler = (e: Event) => {
         e.preventDefault();
-        this.menuItemHandler(e.currentTarget.id);
+        this.handleMenuEvent((e.currentTarget as HTMLElement).dataset.id);
     }
 
-    menuItemHandler = (key: string) => {
-        if (key === "top") {
-            this.handleMenuEvent("top");
-        } else if (MENU_KEYS[key] != null) {
-            this.handleMenuEvent(MENU_KEYS[key].id);
-        }
-    }
+    getMenu = () => {
+        const allMenus = [];
 
-    //render each individual menu with separate keys
-    getChildMenu(items: IMenuItem[], group: string, prefix?: string) {
-        if (typeof items === "undefined" ||
-            items === null ||
-            items.length === 0) {
-            return;
-        }
-
-        const stack = [];
-        const childStack = [];
-
-        if (prefix == null || prefix.length === 0) {
-            prefix = "";
-        } else {
-            prefix += ":";
-        }
-
-        for (const i of items) {
-            stack.push((
-                <a onClick={(e) => this.menuItemClickHandler(e)}
-                    title={i.text}
-                    class={"menu-item" + (this.props.currentMenuItem != null && this.props.currentMenuItem === i.id ? " active" : "")}
-                    id={prefix + i.key}>{i.key}: {i.text}</a>
-            ));
-            if (i.children != null && i.children.length > 0) {
-                childStack.push(this.getChildMenu(i.children, prefix + i.key, prefix + i.key));
+        for (const key of Object.keys(MENU.SUBMENUS)) {
+            const items = MENU.SUBMENUS[key];
+            const resultStack = [];
+            if (key in BUILDINGS.SUBMENUS) {
+                //populate related buildings
+                for (const bldg of BUILDINGS.SUBMENUS[key]) {
+                    resultStack.push((
+                        <a onClick={(e) => this.menuItemClickHandler(e)}
+                            title={bldg.display_name}
+                            class={"menu-item" + (this.props.currentMenuItem != null && this.props.currentMenuItem === bldg.id ? " active" : "")}
+                            data-id={bldg.id}>{bldg.hotkey}: {bldg.display_name}</a>
+                    ));
+                }
             }
+
+            if (items != null) {
+                for (const item of items) {
+                    resultStack.push((
+                        <a onClick={(e) => this.menuItemClickHandler(e)}
+                            title={item.text}
+                            class={"menu-item" + (this.props.currentMenuItem != null && this.props.currentMenuItem === item.id ? " active" : "")}
+                            data-id={item.id}>{item.key}: {item.text}</a>
+                    ));
+                }
+            }
+
+            allMenus.push((
+                <div class={"submenu" + (this.props.currentMenu === key ? " active" : "")}>
+                    {resultStack}
+                </div>
+            ));
         }
 
-        const thisMenu: any[] = [<div class={"submenu" + (this.props.currentMenu === group ? " active" : "")}>{stack}</div>];
-
-        return thisMenu.concat(childStack);
+        return allMenus;
     }
 }
-
-// export { Menu };
 
 export default connect(mapStateToProps, mapDispatchToProps)(Menu);

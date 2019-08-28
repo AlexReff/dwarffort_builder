@@ -184,7 +184,8 @@ class GameHighlighter extends Component<IGameHighlighterProps, IGameHighlighterS
     getInspectTiles = () => {
         if (this.props.canvasRef == null ||
             this.props.mapSize == null ||
-            this.props.buildingList == null) {
+            this.props.buildingList == null ||
+            this.props.buildingList.length === 0) {
             return null;
         }
 
@@ -197,6 +198,10 @@ class GameHighlighter extends Component<IGameHighlighterProps, IGameHighlighterS
         const canvasBounds = this.props.canvasRef.getBoundingClientRect();
 
         for (const key of Object.values(this.props.buildingList)) {
+            if (this.props.zLevel.toString() !== key.split(":")[0]) {
+                continue;
+            }
+
             const range = this.props.buildingBounds[key];
 
             const width = +TILE_W + (+TILE_W * Math.abs(range[1][0] - range[0][0]));
@@ -267,8 +272,10 @@ class GameHighlighter extends Component<IGameHighlighterProps, IGameHighlighterS
             result.push((
                 <div class="all_inspect" style={allStyle}></div>
             ));
+        }
 
-            let toolbarStyle = {};
+        let toolbarStyle = {};
+        if (hasInspectTargets) {
             if (this.state.toolbarMoveDragging) {
                 toolbarStyle = {
                     left: `${maxX - +TILE_W - (this.state.dragStartX - this.state.mouseX)}px`,
@@ -280,19 +287,25 @@ class GameHighlighter extends Component<IGameHighlighterProps, IGameHighlighterS
                     top: `${minY}px`,
                 };
             }
+        } else {
+            //render offscreen to get the image(s) to download
+            toolbarStyle = {
+                left: "-100vw",
+                top: "-100vh",
+            };
+        }
 
-            result.push((
-                <div class="toolbar_wrapper" style={toolbarStyle}>
-                    <div class="inspect_toolbar">
-                        <div class="toolbar_move" onMouseDown={this.handleMoveMouseDown} onMouseUp={this.handleMoveMouseUp}>
-                            <a class="drag_inner_target">
-                                <i class="fas fa-arrows-alt"></i>
-                            </a>
-                        </div>
+        result.push((
+            <div class="toolbar_wrapper" style={toolbarStyle}>
+                <div class="inspect_toolbar">
+                    <div class="toolbar_move" onMouseDown={this.handleMoveMouseDown} onMouseUp={this.handleMoveMouseUp}>
+                        <a class="drag_inner_target">
+                            <i class="fas fa-arrows-alt"></i>
+                        </a>
                     </div>
                 </div>
-            ));
-        }
+            </div>
+        ));
 
         let wrapperClass = "inspect_wrapper";
         if (this.props.inspecting) {
@@ -348,7 +361,5 @@ class GameHighlighter extends Component<IGameHighlighterProps, IGameHighlighterS
         return stack;
     }
 }
-
-// export default GameHighlighter;
 
 export default connect(mapStateToProps, mapDispatchToProps)(GameHighlighter);

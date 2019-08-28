@@ -1,1100 +1,1183 @@
 {
-    "leatherworks": {
-        "display_name": "Leatherworks",
-        "tiles": [
-            [
-                {
-                    "char": "177",
-                    "bg": "rgb(0, 0, 0)",
-                    "fg": "rgb(128, 128, 0)",
-                    "walkable": 1
-                },
-                {
-                    "char": "177",
-                    "bg": "rgb(0, 0, 0)",
-                    "fg": "rgb(128, 128, 0)",
-                    "walkable": 1
-                },
-                {
-                    "char": "176",
-                    "bg": "rgb(192, 192, 192)",
-                    "fg": "rgb(128, 128, 128)",
-                    "walkable": 0
-                }
-            ],
-            [
-                {
-                    "char": "176",
-                    "bg": "rgb(192, 192, 192)",
-                    "fg": "rgb(128, 128, 128)",
-                    "walkable": 0
-                },
-                {},
-                {}
-            ],
-            [
-                {
-                    "char": "92",
-                    "bg": "rgb(0, 0, 0)",
-                    "fg": "rgb(128, 128, 128)",
-                    "walkable": 1
-                },
-                {},
-                {
-                    "char": "176",
-                    "bg": "rgb(192, 192, 192)",
-                    "fg": "rgb(128, 128, 128)",
-                    "walkable": 0
-                }
+    "buildings": [
+        {
+            "id": "leatherworks",
+            "display_name": "Leatherworks",
+            "hotkey": "e",
+            "submenu": "workshops",
+            "tiles": [
+                [
+                    {
+                        "char": "177",
+                        "bg": "rgb(0, 0, 0)",
+                        "fg": "rgb(128, 128, 0)",
+                        "walkable": 1
+                    },
+                    {
+                        "char": "177",
+                        "bg": "rgb(0, 0, 0)",
+                        "fg": "rgb(128, 128, 0)",
+                        "walkable": 1
+                    },
+                    {
+                        "char": "176",
+                        "bg": "rgb(192, 192, 192)",
+                        "fg": "rgb(128, 128, 128)",
+                        "walkable": 0
+                    }
+                ],
+                [
+                    {
+                        "char": "176",
+                        "bg": "rgb(192, 192, 192)",
+                        "fg": "rgb(128, 128, 128)",
+                        "walkable": 0
+                    },
+                    {},
+                    {}
+                ],
+                [
+                    {
+                        "char": "92",
+                        "bg": "rgb(0, 0, 0)",
+                        "fg": "rgb(128, 128, 128)",
+                        "walkable": 1
+                    },
+                    {},
+                    {
+                        "char": "176",
+                        "bg": "rgb(192, 192, 192)",
+                        "fg": "rgb(128, 128, 128)",
+                        "walkable": 0
+                    }
+                ]
             ]
-        ]
-    },
-    "quern": {
-        "display_name": "Quern",
-        "tiles": [
-            [
-                {
-                    "char": "9",
-                    "bg": "rgb(0, 0, 0)",
-                    "fg": "rgb(192, 192, 192)",
-                    "walkable": 1
-                }
+        },
+        {
+            "id": "quern",
+            "display_name": "Quern",
+            "hotkey": "q",
+            "submenu": "workshops",
+            "tiles": [
+                [
+                    {
+                        "char": "9",
+                        "bg": "rgb(0, 0, 0)",
+                        "fg": "rgb(192, 192, 192)",
+                        "walkable": 1
+                    }
+                ]
             ]
-        ]
-    },
-    "millstone": {
-        "display_name": "Millstone",
-        "tiles": [
-            [
-                {
-                    "char": "9",
-                    "bg": "rgb(0, 0, 0)",
-                    "fg": "rgb(192, 192, 192)",
-                    "walkable": 1
-                }
+        },
+        {
+            "id": "millstone",
+            "display_name": "Millstone",
+            "hotkey": "M",
+            "submenu": "workshops",
+            "tiles": [
+                [
+                    {
+                        "char": "9",
+                        "bg": "rgb(0, 0, 0)",
+                        "fg": "rgb(192, 192, 192)",
+                        "walkable": 1
+                    }
+                ]
             ]
-        ]
-    },
-    "loom": {
-        "display_name": "Loom",
-        "tiles": [
-            [
-                {
-                    "char": "195",
-                    "bg": "rgb(0, 0, 0)",
-                    "fg": "rgb(192, 192, 192)",
-                    "walkable": 1
-                },
-                {
-                    "char": "35",
-                    "bg": "rgb(0, 0, 0)",
-                    "fg": "rgb(192, 192, 192)",
-                    "walkable": 0
-                },
-                {
-                    "char": "180",
-                    "bg": "rgb(0, 0, 0)",
-                    "fg": "rgb(192, 192, 192)",
-                    "walkable": 1
-                }
-            ],
-            [
-                {
-                    "char": "237",
-                    "bg": "rgb(0, 0, 0)",
-                    "fg": "rgb(255, 0, 255)",
-                    "walkable": 1
-                },
-                {},
-                {}
-            ],
-            [
-                {},
-                {},
-                {
-                    "char": "167",
-                    "bg": "rgb(0, 0, 0)",
-                    "fg": "rgb(255, 0, 0)",
-                    "walkable": 1
-                }
+        },
+        {
+            "id": "loom",
+            "display_name": "Loom",
+            "hotkey": "o",
+            "submenu": "workshops",
+            "tiles": [
+                [
+                    {
+                        "char": "195",
+                        "bg": "rgb(0, 0, 0)",
+                        "fg": "rgb(192, 192, 192)",
+                        "walkable": 1
+                    },
+                    {
+                        "char": "35",
+                        "bg": "rgb(0, 0, 0)",
+                        "fg": "rgb(192, 192, 192)",
+                        "walkable": 0
+                    },
+                    {
+                        "char": "180",
+                        "bg": "rgb(0, 0, 0)",
+                        "fg": "rgb(192, 192, 192)",
+                        "walkable": 1
+                    }
+                ],
+                [
+                    {
+                        "char": "237",
+                        "bg": "rgb(0, 0, 0)",
+                        "fg": "rgb(255, 0, 255)",
+                        "walkable": 1
+                    },
+                    {},
+                    {}
+                ],
+                [
+                    {},
+                    {},
+                    {
+                        "char": "167",
+                        "bg": "rgb(0, 0, 0)",
+                        "fg": "rgb(255, 0, 0)",
+                        "walkable": 1
+                    }
+                ]
             ]
-        ]
-    },
-    "clothier": {
-        "display_name": "Clothier's shop",
-        "tiles": [
-            [
-                {
-                    "char": "176",
-                    "bg": "rgb(192, 192, 192)",
-                    "fg": "rgb(128, 128, 128)",
-                    "walkable": 0
-                },
-                {},
-                {
-                    "char": "237",
-                    "bg": "rgb(0, 0, 0)",
-                    "fg": "rgb(192, 192, 192)",
-                    "walkable": 1
-                }
-            ],
-            [
-                {},
-                {},
-                {
-                    "char": "93",
-                    "bg": "rgb(0, 0, 0)",
-                    "fg": "rgb(0, 128, 0)",
-                    "walkable": 1
-                }
-            ],
-            [
-                {
-                    "char": "91",
-                    "bg": "rgb(0, 0, 0)",
-                    "fg": "rgb(0, 128, 128)",
-                    "walkable": 1
-                },
-                {
-                    "char": "176",
-                    "bg": "rgb(192, 192, 192)",
-                    "fg": "rgb(128, 128, 128)",
-                    "walkable": 0
-                },
-                {}
+        },
+        {
+            "id": "clothier",
+            "display_name": "Clothier's shop",
+            "hotkey": "k",
+            "submenu": "workshops",
+            "tiles": [
+                [
+                    {
+                        "char": "176",
+                        "bg": "rgb(192, 192, 192)",
+                        "fg": "rgb(128, 128, 128)",
+                        "walkable": 0
+                    },
+                    {},
+                    {
+                        "char": "237",
+                        "bg": "rgb(0, 0, 0)",
+                        "fg": "rgb(192, 192, 192)",
+                        "walkable": 1
+                    }
+                ],
+                [
+                    {},
+                    {},
+                    {
+                        "char": "93",
+                        "bg": "rgb(0, 0, 0)",
+                        "fg": "rgb(0, 128, 0)",
+                        "walkable": 1
+                    }
+                ],
+                [
+                    {
+                        "char": "91",
+                        "bg": "rgb(0, 0, 0)",
+                        "fg": "rgb(0, 128, 128)",
+                        "walkable": 1
+                    },
+                    {
+                        "char": "176",
+                        "bg": "rgb(192, 192, 192)",
+                        "fg": "rgb(128, 128, 128)",
+                        "walkable": 0
+                    },
+                    {}
+                ]
             ]
-        ]
-    },
-    "bowyer": {
-        "display_name": "Bowyer's workshop",
-        "tiles": [
-            [
-                {
-                    "char": "176",
-                    "bg": "rgb(192, 192, 192)",
-                    "fg": "rgb(128, 128, 128)",
-                    "walkable": 0
-                },
-                {
-                    "char": "238",
-                    "bg": "rgb(0, 0, 0)",
-                    "fg": "rgb(128, 128, 0)",
-                    "walkable": 1
-                },
-                {}
-            ],
-            [
-                {
-                    "char": "176",
-                    "bg": "rgb(192, 192, 192)",
-                    "fg": "rgb(128, 128, 128)",
-                    "walkable": 0
-                },
-                {
-                    "char": "93",
-                    "bg": "rgb(0, 0, 0)",
-                    "fg": "rgb(128, 128, 128)",
-                    "walkable": 1
-                },
-                {}
-            ],
-            [
-                {
-                    "char": "176",
-                    "bg": "rgb(192, 192, 192)",
-                    "fg": "rgb(128, 128, 128)",
-                    "walkable": 0
-                },
-                {},
-                {
-                    "char": "40",
-                    "bg": "rgb(0, 0, 0)",
-                    "fg": "rgb(128, 128, 0)",
-                    "walkable": 1
-                }
+        },
+        {
+            "id": "bowyer",
+            "display_name": "Bowyer's workshop",
+            "hotkey": "b",
+            "submenu": "workshops",
+            "tiles": [
+                [
+                    {
+                        "char": "176",
+                        "bg": "rgb(192, 192, 192)",
+                        "fg": "rgb(128, 128, 128)",
+                        "walkable": 0
+                    },
+                    {
+                        "char": "238",
+                        "bg": "rgb(0, 0, 0)",
+                        "fg": "rgb(128, 128, 0)",
+                        "walkable": 1
+                    },
+                    {}
+                ],
+                [
+                    {
+                        "char": "176",
+                        "bg": "rgb(192, 192, 192)",
+                        "fg": "rgb(128, 128, 128)",
+                        "walkable": 0
+                    },
+                    {
+                        "char": "93",
+                        "bg": "rgb(0, 0, 0)",
+                        "fg": "rgb(128, 128, 128)",
+                        "walkable": 1
+                    },
+                    {}
+                ],
+                [
+                    {
+                        "char": "176",
+                        "bg": "rgb(192, 192, 192)",
+                        "fg": "rgb(128, 128, 128)",
+                        "walkable": 0
+                    },
+                    {},
+                    {
+                        "char": "40",
+                        "bg": "rgb(0, 0, 0)",
+                        "fg": "rgb(128, 128, 0)",
+                        "walkable": 1
+                    }
+                ]
             ]
-        ]
-    },
-    "carpenter": {
-        "display_name": "Carpenter's workshop",
-        "tiles": [
-            [
-                {},
-                {
-                    "char": "34",
-                    "bg": "rgb(0, 0, 0)",
-                    "fg": "rgb(192, 192, 192)",
-                    "walkable": 1
-                },
-                {
-                    "char": "61",
-                    "bg": "rgb(0, 0, 0)",
-                    "fg": "rgb(128, 128, 0)",
-                    "walkable": 1
-                }
-            ],
-            [
-                {
-                    "char": "176",
-                    "bg": "rgb(192, 192, 192)",
-                    "fg": "rgb(128, 128, 128)",
-                    "walkable": 0
-                },
-                {},
-                {}
-            ],
-            [
-                {
-                    "char": "176",
-                    "bg": "rgb(192, 192, 192)",
-                    "fg": "rgb(128, 128, 128)",
-                    "walkable": 0
-                },
-                {
-                    "char": "93",
-                    "bg": "rgb(0, 0, 0)",
-                    "fg": "rgb(128, 128, 128)",
-                    "walkable": 1
-                },
-                {
-                    "char": "176",
-                    "bg": "rgb(192, 192, 192)",
-                    "fg": "rgb(128, 128, 128)",
-                    "walkable": 0
-                }
+        },
+        {
+            "id": "carpenter",
+            "display_name": "Carpenter's workshop",
+            "hotkey": "c",
+            "submenu": "workshops",
+            "tiles": [
+                [
+                    {},
+                    {
+                        "char": "34",
+                        "bg": "rgb(0, 0, 0)",
+                        "fg": "rgb(192, 192, 192)",
+                        "walkable": 1
+                    },
+                    {
+                        "char": "61",
+                        "bg": "rgb(0, 0, 0)",
+                        "fg": "rgb(128, 128, 0)",
+                        "walkable": 1
+                    }
+                ],
+                [
+                    {
+                        "char": "176",
+                        "bg": "rgb(192, 192, 192)",
+                        "fg": "rgb(128, 128, 128)",
+                        "walkable": 0
+                    },
+                    {},
+                    {}
+                ],
+                [
+                    {
+                        "char": "176",
+                        "bg": "rgb(192, 192, 192)",
+                        "fg": "rgb(128, 128, 128)",
+                        "walkable": 0
+                    },
+                    {
+                        "char": "93",
+                        "bg": "rgb(0, 0, 0)",
+                        "fg": "rgb(128, 128, 128)",
+                        "walkable": 1
+                    },
+                    {
+                        "char": "176",
+                        "bg": "rgb(192, 192, 192)",
+                        "fg": "rgb(128, 128, 128)",
+                        "walkable": 0
+                    }
+                ]
             ]
-        ]
-    },
-    "forge": {
-        "display_name": "Forge",
-        "tiles": [
-            [
-                {
-                    "char": "31",
-                    "bg": "rgb(0, 0, 0)",
-                    "fg": "rgb(128, 128, 0)",
-                    "walkable": 1
-                },
-                {},
-                {}
-            ],
-            [
-                {
-                    "char": "7",
-                    "bg": "rgb(192, 192, 192)",
-                    "fg": "rgb(255, 0, 0)",
-                    "walkable": 0
-                },
-                {},
-                {
-                    "char": "7",
-                    "bg": "rgb(192, 192, 192)",
-                    "fg": "rgb(0, 0, 128)",
-                    "walkable": 0
-                }
-            ],
-            [
-                {},
-                {
-                    "char": "229",
-                    "bg": "rgb(0, 0, 0)",
-                    "fg": "rgb(128, 128, 128)",
-                    "walkable": 1
-                },
-                {
-                    "char": "240",
-                    "bg": "rgb(0, 0, 0)",
-                    "fg": "rgb(128, 128, 128)",
-                    "walkable": 1
-                }
+        },
+        {
+            "id": "forge",
+            "display_name": "Forge",
+            "hotkey": "f",
+            "submenu": "workshops",
+            "tiles": [
+                [
+                    {
+                        "char": "31",
+                        "bg": "rgb(0, 0, 0)",
+                        "fg": "rgb(128, 128, 0)",
+                        "walkable": 1
+                    },
+                    {},
+                    {}
+                ],
+                [
+                    {
+                        "char": "7",
+                        "bg": "rgb(192, 192, 192)",
+                        "fg": "rgb(255, 0, 0)",
+                        "walkable": 0
+                    },
+                    {},
+                    {
+                        "char": "7",
+                        "bg": "rgb(192, 192, 192)",
+                        "fg": "rgb(0, 0, 128)",
+                        "walkable": 0
+                    }
+                ],
+                [
+                    {},
+                    {
+                        "char": "229",
+                        "bg": "rgb(0, 0, 0)",
+                        "fg": "rgb(128, 128, 128)",
+                        "walkable": 1
+                    },
+                    {
+                        "char": "240",
+                        "bg": "rgb(0, 0, 0)",
+                        "fg": "rgb(128, 128, 128)",
+                        "walkable": 1
+                    }
+                ]
             ]
-        ]
-    },
-    "magmaforge": {
-        "display_name": "Magma Forge",
-        "tiles": [
-            [
-                {
-                    "char": "92",
-                    "bg": "rgb(0, 0, 0)",
-                    "fg": "rgb(128, 128, 128)",
-                    "walkable": 1
-                },
-                {},
-                {}
-            ],
-            [
-                {
-                    "char": "8",
-                    "bg": "rgb(128, 0, 0)",
-                    "fg": "rgb(128, 128, 128)",
-                    "walkable": 0
-                },
-                {
-                    "char": "196",
-                    "bg": "rgb(0, 0, 0)",
-                    "fg": "rgb(128, 128, 128)",
-                    "walkable": 1
-                },
-                {
-                    "char": "8",
-                    "bg": "rgb(128, 0, 0)",
-                    "fg": "rgb(128, 128, 128)",
-                    "walkable": 0
-                }
-            ],
-            [
-                {},
-                {
-                    "char": "229",
-                    "bg": "rgb(0, 0, 0)",
-                    "fg": "rgb(128, 128, 128)",
-                    "walkable": 1
-                },
-                {}
+        },
+        {
+            "id": "magmaforge",
+            "display_name": "Magma Forge",
+            "hotkey": "v",
+            "submenu": "workshops",
+            "tiles": [
+                [
+                    {
+                        "char": "92",
+                        "bg": "rgb(0, 0, 0)",
+                        "fg": "rgb(128, 128, 128)",
+                        "walkable": 1
+                    },
+                    {},
+                    {}
+                ],
+                [
+                    {
+                        "char": "8",
+                        "bg": "rgb(128, 0, 0)",
+                        "fg": "rgb(128, 128, 128)",
+                        "walkable": 0
+                    },
+                    {
+                        "char": "196",
+                        "bg": "rgb(0, 0, 0)",
+                        "fg": "rgb(128, 128, 128)",
+                        "walkable": 1
+                    },
+                    {
+                        "char": "8",
+                        "bg": "rgb(128, 0, 0)",
+                        "fg": "rgb(128, 128, 128)",
+                        "walkable": 0
+                    }
+                ],
+                [
+                    {},
+                    {
+                        "char": "229",
+                        "bg": "rgb(0, 0, 0)",
+                        "fg": "rgb(128, 128, 128)",
+                        "walkable": 1
+                    },
+                    {}
+                ]
             ]
-        ]
-    },
-    "jeweler": {
-        "display_name": "Jeweler's workshop",
-        "tiles": [
-            [
-                {},
-                {
-                    "char": "42",
-                    "bg": "rgb(0, 0, 0)",
-                    "fg": "rgb(0, 0, 128)",
-                    "walkable": 1
-                },
-                {
-                    "char": "176",
-                    "bg": "rgb(192, 192, 192)",
-                    "fg": "rgb(128, 128, 128)",
-                    "walkable": 0
-                }
-            ],
-            [
-                {
-                    "char": "42",
-                    "bg": "rgb(0, 0, 0)",
-                    "fg": "rgb(0, 128, 0)",
-                    "walkable": 1
-                },
-                {
-                    "char": "91",
-                    "bg": "rgb(0, 0, 0)",
-                    "fg": "rgb(128, 128, 128)",
-                    "walkable": 1
-                },
-                {
-                    "char": "176",
-                    "bg": "rgb(192, 192, 192)",
-                    "fg": "rgb(128, 128, 128)",
-                    "walkable": 0
-                }
-            ],
-            [
-                {},
-                {
-                    "char": "123",
-                    "bg": "rgb(0, 0, 0)",
-                    "fg": "rgb(255, 255, 255)",
-                    "walkable": 1
-                },
-                {
-                    "char": "176",
-                    "bg": "rgb(192, 192, 192)",
-                    "fg": "rgb(128, 128, 128)",
-                    "walkable": 0
-                }
+        },
+        {
+            "id": "jeweler",
+            "display_name": "Jeweler's workshop",
+            "hotkey": "j",
+            "submenu": "workshops",
+            "tiles": [
+                [
+                    {},
+                    {
+                        "char": "42",
+                        "bg": "rgb(0, 0, 0)",
+                        "fg": "rgb(0, 0, 128)",
+                        "walkable": 1
+                    },
+                    {
+                        "char": "176",
+                        "bg": "rgb(192, 192, 192)",
+                        "fg": "rgb(128, 128, 128)",
+                        "walkable": 0
+                    }
+                ],
+                [
+                    {
+                        "char": "42",
+                        "bg": "rgb(0, 0, 0)",
+                        "fg": "rgb(0, 128, 0)",
+                        "walkable": 1
+                    },
+                    {
+                        "char": "91",
+                        "bg": "rgb(0, 0, 0)",
+                        "fg": "rgb(128, 128, 128)",
+                        "walkable": 1
+                    },
+                    {
+                        "char": "176",
+                        "bg": "rgb(192, 192, 192)",
+                        "fg": "rgb(128, 128, 128)",
+                        "walkable": 0
+                    }
+                ],
+                [
+                    {},
+                    {
+                        "char": "123",
+                        "bg": "rgb(0, 0, 0)",
+                        "fg": "rgb(255, 255, 255)",
+                        "walkable": 1
+                    },
+                    {
+                        "char": "176",
+                        "bg": "rgb(192, 192, 192)",
+                        "fg": "rgb(128, 128, 128)",
+                        "walkable": 0
+                    }
+                ]
             ]
-        ]
-    },
-    "mason": {
-        "display_name": "Mason's workshop",
-        "tiles": [
-            [
-                {
-                    "char": "59",
-                    "bg": "rgb(0, 0, 0)",
-                    "fg": "rgb(255, 255, 255)",
-                    "walkable": 1
-                },
-                {},
-                {
-                    "char": "176",
-                    "bg": "rgb(192, 192, 192)",
-                    "fg": "rgb(128, 128, 128)",
-                    "walkable": 0
-                }
-            ],
-            [
-                {
-                    "char": "176",
-                    "bg": "rgb(192, 192, 192)",
-                    "fg": "rgb(128, 128, 128)",
-                    "walkable": 0
-                },
-                {
-                    "char": "91",
-                    "bg": "rgb(0, 0, 0)",
-                    "fg": "rgb(128, 128, 128)",
-                    "walkable": 1
-                },
-                {
-                    "char": "176",
-                    "bg": "rgb(192, 192, 192)",
-                    "fg": "rgb(128, 128, 128)",
-                    "walkable": 0
-                }
-            ],
-            [
-                {},
-                {
-                    "char": "111",
-                    "bg": "rgb(0, 0, 0)",
-                    "fg": "rgb(192, 192, 192)",
-                    "walkable": 1
-                },
-                {}
+        },
+        {
+            "id": "mason",
+            "display_name": "Mason's workshop",
+            "hotkey": "m",
+            "submenu": "workshops",
+            "tiles": [
+                [
+                    {
+                        "char": "59",
+                        "bg": "rgb(0, 0, 0)",
+                        "fg": "rgb(255, 255, 255)",
+                        "walkable": 1
+                    },
+                    {},
+                    {
+                        "char": "176",
+                        "bg": "rgb(192, 192, 192)",
+                        "fg": "rgb(128, 128, 128)",
+                        "walkable": 0
+                    }
+                ],
+                [
+                    {
+                        "char": "176",
+                        "bg": "rgb(192, 192, 192)",
+                        "fg": "rgb(128, 128, 128)",
+                        "walkable": 0
+                    },
+                    {
+                        "char": "91",
+                        "bg": "rgb(0, 0, 0)",
+                        "fg": "rgb(128, 128, 128)",
+                        "walkable": 1
+                    },
+                    {
+                        "char": "176",
+                        "bg": "rgb(192, 192, 192)",
+                        "fg": "rgb(128, 128, 128)",
+                        "walkable": 0
+                    }
+                ],
+                [
+                    {},
+                    {
+                        "char": "111",
+                        "bg": "rgb(0, 0, 0)",
+                        "fg": "rgb(192, 192, 192)",
+                        "walkable": 1
+                    },
+                    {}
+                ]
             ]
-        ]
-    },
-    "butcher": {
-        "display_name": "Butcher's shop",
-        "tiles": [
-            [
-                {},
-                {},
-                {
-                    "char": "178",
-                    "bg": "rgb(128, 0, 0)",
-                    "fg": "rgb(192, 192, 192)",
-                    "walkable": 0
-                }
-            ],
-            [
-                {
-                    "char": "247",
-                    "bg": "rgb(192, 192, 192)",
-                    "fg": "rgb(128, 0, 0)",
-                    "walkable": 0
-                },
-                {},
-                {
-                    "char": "236",
-                    "bg": "rgb(192, 192, 192)",
-                    "fg": "rgb(128, 0, 0)",
-                    "walkable": 0
-                }
-            ],
-            [
-                {},
-                {
-                    "char": "219",
-                    "bg": "rgb(0, 0, 0)",
-                    "fg": "rgb(0, 0, 0)",
-                    "walkable": 1
-                },
-                {}
+        },
+        {
+            "id": "butcher",
+            "display_name": "Butcher's shop",
+            "hotkey": "u",
+            "submenu": "workshops",
+            "tiles": [
+                [
+                    {},
+                    {},
+                    {
+                        "char": "178",
+                        "bg": "rgb(128, 0, 0)",
+                        "fg": "rgb(192, 192, 192)",
+                        "walkable": 0
+                    }
+                ],
+                [
+                    {
+                        "char": "247",
+                        "bg": "rgb(192, 192, 192)",
+                        "fg": "rgb(128, 0, 0)",
+                        "walkable": 0
+                    },
+                    {},
+                    {
+                        "char": "236",
+                        "bg": "rgb(192, 192, 192)",
+                        "fg": "rgb(128, 0, 0)",
+                        "walkable": 0
+                    }
+                ],
+                [
+                    {},
+                    {
+                        "char": "219",
+                        "bg": "rgb(0, 0, 0)",
+                        "fg": "rgb(0, 0, 0)",
+                        "walkable": 1
+                    },
+                    {}
+                ]
             ]
-        ]
-    },
-    "tanner": {
-        "display_name": "Tanner's shop",
-        "tiles": [
-            [
-                {
-                    "char": "8",
-                    "bg": "rgb(0, 128, 0)",
-                    "fg": "rgb(192, 192, 192)",
-                    "walkable": 0
-                },
-                {},
-                {}
-            ],
-            [
-                {},
-                {
-                    "char": "219",
-                    "bg": "rgb(0, 0, 0)",
-                    "fg": "rgb(0, 0, 0)",
-                    "walkable": 1
-                },
-                {
-                    "char": "176",
-                    "bg": "rgb(192, 192, 192)",
-                    "fg": "rgb(128, 128, 128)",
-                    "walkable": 0
-                }
-            ],
-            [
-                {
-                    "char": "8",
-                    "bg": "rgb(0, 128, 0)",
-                    "fg": "rgb(192, 192, 192)",
-                    "walkable": 0
-                },
-                {},
-                {}
+        },
+        {
+            "id": "tanner",
+            "display_name": "Tanner's shop",
+            "hotkey": "n",
+            "submenu": "workshops",
+            "tiles": [
+                [
+                    {
+                        "char": "8",
+                        "bg": "rgb(0, 128, 0)",
+                        "fg": "rgb(192, 192, 192)",
+                        "walkable": 0
+                    },
+                    {},
+                    {}
+                ],
+                [
+                    {},
+                    {
+                        "char": "219",
+                        "bg": "rgb(0, 0, 0)",
+                        "fg": "rgb(0, 0, 0)",
+                        "walkable": 1
+                    },
+                    {
+                        "char": "176",
+                        "bg": "rgb(192, 192, 192)",
+                        "fg": "rgb(128, 128, 128)",
+                        "walkable": 0
+                    }
+                ],
+                [
+                    {
+                        "char": "8",
+                        "bg": "rgb(0, 128, 0)",
+                        "fg": "rgb(192, 192, 192)",
+                        "walkable": 0
+                    },
+                    {},
+                    {}
+                ]
             ]
-        ]
-    },
-    "craftsdwarf": {
-        "display_name": "Craftsdwarf's workshop",
-        "tiles": [
-            [
-                {},
-                {
-                    "char": "45",
-                    "bg": "rgb(0, 0, 0)",
-                    "fg": "rgb(255, 255, 255)",
-                    "walkable": 1
-                },
-                {
-                    "char": "176",
-                    "bg": "rgb(192, 192, 192)",
-                    "fg": "rgb(128, 128, 128)",
-                    "walkable": 0
-                }
-            ],
-            [
-                {
-                    "char": "176",
-                    "bg": "rgb(192, 192, 192)",
-                    "fg": "rgb(128, 128, 128)",
-                    "walkable": 0
-                },
-                {
-                    "char": "93",
-                    "bg": "rgb(0, 0, 0)",
-                    "fg": "rgb(128, 128, 128)",
-                    "walkable": 1
-                },
-                {}
-            ],
-            [
-                {
-                    "char": "176",
-                    "bg": "rgb(192, 192, 192)",
-                    "fg": "rgb(128, 128, 128)",
-                    "walkable": 0
-                },
-                {
-                    "char": "176",
-                    "bg": "rgb(192, 192, 192)",
-                    "fg": "rgb(128, 128, 128)",
-                    "walkable": 0
-                },
-                {}
+        },
+        {
+            "id": "craftsdwarf",
+            "display_name": "Craftsdwarf's workshop",
+            "hotkey": "r",
+            "submenu": "workshops",
+            "tiles": [
+                [
+                    {},
+                    {
+                        "char": "45",
+                        "bg": "rgb(0, 0, 0)",
+                        "fg": "rgb(255, 255, 255)",
+                        "walkable": 1
+                    },
+                    {
+                        "char": "176",
+                        "bg": "rgb(192, 192, 192)",
+                        "fg": "rgb(128, 128, 128)",
+                        "walkable": 0
+                    }
+                ],
+                [
+                    {
+                        "char": "176",
+                        "bg": "rgb(192, 192, 192)",
+                        "fg": "rgb(128, 128, 128)",
+                        "walkable": 0
+                    },
+                    {
+                        "char": "93",
+                        "bg": "rgb(0, 0, 0)",
+                        "fg": "rgb(128, 128, 128)",
+                        "walkable": 1
+                    },
+                    {}
+                ],
+                [
+                    {
+                        "char": "176",
+                        "bg": "rgb(192, 192, 192)",
+                        "fg": "rgb(128, 128, 128)",
+                        "walkable": 0
+                    },
+                    {
+                        "char": "176",
+                        "bg": "rgb(192, 192, 192)",
+                        "fg": "rgb(128, 128, 128)",
+                        "walkable": 0
+                    },
+                    {}
+                ]
             ]
-        ]
-    },
-    "siege": {
-        "display_name": "Siege workshop",
-        "tiles": [
-            [
-                {},
-                {},
-                {
-                    "char": "111",
-                    "bg": "rgb(0, 0, 0)",
-                    "fg": "rgb(192, 192, 192)",
-                    "walkable": 1
-                },
-                {},
-                {}
-            ],
-            [
-                {},
-                {
-                    "char": "176",
-                    "bg": "rgb(192, 192, 192)",
-                    "fg": "rgb(128, 128, 128)",
-                    "walkable": 0
-                },
-                {
-                    "char": "176",
-                    "bg": "rgb(192, 192, 192)",
-                    "fg": "rgb(128, 128, 128)",
-                    "walkable": 0
-                },
-                {
-                    "char": "176",
-                    "bg": "rgb(192, 192, 192)",
-                    "fg": "rgb(128, 128, 128)",
-                    "walkable": 0
-                },
-                {
-                    "char": "92",
-                    "bg": "rgb(0, 0, 0)",
-                    "fg": "rgb(128, 128, 0)",
-                    "walkable": 1
-                }
-            ],
-            [
-                {
-                    "char": "47",
-                    "bg": "rgb(0, 0, 0)",
-                    "fg": "rgb(128, 128, 0)",
-                    "walkable": 1
-                },
-                {},
-                {},
-                {},
-                {}
-            ],
-            [
-                {
-                    "char": "111",
-                    "bg": "rgb(0, 0, 0)",
-                    "fg": "rgb(192, 192, 192)",
-                    "walkable": 1
-                },
-                {
-                    "char": "176",
-                    "bg": "rgb(192, 192, 192)",
-                    "fg": "rgb(128, 128, 128)",
-                    "walkable": 0
-                },
-                {
-                    "char": "176",
-                    "bg": "rgb(192, 192, 192)",
-                    "fg": "rgb(128, 128, 128)",
-                    "walkable": 0
-                },
-                {
-                    "char": "176",
-                    "bg": "rgb(192, 192, 192)",
-                    "fg": "rgb(128, 128, 128)",
-                    "walkable": 0
-                },
-                {}
-            ],
-            [
-                {},
-                {},
-                {},
-                {
-                    "char": "126",
-                    "bg": "rgb(0, 0, 0)",
-                    "fg": "rgb(255, 255, 0)",
-                    "walkable": 1
-                },
-                {}
+        },
+        {
+            "id": "siege",
+            "display_name": "Siege workshop",
+            "hotkey": "s",
+            "submenu": "workshops",
+            "tiles": [
+                [
+                    {},
+                    {},
+                    {
+                        "char": "111",
+                        "bg": "rgb(0, 0, 0)",
+                        "fg": "rgb(192, 192, 192)",
+                        "walkable": 1
+                    },
+                    {},
+                    {}
+                ],
+                [
+                    {},
+                    {
+                        "char": "176",
+                        "bg": "rgb(192, 192, 192)",
+                        "fg": "rgb(128, 128, 128)",
+                        "walkable": 0
+                    },
+                    {
+                        "char": "176",
+                        "bg": "rgb(192, 192, 192)",
+                        "fg": "rgb(128, 128, 128)",
+                        "walkable": 0
+                    },
+                    {
+                        "char": "176",
+                        "bg": "rgb(192, 192, 192)",
+                        "fg": "rgb(128, 128, 128)",
+                        "walkable": 0
+                    },
+                    {
+                        "char": "92",
+                        "bg": "rgb(0, 0, 0)",
+                        "fg": "rgb(128, 128, 0)",
+                        "walkable": 1
+                    }
+                ],
+                [
+                    {
+                        "char": "47",
+                        "bg": "rgb(0, 0, 0)",
+                        "fg": "rgb(128, 128, 0)",
+                        "walkable": 1
+                    },
+                    {},
+                    {},
+                    {},
+                    {}
+                ],
+                [
+                    {
+                        "char": "111",
+                        "bg": "rgb(0, 0, 0)",
+                        "fg": "rgb(192, 192, 192)",
+                        "walkable": 1
+                    },
+                    {
+                        "char": "176",
+                        "bg": "rgb(192, 192, 192)",
+                        "fg": "rgb(128, 128, 128)",
+                        "walkable": 0
+                    },
+                    {
+                        "char": "176",
+                        "bg": "rgb(192, 192, 192)",
+                        "fg": "rgb(128, 128, 128)",
+                        "walkable": 0
+                    },
+                    {
+                        "char": "176",
+                        "bg": "rgb(192, 192, 192)",
+                        "fg": "rgb(128, 128, 128)",
+                        "walkable": 0
+                    },
+                    {}
+                ],
+                [
+                    {},
+                    {},
+                    {},
+                    {
+                        "char": "126",
+                        "bg": "rgb(0, 0, 0)",
+                        "fg": "rgb(255, 255, 0)",
+                        "walkable": 1
+                    },
+                    {}
+                ]
             ]
-        ]
-    },
-    "mechanic": {
-        "display_name": "Mechanic's workshop",
-        "tiles": [
-            [
-                {
-                    "char": "128",
-                    "bg": "rgb(0, 0, 0)",
-                    "fg": "rgb(128, 128, 128)",
-                    "walkable": 1
-                },
-                {},
-                {}
-            ],
-            [
-                {},
-                {
-                    "char": "91",
-                    "bg": "rgb(0, 0, 0)",
-                    "fg": "rgb(128, 128, 128)",
-                    "walkable": 1
-                },
-                {
-                    "char": "176",
-                    "bg": "rgb(192, 192, 192)",
-                    "fg": "rgb(128, 128, 128)",
-                    "walkable": 0
-                }
-            ],
-            [
-                {},
-                {
-                    "char": "94",
-                    "bg": "rgb(0, 0, 0)",
-                    "fg": "rgb(0, 255, 255)",
-                    "walkable": 1
-                },
-                {
-                    "char": "127",
-                    "bg": "rgb(0, 0, 0)",
-                    "fg": "rgb(255, 255, 255)",
-                    "walkable": 1
-                }
+        },
+        {
+            "id": "mechanic",
+            "display_name": "Mechanic's workshop",
+            "hotkey": "t",
+            "submenu": "workshops",
+            "tiles": [
+                [
+                    {
+                        "char": "128",
+                        "bg": "rgb(0, 0, 0)",
+                        "fg": "rgb(128, 128, 128)",
+                        "walkable": 1
+                    },
+                    {},
+                    {}
+                ],
+                [
+                    {},
+                    {
+                        "char": "91",
+                        "bg": "rgb(0, 0, 0)",
+                        "fg": "rgb(128, 128, 128)",
+                        "walkable": 1
+                    },
+                    {
+                        "char": "176",
+                        "bg": "rgb(192, 192, 192)",
+                        "fg": "rgb(128, 128, 128)",
+                        "walkable": 0
+                    }
+                ],
+                [
+                    {},
+                    {
+                        "char": "94",
+                        "bg": "rgb(0, 0, 0)",
+                        "fg": "rgb(0, 255, 255)",
+                        "walkable": 1
+                    },
+                    {
+                        "char": "127",
+                        "bg": "rgb(0, 0, 0)",
+                        "fg": "rgb(255, 255, 255)",
+                        "walkable": 1
+                    }
+                ]
             ]
-        ]
-    },
-    "still": {
-        "display_name": "Still",
-        "tiles": [
-            [
-                {
-                    "char": "246",
-                    "bg": "rgb(192, 192, 192)",
-                    "fg": "rgb(0, 0, 0)",
-                    "walkable": 0
-                },
-                {
-                    "char": "205",
-                    "bg": "rgb(0, 0, 0)",
-                    "fg": "rgb(192, 192, 192)",
-                    "walkable": 1
-                },
-                {
-                    "char": "184",
-                    "bg": "rgb(0, 0, 0)",
-                    "fg": "rgb(192, 192, 192)",
-                    "walkable": 1
-                }
-            ],
-            [
-                {
-                    "char": "111",
-                    "bg": "rgb(0, 0, 0)",
-                    "fg": "rgb(192, 192, 192)",
-                    "walkable": 1
-                },
-                {},
-                {
-                    "char": "126",
-                    "bg": "rgb(0, 0, 0)",
-                    "fg": "rgb(0, 128, 0)",
-                    "walkable": 1
-                }
-            ],
-            [
-                {
-                    "char": "126",
-                    "bg": "rgb(0, 0, 0)",
-                    "fg": "rgb(0, 128, 0)",
-                    "walkable": 1
-                },
-                {},
-                {
-                    "char": "111",
-                    "bg": "rgb(0, 0, 0)",
-                    "fg": "rgb(192, 192, 192)",
-                    "walkable": 1
-                }
+        },
+        {
+            "id": "still",
+            "display_name": "Still",
+            "hotkey": "l",
+            "submenu": "workshops",
+            "tiles": [
+                [
+                    {
+                        "char": "246",
+                        "bg": "rgb(192, 192, 192)",
+                        "fg": "rgb(0, 0, 0)",
+                        "walkable": 0
+                    },
+                    {
+                        "char": "205",
+                        "bg": "rgb(0, 0, 0)",
+                        "fg": "rgb(192, 192, 192)",
+                        "walkable": 1
+                    },
+                    {
+                        "char": "184",
+                        "bg": "rgb(0, 0, 0)",
+                        "fg": "rgb(192, 192, 192)",
+                        "walkable": 1
+                    }
+                ],
+                [
+                    {
+                        "char": "111",
+                        "bg": "rgb(0, 0, 0)",
+                        "fg": "rgb(192, 192, 192)",
+                        "walkable": 1
+                    },
+                    {},
+                    {
+                        "char": "126",
+                        "bg": "rgb(0, 0, 0)",
+                        "fg": "rgb(0, 128, 0)",
+                        "walkable": 1
+                    }
+                ],
+                [
+                    {
+                        "char": "126",
+                        "bg": "rgb(0, 0, 0)",
+                        "fg": "rgb(0, 128, 0)",
+                        "walkable": 1
+                    },
+                    {},
+                    {
+                        "char": "111",
+                        "bg": "rgb(0, 0, 0)",
+                        "fg": "rgb(192, 192, 192)",
+                        "walkable": 1
+                    }
+                ]
             ]
-        ]
-    },
-    "farmers": {
-        "display_name": "Farmer's workshop",
-        "tiles": [
-            [
-                {},
-                {
-                    "char": "65",
-                    "bg": "rgb(0, 0, 0)",
-                    "fg": "rgb(192, 192, 192)",
-                    "walkable": 0
-                },
-                {
-                    "char": "240",
-                    "bg": "rgb(0, 0, 0)",
-                    "fg": "rgb(255, 255, 0)",
-                    "walkable": 1
-                }
-            ],
-            [
-                {},
-                {},
-                {}
-            ],
-            [
-                {
-                    "char": "79",
-                    "bg": "rgb(0, 0, 0)",
-                    "fg": "rgb(192, 192, 192)",
-                    "walkable": 0
-                },
-                {
-                    "char": "210",
-                    "bg": "rgb(0, 0, 0)",
-                    "fg": "rgb(192, 192, 192)",
-                    "walkable": 1
-                },
-                {
-                    "char": "237",
-                    "bg": "rgb(0, 0, 0)",
-                    "fg": "rgb(0, 255, 255)",
-                    "walkable": 1
-                }
+        },
+        {
+            "id": "farmers",
+            "display_name": "Farmer's workshop",
+            "hotkey": "w",
+            "submenu": "workshops",
+            "tiles": [
+                [
+                    {},
+                    {
+                        "char": "65",
+                        "bg": "rgb(0, 0, 0)",
+                        "fg": "rgb(192, 192, 192)",
+                        "walkable": 0
+                    },
+                    {
+                        "char": "240",
+                        "bg": "rgb(0, 0, 0)",
+                        "fg": "rgb(255, 255, 0)",
+                        "walkable": 1
+                    }
+                ],
+                [
+                    {},
+                    {},
+                    {}
+                ],
+                [
+                    {
+                        "char": "79",
+                        "bg": "rgb(0, 0, 0)",
+                        "fg": "rgb(192, 192, 192)",
+                        "walkable": 0
+                    },
+                    {
+                        "char": "210",
+                        "bg": "rgb(0, 0, 0)",
+                        "fg": "rgb(192, 192, 192)",
+                        "walkable": 1
+                    },
+                    {
+                        "char": "237",
+                        "bg": "rgb(0, 0, 0)",
+                        "fg": "rgb(0, 255, 255)",
+                        "walkable": 1
+                    }
+                ]
             ]
-        ]
-    },
-    "kitchen": {
-        "display_name": "Kitchen",
-        "tiles": [
-            [
-                {
-                    "char": "246",
-                    "bg": "rgb(128, 128, 0)",
-                    "fg": "rgb(0, 0, 0)",
-                    "walkable": 1
-                },
-                {
-                    "char": "176",
-                    "bg": "rgb(192, 192, 192)",
-                    "fg": "rgb(128, 128, 128)",
-                    "walkable": 0
-                },
-                {
-                    "char": "176",
-                    "bg": "rgb(192, 192, 192)",
-                    "fg": "rgb(128, 128, 128)",
-                    "walkable": 0
-                }
-            ],
-            [
-                {},
-                {},
-                {
-                    "char": "176",
-                    "bg": "rgb(192, 192, 192)",
-                    "fg": "rgb(128, 128, 128)",
-                    "walkable": 0
-                }
-            ],
-            [
-                {
-                    "char": "236",
-                    "bg": "rgb(0, 0, 0)",
-                    "fg": "rgb(128, 0, 0)",
-                    "walkable": 1
-                },
-                {},
-                {
-                    "char": "59",
-                    "bg": "rgb(0, 0, 0)",
-                    "fg": "rgb(0, 128, 0)",
-                    "walkable": 1
-                }
+        },
+        {
+            "id": "kitchen",
+            "display_name": "Kitchen",
+            "hotkey": "z",
+            "submenu": "workshops",
+            "tiles": [
+                [
+                    {
+                        "char": "246",
+                        "bg": "rgb(128, 128, 0)",
+                        "fg": "rgb(0, 0, 0)",
+                        "walkable": 1
+                    },
+                    {
+                        "char": "176",
+                        "bg": "rgb(192, 192, 192)",
+                        "fg": "rgb(128, 128, 128)",
+                        "walkable": 0
+                    },
+                    {
+                        "char": "176",
+                        "bg": "rgb(192, 192, 192)",
+                        "fg": "rgb(128, 128, 128)",
+                        "walkable": 0
+                    }
+                ],
+                [
+                    {},
+                    {},
+                    {
+                        "char": "176",
+                        "bg": "rgb(192, 192, 192)",
+                        "fg": "rgb(128, 128, 128)",
+                        "walkable": 0
+                    }
+                ],
+                [
+                    {
+                        "char": "236",
+                        "bg": "rgb(0, 0, 0)",
+                        "fg": "rgb(128, 0, 0)",
+                        "walkable": 1
+                    },
+                    {},
+                    {
+                        "char": "59",
+                        "bg": "rgb(0, 0, 0)",
+                        "fg": "rgb(0, 128, 0)",
+                        "walkable": 1
+                    }
+                ]
             ]
-        ]
-    },
-    "fishery": {
-        "display_name": "Fishery",
-        "tiles": [
-            [
-                {
-                    "char": "178",
-                    "bg": "rgb(192, 192, 192)",
-                    "fg": "rgb(128, 128, 128)",
-                    "walkable": 0
-                },
-                {
-                    "char": "224",
-                    "bg": "rgb(192, 192, 192)",
-                    "fg": "rgb(255, 255, 255)",
-                    "walkable": 0
-                },
-                {
-                    "char": "35",
-                    "bg": "rgb(0, 0, 0)",
-                    "fg": "rgb(192, 192, 192)",
-                    "walkable": 1
-                }
-            ],
-            [
-                {},
-                {},
-                {}
-            ],
-            [
-                {},
-                {
-                    "char": "178",
-                    "bg": "rgb(192, 192, 192)",
-                    "fg": "rgb(128, 128, 128)",
-                    "walkable": 0
-                },
-                {}
+        },
+        {
+            "id": "fishery",
+            "display_name": "Fishery",
+            "hotkey": "h",
+            "submenu": "workshops",
+            "tiles": [
+                [
+                    {
+                        "char": "178",
+                        "bg": "rgb(192, 192, 192)",
+                        "fg": "rgb(128, 128, 128)",
+                        "walkable": 0
+                    },
+                    {
+                        "char": "224",
+                        "bg": "rgb(192, 192, 192)",
+                        "fg": "rgb(255, 255, 255)",
+                        "walkable": 0
+                    },
+                    {
+                        "char": "35",
+                        "bg": "rgb(0, 0, 0)",
+                        "fg": "rgb(192, 192, 192)",
+                        "walkable": 1
+                    }
+                ],
+                [
+                    {},
+                    {},
+                    {}
+                ],
+                [
+                    {},
+                    {
+                        "char": "178",
+                        "bg": "rgb(192, 192, 192)",
+                        "fg": "rgb(128, 128, 128)",
+                        "walkable": 0
+                    },
+                    {}
+                ]
             ]
-        ]
-    },
-    "ashery": {
-        "display_name": "Ashery",
-        "tiles": [
-            [
-                {},
-                {
-                    "char": "88",
-                    "bg": "rgb(0, 0, 0)",
-                    "fg": "rgb(192, 192, 192)",
-                    "walkable": 0
-                },
-                {
-                    "char": "45",
-                    "bg": "rgb(0, 0, 0)",
-                    "fg": "rgb(128, 128, 128)",
-                    "walkable": 1
-                }
-            ],
-            [
-                {},
-                {
-                    "char": "246",
-                    "bg": "rgb(128, 128, 0)",
-                    "fg": "rgb(0, 0, 0)",
-                    "walkable": 1
-                },
-                {}
-            ],
-            [
-                {
-                    "char": "177",
-                    "bg": "rgb(0, 0, 0)",
-                    "fg": "rgb(192, 192, 192)",
-                    "walkable": 0
-                },
-                {},
-                {
-                    "char": "247",
-                    "bg": "rgb(0, 0, 0)",
-                    "fg": "rgb(192, 192, 192)",
-                    "walkable": 1
-                }
+        },
+        {
+            "id": "ashery",
+            "display_name": "Ashery",
+            "hotkey": "y",
+            "submenu": "workshops",
+            "tiles": [
+                [
+                    {},
+                    {
+                        "char": "88",
+                        "bg": "rgb(0, 0, 0)",
+                        "fg": "rgb(192, 192, 192)",
+                        "walkable": 0
+                    },
+                    {
+                        "char": "45",
+                        "bg": "rgb(0, 0, 0)",
+                        "fg": "rgb(128, 128, 128)",
+                        "walkable": 1
+                    }
+                ],
+                [
+                    {},
+                    {
+                        "char": "246",
+                        "bg": "rgb(128, 128, 0)",
+                        "fg": "rgb(0, 0, 0)",
+                        "walkable": 1
+                    },
+                    {}
+                ],
+                [
+                    {
+                        "char": "177",
+                        "bg": "rgb(0, 0, 0)",
+                        "fg": "rgb(192, 192, 192)",
+                        "walkable": 0
+                    },
+                    {},
+                    {
+                        "char": "247",
+                        "bg": "rgb(0, 0, 0)",
+                        "fg": "rgb(192, 192, 192)",
+                        "walkable": 1
+                    }
+                ]
             ]
-        ]
-    },
-    "dyer": {
-        "display_name": "Dyer's shop",
-        "tiles": [
-            [
-                {},
-                {
-                    "char": "7",
-                    "bg": "rgb(128, 128, 0)",
-                    "fg": "rgb(0, 255, 0)",
-                    "walkable": 0
-                },
-                {
-                    "char": "150",
-                    "bg": "rgb(0, 0, 0)",
-                    "fg": "rgb(128, 128, 0)",
-                    "walkable": 1
-                }
-            ],
-            [
-                {},
-                {},
-                {}
-            ],
-            [
-                {
-                    "char": "7",
-                    "bg": "rgb(128, 128, 0)",
-                    "fg": "rgb(255, 0, 0)",
-                    "walkable": 0
-                },
-                {},
-                {
-                    "char": "7",
-                    "bg": "rgb(128, 128, 0)",
-                    "fg": "rgb(0, 0, 255)",
-                    "walkable": 0
-                }
+        },
+        {
+            "id": "dyer",
+            "display_name": "Dyer's shop",
+            "hotkey": "d",
+            "submenu": "workshops",
+            "tiles": [
+                [
+                    {},
+                    {
+                        "char": "7",
+                        "bg": "rgb(128, 128, 0)",
+                        "fg": "rgb(0, 255, 0)",
+                        "walkable": 0
+                    },
+                    {
+                        "char": "150",
+                        "bg": "rgb(0, 0, 0)",
+                        "fg": "rgb(128, 128, 0)",
+                        "walkable": 1
+                    }
+                ],
+                [
+                    {},
+                    {},
+                    {}
+                ],
+                [
+                    {
+                        "char": "7",
+                        "bg": "rgb(128, 128, 0)",
+                        "fg": "rgb(255, 0, 0)",
+                        "walkable": 0
+                    },
+                    {},
+                    {
+                        "char": "7",
+                        "bg": "rgb(128, 128, 0)",
+                        "fg": "rgb(0, 0, 255)",
+                        "walkable": 0
+                    }
+                ]
             ]
-        ]
-    },
-    "soap": {
-        "display_name": "Soap maker's workshop",
-        "tiles": [
-            [
-                {
-                    "char": "150",
-                    "bg": "rgb(0, 0, 0)",
-                    "fg": "rgb(128, 128, 0)",
-                    "walkable": 1
-                },
-                {},
-                {
-                    "char": "8",
-                    "bg": "rgb(192, 192, 192)",
-                    "fg": "rgb(128, 128, 0)",
-                    "walkable": 0
-                }
-            ],
-            [
-                {},
-                {},
-                {
-                    "char": "8",
-                    "bg": "rgb(192, 192, 192)",
-                    "fg": "rgb(128, 128, 0)",
-                    "walkable": 0
-                }
-            ],
-            [
-                {},
-                {
-                    "char": "240",
-                    "bg": "rgb(0, 0, 0)",
-                    "fg": "rgb(255, 255, 255)",
-                    "walkable": 1
-                },
-                {}
+        },
+        {
+            "id": "soap",
+            "display_name": "Soap maker's workshop",
+            "hotkey": "S",
+            "submenu": "workshops",
+            "tiles": [
+                [
+                    {
+                        "char": "150",
+                        "bg": "rgb(0, 0, 0)",
+                        "fg": "rgb(128, 128, 0)",
+                        "walkable": 1
+                    },
+                    {},
+                    {
+                        "char": "8",
+                        "bg": "rgb(192, 192, 192)",
+                        "fg": "rgb(128, 128, 0)",
+                        "walkable": 0
+                    }
+                ],
+                [
+                    {},
+                    {},
+                    {
+                        "char": "8",
+                        "bg": "rgb(192, 192, 192)",
+                        "fg": "rgb(128, 128, 0)",
+                        "walkable": 0
+                    }
+                ],
+                [
+                    {},
+                    {
+                        "char": "240",
+                        "bg": "rgb(0, 0, 0)",
+                        "fg": "rgb(255, 255, 255)",
+                        "walkable": 1
+                    },
+                    {}
+                ]
             ]
-        ]
-    },
-    "screw": {
-        "display_name": "Screw Press",
-        "tiles": [
-            [
-                {
-                    "char": "207",
-                    "bg": "rgb(0, 0, 0)",
-                    "fg": "rgb(192, 192, 192)",
-                    "walkable": 1
-                }
+        },
+        {
+            "id": "screw",
+            "display_name": "Screw Press",
+            "hotkey": "p",
+            "submenu": "workshops",
+            "tiles": [
+                [
+                    {
+                        "char": "207",
+                        "bg": "rgb(0, 0, 0)",
+                        "fg": "rgb(192, 192, 192)",
+                        "walkable": 1
+                    }
+                ]
             ]
-        ]
-    },
-    "bed": {
-        "display_name": "Bed",
-        "tiles": [
-            [
-                {
-                    "char": "233",
-                    "bg": "rgb(0, 0, 0)",
-                    "fg": "rgb(128, 128, 0)",
-                    "walkable": 1
-                }
+        },
+        {
+            "id": "bed",
+            "display_name": "Bed",
+            "hotkey": "b",
+            "submenu": "building",
+            "tiles": [
+                [
+                    {
+                        "char": "233",
+                        "bg": "rgb(0, 0, 0)",
+                        "fg": "rgb(128, 128, 0)",
+                        "walkable": 1
+                    }
+                ]
             ]
-        ]
-    },
-    "chair": {
-        "display_name": "Chair/Throne",
-        "tiles": [
-            [
-                {
-                    "char": "210",
-                    "bg": "rgb(0, 0, 0)",
-                    "fg": "rgb(192, 192, 192)",
-                    "walkable": 1
-                }
+        },
+        {
+            "id": "chair",
+            "display_name": "Chair/Throne",
+            "hotkey": "c",
+            "submenu": "building",
+            "tiles": [
+                [
+                    {
+                        "char": "210",
+                        "bg": "rgb(0, 0, 0)",
+                        "fg": "rgb(192, 192, 192)",
+                        "walkable": 1
+                    }
+                ]
             ]
-        ]
-    },
-    "door": {
-        "display_name": "Door",
-        "tiles": [
-            [
-                {
-                    "char": "240",
-                    "bg": "rgb(0, 128, 0)",
-                    "fg": "rgb(192, 192, 192)",
-                    "walkable": 1
-                }
+        },
+        {
+            "id": "door",
+            "display_name": "Door",
+            "hotkey": "d",
+            "submenu": "building",
+            "tiles": [
+                [
+                    {
+                        "char": "240",
+                        "bg": "rgb(0, 128, 0)",
+                        "fg": "rgb(192, 192, 192)",
+                        "walkable": 1
+                    }
+                ]
             ]
-        ]
-    }
+        }
+    ]
 }

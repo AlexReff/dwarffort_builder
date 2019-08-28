@@ -17,14 +17,26 @@ const initialState: IInspectState = {
     addCoord: false,
     coordToInspect: null,
     coordRangeToInspect: null,
-    mapCoordToInspect: null,
     inspecting: false,
     inspectedBuildings: null,
     inspectMoveRequestPayload: null,
+    mapCoordToInspect: null,
 };
 
 export default (state = initialState, action) => {
     switch (action.type) {
+        case ACTION_TYPE.ZLEVEL_INC:
+        case ACTION_TYPE.ZLEVEL_DEC:
+        case ACTION_TYPE.ZLEVEL_GOTO: {
+            return {
+                ...state,
+                inspectedBuildings: null,
+                coordToInspect: null,
+                coordRangeToInspect: null,
+                inspectMoveRequestPayload: null,
+                mapCoordToInspect: null,
+            };
+        }
         case ACTION_TYPE.MENU_SUBMENU: {
             return {
                 ...state,

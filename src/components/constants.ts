@@ -1,7 +1,7 @@
 const styles = require(".././css/_variables.scss");
 
-import * as buildings from "../data/buildings.json";
-import * as items from "../data/menu.json";
+import { buildings } from "../data/buildings.json";
+import { items } from "../data/menu_flat.json";
 
 import { ACTION_TYPE, CURSOR_BEHAVIOR, DIRECTION, KEYS, MENU_ITEM } from "./enums";
 export { ACTION_TYPE, CURSOR_BEHAVIOR, DIRECTION, KEYS, MENU_ITEM };
@@ -22,9 +22,17 @@ export interface IGridRange {
 
 export type Point = [number, number];
 
-export interface IMenuItem {
+export interface IFlatMenuItem {
+    "id": string;
     "text": string;
     "key": string;
+    "parent": string;
+    "parsedKey"?: string;
+}
+
+export interface IMenuItem {
+    "text"?: string;
+    "key"?: string;
     "id": MENU_ITEM;
     "children"?: IMenuItem[];
     "parent"?: IMenuItem;
@@ -51,14 +59,6 @@ export const DEBUG = true;
 
 export const MENU_W: number = Number(styles.menuWidth);
 export const HEADER_H: number = Number(styles.headerHeight);
-
-// Building Data
-export const BUILDINGS: {
-    [key: string]: {
-        "display_name": string,
-        "tiles": IBuildingTileData[][],
-    },
-} = buildings as any;
 
 // Tile Data
 export const TILE_W = styles.tileWidth;
@@ -171,39 +171,108 @@ export const TILE_MAP: { [key: string]: Point; } = ((): { [key: string]: Point; 
     return val;
 })();
 
+interface IBuildingData {
+    "id": string;
+    "display_name": string;
+    "hotkey": string;
+    "submenu": string;
+    "tiles": IBuildingTileData[][];
+    "parsedHotkey"?: string;
+}
+
+/** Building data, key=building id */
+// export const BUILDINGS: { [key: string]: IBuildingData } = buildings as any;
+export const BUILDINGS: {
+    LIST: IBuildingData[],
+    IDS: { [key: string]: IBuildingData },
+    KEYS: {
+        [key: string]: IBuildingData;
+    },
+    SUBMENUS: {
+        [key: string]: IBuildingData[];
+    },
+} = {
+    LIST: buildings as IBuildingData[],
+    IDS: buildings.reduce((map, key) => {
+        map[key.id] = key;
+        return map;
+    }, {}),
+    KEYS: {},
+    SUBMENUS: {},
+};
+
 // Menu Data
-export const MENU_ITEMS = items.items as IMenuItem[];
+export const MENU_JSON = items as IFlatMenuItem[];
+//export const MENU_ITEMS = items.items as IMenuItem[];
 
-export const SUBMENUS: Map<string, string> = new Map();
-export const MENU_IDS: Map<string, IMenuItem> = new Map();
+export const MENU: {
+    ITEMS: {
+        [key: string]: IFlatMenuItem;
+    },
+    KEYS: {
+        [key: string]: IFlatMenuItem;
+    },
+    SUBMENUS: {
+        [key: string]: IFlatMenuItem[];
+    },
+} = {
+    ITEMS: {},
+    KEYS: {},
+    SUBMENUS: {},
+};
 
-let _tallestMenu = -1;
+// populate MENU.ITEMS and MENU.SUBMENUS
+for (const item of MENU_JSON) {
+    MENU.ITEMS[item.id] = item;
+    if (!(item.parent in MENU.SUBMENUS)) {
+        MENU.SUBMENUS[item.parent] = [];
+    }
+    MENU.SUBMENUS[item.parent].push(item);
+}
 
-export const MENU_KEYS: Map<string, IMenuItem> = (() => {
-    const result: Map<string, IMenuItem> = new Map();
-    const parseMenuItemRecursive = (menuItems: IMenuItem[], parent?: IMenuItem) => {
-        for (const item of menuItems) {
-            item.parent = parent;
-            let prefix = ""; // (parent != null ? parent.key + ":" : "");
-            let iterParent = parent;
-            while (iterParent != null) {
-                prefix = iterParent.key + ":" + prefix;
-                iterParent = iterParent.parent;
-            }
-            const key = prefix + item.key;
-            result[key] = item;
-            MENU_IDS[item.id] = item;
-            if (item.children != null && item.children.length) {
-                SUBMENUS[item.id] = key;
-                _tallestMenu = Math.max(_tallestMenu, item.children.length);
-                parseMenuItemRecursive(item.children, item);
-            }
-        }
-    };
+// populate MENU.KEYS and parsedHotkey
+for (const key of Object.keys(MENU.ITEMS)) {
+    //calculate the 'full' key
+    const newKeyParts = [];
+    let parent = MENU.ITEMS[key].parent;
+    while (parent != null && parent.length > 0 && parent != "top") {
+        newKeyParts.push(MENU.ITEMS[parent].key);
+        parent = MENU.ITEMS[parent].parent;
+    }
+    let newKey = "";
+    if (newKeyParts.length > 0) {
+        newKey = newKeyParts.reverse().join(":") + ":";
+    }
+    newKey += MENU.ITEMS[key].key;
+    MENU.ITEMS[key].parsedKey = newKey;
+    MENU.KEYS[newKey] = MENU.ITEMS[key];
+}
 
-    parseMenuItemRecursive(MENU_ITEMS);
+// populate buildings parsedHotkey
+for (const target of BUILDINGS.LIST) {
+    if (!(target.submenu in MENU.ITEMS)) {
+        continue; //invalid 'submenu' value
+    }
+    target.parsedHotkey = MENU.ITEMS[target.submenu].parsedKey + ":" + target.hotkey;
+    BUILDINGS.KEYS[target.parsedHotkey] = target;
+    if (!(target.submenu in BUILDINGS.SUBMENUS)) {
+        BUILDINGS.SUBMENUS[target.submenu] = [];
+    }
+    BUILDINGS.SUBMENUS[target.submenu].push(target);
+}
 
-    return result;
-})();
+// add submenu keys for submenus with only buildings
+for (const key of Object.keys(BUILDINGS.SUBMENUS)) {
+    if (!(key in MENU.SUBMENUS)) {
+        MENU.SUBMENUS[key] = null;
+    }
+}
+
+const _tallestMenu: number = Object.keys(MENU.SUBMENUS).reduce((map, key) => {
+    if (MENU.SUBMENUS[key] != null) {
+        map = Math.max(map, MENU.SUBMENUS[key].length);
+    }
+    return map;
+}, -1);
 
 export const SUBMENU_MAX_H = _tallestMenu;

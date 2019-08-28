@@ -6,18 +6,12 @@
             "id": "building",
             "children": [
                 {
-                    "text": "Bed",
-                    "key": "b",
                     "id": "bed"
                 },
                 {
-                    "text": "Chair",
-                    "key": "c",
                     "id": "chair"
                 },
                 {
-                    "text": "Door",
-                    "key": "d",
                     "id": "door"
                 },
                 {
@@ -26,123 +20,75 @@
                     "id": "workshops",
                     "children": [
                         {
-                            "text": "Leather Works",
-                            "key": "e",
                             "id": "leatherworks"
                         },
                         {
-                            "text": "Quern",
-                            "key": "q",
                             "id": "quern"
                         },
                         {
-                            "text": "Millstone",
-                            "key": "M",
                             "id": "millstone"
                         },
                         {
-                            "text": "Loom",
-                            "key": "o",
                             "id": "loom"
                         },
                         {
-                            "text": "Clothier's Shop",
-                            "key": "k",
                             "id": "clothier"
                         },
                         {
-                            "text": "Bowyer's Workshop",
-                            "key": "b",
                             "id": "bowyer"
                         },
                         {
-                            "text": "Carpenter's Workshop",
-                            "key": "c",
                             "id": "carpenter"
                         },
                         {
-                            "text": "Metalsmith's Forge",
-                            "key": "f",
                             "id": "forge"
                         },
                         {
-                            "text": "Magma Forge",
-                            "key": "v",
                             "id": "magmaforge"
                         },
                         {
-                            "text": "Jeweler's Workshop",
-                            "key": "j",
                             "id": "jeweler"
                         },
                         {
-                            "text": "Mason's Workshop",
-                            "key": "m",
                             "id": "mason"
                         },
                         {
-                            "text": "Butcher's Shop",
-                            "key": "u",
                             "id": "butcher"
                         },
                         {
-                            "text": "Tanner's Shop",
-                            "key": "n",
                             "id": "tanner"
                         },
                         {
-                            "text": "Craftsdwarf's Workshop",
-                            "key": "r",
                             "id": "craftsdwarf"
                         },
                         {
-                            "text": "Siege Workshop",
-                            "key": "s",
                             "id": "siege"
                         },
                         {
-                            "text": "Mechanic's Workshop",
-                            "key": "t",
                             "id": "mechanic"
                         },
                         {
-                            "text": "Still",
-                            "key": "l",
                             "id": "still"
                         },
                         {
-                            "text": "Farmer's Workshop",
-                            "key": "w",
                             "id": "farmers"
                         },
                         {
-                            "text": "Kitchen",
-                            "key": "z",
                             "id": "kitchen"
                         },
                         {
-                            "text": "Fishery",
-                            "key": "h",
                             "id": "fishery"
                         },
                         {
-                            "text": "Ashery",
-                            "key": "y",
                             "id": "ashery"
                         },
                         {
-                            "text": "Dyer's Shop",
-                            "key": "d",
                             "id": "dyer"
                         },
                         {
-                            "text": "Soap Maker's Workshop",
-                            "key": "S",
                             "id": "soap"
                         },
                         {
-                            "text": "Screw Press",
-                            "key": "p",
                             "id": "screw"
                         }
                     ]

@@ -1,0 +1,81 @@
+{
+    "items": [
+        {
+            "id": "building",
+            "text": "Building",
+            "key": "b",
+            "parent": "top"
+        },
+        {
+            "id": "workshops",
+            "text": "Workshops",
+            "key": "w",
+            "parent": "building"
+        },
+        {
+            "id": "designate",
+            "text": "Designations",
+            "key": "d",
+            "parent": "top"
+        },{
+            "text": "Mine/Floor",
+            "key": "d",
+            "id": "mine",
+            "parent": "designate"
+        },
+        {
+            "text": "Wall",
+            "key": "w",
+            "id": "wall",
+            "parent": "designate"
+        },
+        {
+            "text": "Channel",
+            "key": "h",
+            "id": "channel",
+            "parent": "designate"
+        },
+        {
+            "text": "Up Stair",
+            "key": "u",
+            "id": "upstair",
+            "parent": "designate"
+        },
+        {
+            "text": "Down Stair",
+            "key": "j",
+            "id": "downstair",
+            "parent": "designate"
+        },
+        {
+            "text": "U/D Stair",
+            "key": "i",
+            "id": "udstair",
+            "parent": "designate"
+        },
+        {
+            "text": "Up Ramp",
+            "key": "r",
+            "id": "upramp",
+            "parent": "designate"
+        },
+        {
+            "text": "Remove/Delete",
+            "key": "x",
+            "id": "remove",
+            "parent": "designate"
+        },
+        {
+            "text": "Stockpile",
+            "key": "p",
+            "id": "stockpile",
+            "parent": "top"
+        },
+        {
+            "text": "Inspect Buildings",
+            "key": "q",
+            "id": "inspect",
+            "parent": "top"
+        }
+    ]
+}

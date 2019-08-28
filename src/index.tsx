@@ -6,6 +6,7 @@ import { Provider } from "react-redux";
 import { DEBUG, HEADER_H, KEYS, MENU_W, TILE_URL, TILE_W } from "./components/constants";
 import { DebugMenu } from "./components/debug";
 import { Game } from "./components/game/game";
+import Header from "./components/header";
 import GameHighlighter from "./components/highlighter";
 import Menu from "./components/menu";
 import store from "./components/redux/store";
@@ -152,10 +153,7 @@ class FortressDesigner extends Component<{}, IFortressDesignerState> {
                             <a href="/" class="title">Fortress Designer</a>
                         </div>
                         <div class="right">
-                            {/* <div class="cursors">
-                                <a><i class="fas fa-mouse-pointer"></i></a>
-                                <a><i class="far fa-hand-pointer"></i></a>
-                            </div> */}
+                            <Header />
                         </div>
                     </div>
                     <div id="grid">

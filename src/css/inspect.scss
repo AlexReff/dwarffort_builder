@@ -12,6 +12,10 @@ $all_inspect_z: 1;
     border: 1px solid transparent;
     z-index: $individual_inspect_z;
 
+    &:hover {
+        border-color: rgba(73, 192, 231, .5);
+    }
+
     .inspecting & {
         border-color: rgba(yellow, .5);
     }

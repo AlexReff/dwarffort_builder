@@ -21,6 +21,7 @@ body {
     background: #000;
     color: #FFF;
     @include font-px;
+    user-select: none;
 }
 
 #wrapper {

@@ -3,7 +3,7 @@ import { default as OpenSimplexNoise } from "open-simplex-noise";
 import store, { getUpdatedStoreData, IFlatReduxState } from "../redux/store";
 import { default as Display } from "../rot/display";
 
-import { BUILDINGS, DEFAULTS, DIRECTION, IBuildingTileData, IGridRange, KEYS, MENU_ITEM, Point, TILE_H, TILE_MAP, TILE_W } from "../constants";
+import { BUILDINGS, DEFAULTS, DIRECTION, IGridRange, KEYS, MENU_ITEM, Point, TILE_H, TILE_MAP, TILE_W } from "../constants";
 import { setBuildingListData } from "../redux/building/actions";
 import { IBuildingState } from "../redux/building/reducer";
 import { zLevelGoto } from "../redux/camera/actions";
@@ -303,6 +303,9 @@ class Game implements IFlatReduxState {
                     this.buildingTiles[newPos] !== tile[1]) { //in our way!
                     return false; //can't complete this move
                 }
+            }
+            if (!this.gameGrid[parts[0]][parts[1]][parts[2]].isBuildable(this.strictMode)) {
+                return false;
             }
         }
 
@@ -688,7 +691,7 @@ class Game implements IFlatReduxState {
             if (!this.gameGrid[this.zLevel][pos[0]][pos[1]].isBuildable(this.strictMode)) {
                 color = DEFAULTS.COLORS.CURSOR_INVALID;
             } else {
-                const tiles = BUILDINGS[this.currentMenuItem];
+                const tiles = BUILDINGS.IDS[this.currentMenuItem];
                 if (tiles) {
                     const xOff = pos[0] - this.cursorPosition[0];
                     const yOff = pos[1] - this.cursorPosition[1];
@@ -901,7 +904,7 @@ class Game implements IFlatReduxState {
         if (key == null || center == null) {
             return false;
         }
-        const thisBuilding = BUILDINGS[key];
+        const thisBuilding = BUILDINGS.IDS[key];
         if (thisBuilding == null) {
             return false;
         }
@@ -942,6 +945,10 @@ class Game implements IFlatReduxState {
         store.dispatch(setBuildingListData(this.buildingList, this.buildingTiles, this.buildingIds, this.buildingBounds));
 
         return true;
+    }
+
+    removeBuilding = () => {
+        //
     }
     //#endregion
 

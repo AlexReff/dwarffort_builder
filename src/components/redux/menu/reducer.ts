@@ -1,4 +1,4 @@
-import { ACTION_TYPE, MENU_ITEM, Point } from "../../constants";
+import { ACTION_TYPE, BUILDINGS, MENU, MENU_ITEM, Point } from "../../constants";
 
 export interface IMenuState {
     currentMenu: string;
@@ -20,6 +20,19 @@ export default (state = initialState, action) => {
             };
         }
         case ACTION_TYPE.MENU_ITEM: {
+            if (action.val == null || action.val.length === 0) {
+                return {
+                    ...state,
+                    currentMenuItem: null,
+                };
+            }
+            if (action.val in MENU.SUBMENUS) {
+                return {
+                    ...state,
+                    currentMenu: action.val,
+                    currentMenuItem: null,
+                };
+            }
             return {
                 ...state,
                 currentMenuItem: action.val,

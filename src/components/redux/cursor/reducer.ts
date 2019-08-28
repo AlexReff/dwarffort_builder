@@ -34,9 +34,9 @@ export default (state = initialState, action) => {
         case ACTION_TYPE.MENU_ITEM: {
             return {
                 ...state,
-                cursorBuilding: action.val != null && BUILDINGS[action.val] != null,
-                cursorDiameter: action.val != null && BUILDINGS[action.val] != null ? BUILDINGS[action.val].tiles.length : 0,
-                cursorRadius: action.val != null && BUILDINGS[action.val] != null ? Math.floor(BUILDINGS[action.val].tiles.length / 2.0) : 0,
+                cursorBuilding: action.val != null && BUILDINGS.IDS[action.val] != null,
+                cursorDiameter: action.val != null && BUILDINGS.IDS[action.val] != null ? BUILDINGS.IDS[action.val].tiles.length : 0,
+                cursorRadius: action.val != null && BUILDINGS.IDS[action.val] != null ? Math.floor(BUILDINGS.IDS[action.val].tiles.length / 2.0) : 0,
             };
         }
         case ACTION_TYPE.CURSOR_HIDE: {

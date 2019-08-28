@@ -1,4 +1,4 @@
-import { ACTION_TYPE, MENU_ITEM } from "../../constants";
+import { ACTION_TYPE, MENU, MENU_ITEM } from "../../constants";
 
 export function selectMenu(val: string) {
     return {
@@ -10,14 +10,16 @@ export function selectMenu(val: string) {
 export function goPrevSubmenu() {
     return (dispatch, getState) => {
         const { menu } = getState();
-        let newMenu = "";
-        const idx = menu.currentMenu.lastIndexOf(":");
-        if (idx > 0) {
-            newMenu = menu.currentMenu.substr(0, idx);
-        } else {
-            newMenu = "top";
+        // let newMenu = "";
+        // const idx = menu.currentMenu.lastIndexOf(":");
+        // if (idx > 0) {
+        //     newMenu = menu.currentMenu.substr(0, idx);
+        // } else {
+        //     newMenu = "top";
+        // }
+        if (menu.currentMenu in MENU.ITEMS) {
+            dispatch(selectMenu(MENU.ITEMS[menu.currentMenu].parent));
         }
-        dispatch(selectMenu(newMenu));
     };
 }
 

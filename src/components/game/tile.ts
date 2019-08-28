@@ -1,5 +1,5 @@
 // import * as _ from "lodash";
-import { DEC_TILES, DEC_TILES_COLORS, DIRECTION, FLOOR_TILES, IBuildingTileData, MENU_IDS, Point, WALL_TILES } from "./../constants";
+import { BUILDINGS, DEC_TILES, DEC_TILES_COLORS, DIRECTION, FLOOR_TILES, IBuildingTileData, MENU, Point, WALL_TILES } from "./../constants";
 import RNG from "./../rot/rng";
 
 enum TileType {
@@ -74,7 +74,7 @@ class Tile {
     }
 
     getBuildingName = () => {
-        return MENU_IDS[this.buildingKey].text;
+        return BUILDINGS.IDS[this.buildingKey].display_name;
     }
 
     isBuilding = () => {
