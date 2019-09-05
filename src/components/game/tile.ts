@@ -1,20 +1,22 @@
 // import * as _ from "lodash";
-import { BUILDINGS, DEC_TILES, DEC_TILES_COLORS, DIRECTION, FLOOR_TILES, IBuildingTileData, MENU, Point, WALL_TILES } from "./../constants";
+import { BUILDINGS,
+    DEC_TILES,
+    DEC_TILES_COLORS,
+    DIRECTION,
+    FLOOR_TILES,
+    IBuildingTileData,
+    Point,
+    TILETYPE,
+    WALL_TILES,
+} from "../constants/";
 import RNG from "./../rot/rng";
 
-enum TileType {
-    Empty,
-    Wall,
-    Floor,
-    Building,
-}
-
 class Tile {
-    static Floor = new Tile(TileType.Floor);
-    static Empty = new Tile(TileType.Empty);
-    static Wall = new Tile(TileType.Wall);
+    static Floor = new Tile(TILETYPE.Floor);
+    static Empty = new Tile(TILETYPE.Empty);
+    static Wall = new Tile(TILETYPE.Wall);
 
-    private tileType: TileType;
+    private tileType: TILETYPE;
     private character: string;
     private fgColor: string;
     private bgColor: string;
@@ -24,12 +26,12 @@ class Tile {
 
     private position: Point;
 
-    private neighbors: TileType[];
+    private neighbors: TILETYPE[];
     private decorated: boolean;
     private userSet: boolean; // true if the user designates this, false if generated from code
     private building: boolean; // true if this tile is part of a building
 
-    constructor(tile: TileType, point?: Point, decorate?: boolean) {
+    constructor(tile: TILETYPE, point?: Point, decorate?: boolean) {
         this.tileType = tile;
         this.neighbors = new Array(4);
         this.userSet = false;
@@ -89,7 +91,7 @@ class Tile {
         }
 
         if (strictMode === true) {
-            return this.getType() === TileType.Floor;
+            return this.getType() === TILETYPE.Floor;
         }
 
         return true;
@@ -97,7 +99,7 @@ class Tile {
 
     getDrawData = (coord: Point) => {
         switch (this.tileType) {
-            case TileType.Wall:
+            case TILETYPE.Wall:
                 return [
                     coord[0],
                     coord[1],
@@ -117,7 +119,7 @@ class Tile {
     }
 
     setBuilding = (key: string, data: IBuildingTileData) => {
-        this.tileType = TileType.Building;
+        this.tileType = TILETYPE.Building;
         this.building = true;
         this.buildingKey = key;
 
@@ -149,7 +151,7 @@ class Tile {
      * @param type
      * @returns {true} if this character has changed, false otherwise
      */
-    setNeighbor = (pos: DIRECTION, type: TileType): boolean => {
+    setNeighbor = (pos: DIRECTION, type: TILETYPE): boolean => {
         if (pos % 2 === 1) {
             return false;
         }
@@ -163,7 +165,7 @@ class Tile {
         return this.computeCharacter();
     }
 
-    setType = (type: TileType, fromUser?: boolean): boolean => {
+    setType = (type: TILETYPE, fromUser?: boolean): boolean => {
         if (fromUser === true) {
             this.userSet = true;
         } else if (fromUser === false) {
@@ -172,11 +174,10 @@ class Tile {
         if (type === this.tileType) {
             return false;
         }
-        if (type !== TileType.Building) {
+        if (type !== TILETYPE.Building) {
             this.building = false;
             this.buildingKey = null;
             this.buildingData = null;
-            // this.buildingChar = null;
         }
         this.tileType = type;
         this.init();
@@ -201,10 +202,10 @@ class Tile {
     private computeCharacter = () => {
         const prevChar = this.character;
         switch (this.tileType) {
-            case TileType.Wall:
+            case TILETYPE.Wall:
                 let flags = 0;
                 for (let i = 0; i < this.neighbors.length; i++) {
-                    if (this.neighbors[i] === TileType.Wall) {
+                    if (this.neighbors[i] === TILETYPE.Wall) {
                         // tslint:disable-next-line: no-bitwise
                         flags = flags | Math.pow(2, i);
                     }
@@ -231,10 +232,10 @@ class Tile {
                 }
 
                 return true;
-            case TileType.Floor:
+            case TILETYPE.Floor:
                 this.character = `f${RNG.getUniformInt(0, FLOOR_TILES.length - 1)}`;
                 break;
-            case TileType.Empty:
+            case TILETYPE.Empty:
                 if (this.decorated) {
                     this.character = `z${RNG.getUniformInt(0, DEC_TILES.length - 1)}`;
                 } else {
@@ -250,15 +251,15 @@ class Tile {
 
     private init = () => {
         switch (this.tileType) {
-            case TileType.Floor:
+            case TILETYPE.Floor:
                 this.fgColor = "rgba(50, 50, 50, .2)";
                 this.bgColor = "transparent";
                 break;
-            case TileType.Wall:
+            case TILETYPE.Wall:
                 this.fgColor = "transparent";
                 this.bgColor = "transparent";
                 break;
-            case TileType.Empty:
+            case TILETYPE.Empty:
                 this.fgColor = "transparent";
                 this.bgColor = "transparent";
                 if (this.decorated) {
@@ -275,4 +276,4 @@ class Tile {
     }
 }
 
-export { Tile, TileType };
+export { Tile, TILETYPE };

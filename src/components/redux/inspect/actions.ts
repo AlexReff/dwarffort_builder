@@ -1,4 +1,4 @@
-import { ACTION_TYPE, Point } from "../../constants";
+import { ACTION_TYPE, Point } from "../../constants/";
 import { IInspectState } from "./reducer";
 import { IBuildingState } from "../building/reducer";
 

@@ -1,4 +1,4 @@
-import { ACTION_TYPE, Point } from "../../constants";
+import { ACTION_TYPE, Point } from "../../constants/";
 
 export interface IBuildingState {
     /** a list of building KEYS: `zLevel:x:y` */

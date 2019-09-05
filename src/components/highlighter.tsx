@@ -1,6 +1,6 @@
 import { Component, h } from "preact";
 import { connect } from "react-redux";
-import { KEYS, Point, TILE_H, TILE_W } from "./constants";
+import { KEYS, Point, TILE_H, TILE_W } from "./constants/";
 import { IBuildingState } from "./redux/building/reducer";
 import { ICameraState } from "./redux/camera/reducer";
 import { inspectMoveSelectionRequest, inspectRequestAtMapCoord, inspectRequestAtPos, inspectRequestRange } from "./redux/inspect/actions";

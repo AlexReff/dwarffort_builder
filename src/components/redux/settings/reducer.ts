@@ -1,4 +1,4 @@
-import { ACTION_TYPE, CURSOR_BEHAVIOR, DEFAULTS, Point } from "../../constants";
+import { ACTION_TYPE, CURSOR_BEHAVIOR, DEFAULTS, Point } from "../../constants/";
 
 export interface ISettingsState {
     strictMode: boolean;

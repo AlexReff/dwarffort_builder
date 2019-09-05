@@ -1,4 +1,4 @@
-import { ACTION_TYPE, BUILDINGS, Point } from "../../constants";
+import { ACTION_TYPE, BUILDINGS, Point } from "../../constants/";
 
 export interface ICursorState {
     cursorVisible: boolean;

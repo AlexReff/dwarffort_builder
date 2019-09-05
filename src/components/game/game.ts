@@ -3,7 +3,7 @@ import { default as OpenSimplexNoise } from "open-simplex-noise";
 import store, { getUpdatedStoreData, IFlatReduxState } from "../redux/store";
 import { default as Display } from "../rot/display";
 
-import { BUILDINGS, DEFAULTS, DIRECTION, IGridRange, KEYS, MENU_ITEM, Point, TILE_H, TILE_MAP, TILE_W } from "../constants";
+import { BUILDINGS, DEFAULTS, DIRECTION, IGridRange, KEYS, MENU_ITEM, Point, TILE_H, TILE_MAP, TILE_W } from "../constants/";
 import { setBuildingListData } from "../redux/building/actions";
 import { IBuildingState } from "../redux/building/reducer";
 import { zLevelGoto } from "../redux/camera/actions";
@@ -20,7 +20,7 @@ import { IMenuState } from "../redux/menu/reducer";
 import { Initialize } from "../redux/settings/actions";
 import { ISettingsState } from "../redux/settings/reducer";
 import rng from "../rot/rng";
-import { Tile, TileType } from "./tile";
+import { Tile, TILETYPE } from "./tile";
 
 class Game implements IFlatReduxState {
     displayElement: HTMLElement;
@@ -315,7 +315,7 @@ class Game implements IFlatReduxState {
             const parts = tile[0].split(":");
             const target = this.gameGrid[parts[0]][parts[1]][parts[2]];
             oldBuildings[tile[0]] = target.getBuildingKey();
-            const targetType = this.strictMode ? TileType.Floor : TileType.Empty;
+            const targetType = this.strictMode ? TILETYPE.Floor : TILETYPE.Empty;
             target.setType(targetType, false);
         }
 
@@ -566,7 +566,7 @@ class Game implements IFlatReduxState {
                     this.gameGrid[targetFloor][x] = [];
                 }
                 if (this.gameGrid[targetFloor][x][y] == null) {
-                    this.gameGrid[targetFloor][x][y] = new Tile(TileType.Empty, [x, y], noiseMap[x][y] <= 15);
+                    this.gameGrid[targetFloor][x][y] = new Tile(TILETYPE.Empty, [x, y], noiseMap[x][y] <= 15);
                 }
             }
         }
@@ -810,7 +810,7 @@ class Game implements IFlatReduxState {
                             //skip this
                             continue;
                         }
-                        if (this.setTile([x, y], TileType.Empty, false)) {
+                        if (this.setTile([x, y], TILETYPE.Empty, false)) {
                             // this.dirtyTiles.push([x, y]);
                         }
                     }
@@ -824,7 +824,7 @@ class Game implements IFlatReduxState {
                             //skip this
                             continue;
                         }
-                        if (this.setTile([x, y], TileType.Wall, true)) {
+                        if (this.setTile([x, y], TILETYPE.Wall, true)) {
                             // this.dirtyTiles.push([x, y]);
                         }
                     }
@@ -838,7 +838,7 @@ class Game implements IFlatReduxState {
                             //skip this
                             continue;
                         }
-                        if (this.setTile([x, y], TileType.Floor, true)) {
+                        if (this.setTile([x, y], TILETYPE.Floor, true)) {
                             // this.dirtyTiles.push([x, y]);
                         }
                     }
@@ -854,8 +854,8 @@ class Game implements IFlatReduxState {
                     if (tile.isUserSet()) {
                         //do not touch this tile
                     } else {
-                        if (tile.getType() === TileType.Empty) {
-                            tile.setType(TileType.Wall, false);
+                        if (tile.getType() === TILETYPE.Empty) {
+                            tile.setType(TILETYPE.Wall, false);
                             // this.dirtyTiles.push([neighbor[0], neighbor[1]]);
                         }
                     }
@@ -871,11 +871,11 @@ class Game implements IFlatReduxState {
     /**
      * Sets a tile to a specific type and return whether or not anything changed
      * @param pos Coordinate to set
-     * @param type TileType to set
+     * @param type TILETYPE to set
      * @param userSet If user set or programatically set
      * @returns {true} if a change occured (tiletype changed)
      */
-    setTile = (pos: Point, type: TileType, userSet?: boolean): boolean => {
+    setTile = (pos: Point, type: TILETYPE, userSet?: boolean): boolean => {
         if (this.gameGrid[this.zLevel][pos[0]][pos[1]].setType(type, userSet)) {
             // // this.dirtyTiles.push(pos);
             return true;

@@ -1,6 +1,6 @@
 import * as _ from "lodash";
 import { Component, h } from "preact";
-import { TILE_H, TILE_URL, TILE_W } from "./constants";
+import { TILE_H, TILE_URL, TILE_W } from "./constants/";
 import { Tile } from "./game/tile";
 
 interface IDebugMenuProps {

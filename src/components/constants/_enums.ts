@@ -45,6 +45,13 @@ export const enum CURSOR_BEHAVIOR {
     MODERN, //builder style, drag+select, mouse-centric UI behavior
 }
 
+export const enum TILETYPE {
+    Empty,
+    Wall,
+    Floor,
+    Building,
+}
+
 export const enum DIRECTION {
     N = 0,
     NE = 1,

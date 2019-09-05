@@ -1,4 +1,4 @@
-import { ACTION_TYPE, MENU, MENU_ITEM } from "../../constants";
+import { ACTION_TYPE, MENU, MENU_ITEM } from "../../constants/";
 
 export function selectMenu(val: string) {
     return {

@@ -3,7 +3,7 @@ import * as _ from "lodash";
 import { Component, h, render } from "preact";
 import { Provider } from "react-redux";
 //components
-import { DEBUG, HEADER_H, KEYS, MENU_W, TILE_URL, TILE_W } from "./components/constants";
+import { DEBUG, HEADER_H, KEYS, MENU_W, TILE_URL, TILE_W } from "./components/constants/";
 import { DebugMenu } from "./components/debug";
 import { Game } from "./components/game/game";
 import Header from "./components/header";

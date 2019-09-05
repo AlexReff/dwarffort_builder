@@ -1,4 +1,4 @@
-import { ACTION_TYPE, BUILDINGS, MENU, MENU_ITEM, Point } from "../../constants";
+import { ACTION_TYPE, BUILDINGS, MENU, MENU_ITEM, Point } from "../../constants/";
 
 export interface IMenuState {
     currentMenu: string;

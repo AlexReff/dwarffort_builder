@@ -1,42 +1,11 @@
-const styles = require(".././css/_variables.scss");
+const styles = require("../.././css/_variables.scss");
 
-import { buildings } from "../data/buildings.json";
-import { items } from "../data/menu_flat.json";
-
-import { ACTION_TYPE, CURSOR_BEHAVIOR, DIRECTION, KEYS, MENU_ITEM } from "./enums";
-export { ACTION_TYPE, CURSOR_BEHAVIOR, DIRECTION, KEYS, MENU_ITEM };
-
-export interface IBuildingTileData {
-    char: string;
-    bg: string;
-    fg: string;
-    walkable: number;
-}
-
-export interface IGridRange {
-    startX: number;
-    endX: number;
-    startY: number;
-    endY: number;
-}
+import { buildings } from "../../data/buildings.json";
+import { items } from "../../data/menu_flat.json";
+import { CURSOR_BEHAVIOR } from "./_enums";
+import { IBuildingTileData, IFlatMenuItem } from "./_interfaces";
 
 export type Point = [number, number];
-
-export interface IFlatMenuItem {
-    "id": string;
-    "text": string;
-    "key": string;
-    "parent": string;
-    "parsedKey"?: string;
-}
-
-export interface IMenuItem {
-    "text"?: string;
-    "key"?: string;
-    "id": MENU_ITEM;
-    "children"?: IMenuItem[];
-    "parent"?: IMenuItem;
-}
 
 export const DEFAULTS = {
     STRICT_MODE: false,
@@ -235,7 +204,7 @@ for (const key of Object.keys(MENU.ITEMS)) {
     //calculate the 'full' key
     const newKeyParts = [];
     let parent = MENU.ITEMS[key].parent;
-    while (parent != null && parent.length > 0 && parent != "top") {
+    while (parent != null && parent.length > 0 && parent !== "top") {
         newKeyParts.push(MENU.ITEMS[parent].key);
         parent = MENU.ITEMS[parent].parent;
     }

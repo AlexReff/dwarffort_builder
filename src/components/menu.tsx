@@ -1,7 +1,7 @@
 import * as _ from "lodash";
 import { Component, h } from "preact";
 import { connect } from "react-redux";
-import { BUILDINGS, KEYS, MENU, Point, SUBMENU_MAX_H } from "./constants";
+import { BUILDINGS, KEYS, MENU, Point, SUBMENU_MAX_H } from "./constants/";
 import { IBuildingState } from "./redux/building/reducer";
 import { IDesignatorState } from "./redux/designator/reducer";
 import { inspectRequestAtMapCoord } from "./redux/inspect/actions";

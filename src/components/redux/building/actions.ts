@@ -1,4 +1,4 @@
-import { ACTION_TYPE } from "../../constants";
+import { ACTION_TYPE } from "../../constants/";
 import { IBuildingState } from "./reducer";
 
 export function setBuildingListData(
