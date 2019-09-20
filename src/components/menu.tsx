@@ -1,49 +1,43 @@
 import * as _ from "lodash";
 import { Component, h } from "preact";
 import { connect } from "react-redux";
-import { BUILDINGS, KEYS, MENU, Point, SUBMENU_MAX_H } from "./constants/";
-import { IBuildingState } from "./redux/building/reducer";
-import { IDesignatorState } from "./redux/designator/reducer";
-import { inspectRequestAtMapCoord } from "./redux/inspect/actions";
-import { IInspectState } from "./redux/inspect/reducer";
-import { selectMenu, selectMenuItem } from "./redux/menu/actions";
+import { BUILDINGS, MENU, Point, SUBMENU_MAX_H } from "./constants/";
+import { selectMenu } from "./redux/menu/actions";
 import { IMenuState } from "./redux/menu/reducer";
 import { setStrictMode } from "./redux/settings/actions";
 import { ISettingsState } from "./redux/settings/reducer";
 import { ReduxState } from "./redux/store";
 
 interface IMenuProps {
-    currentMenu: IMenuState["currentMenu"];
+    currentMenu: IMenuState["currentSubmenu"];
     currentMenuItem: IMenuState["currentMenuItem"];
-    inspecting: IInspectState["inspecting"];
-    inspectedBuildings: IInspectState["inspectedBuildings"];
-    isDesignating: IDesignatorState["isDesignating"];
+    // inspectedBuildings: IInspectState["inspectedBuildings"];
+    // isDesignating: IDesignatorState["isDesignating"];
     strictMode: ISettingsState["strictMode"];
-    buildingList: IBuildingState["buildingList"];
-    buildingIds: IBuildingState["buildingIds"];
+    // buildingList: IBuildingState["buildingList"];
+    // buildingIds: IBuildingState["buildingIds"];
 
-    selectMenu: (id: string) => void;
+    // selectMenu: (id: string) => void;
     selectMenuItem: (id: string) => void;
     setStrictMode: (val: boolean) => void;
-    inspectTileAtMapCoord: (coord: Point, add: boolean) => void;
+    // inspectTileAtMapCoord: (coord: Point, add: boolean) => void;
 }
 
 const mapStateToProps = (state: ReduxState) => ({
-    currentMenu: state.menu.currentMenu,
+    currentMenu: state.menu.currentSubmenu,
     currentMenuItem: state.menu.currentMenuItem,
-    inspecting: state.inspect.inspecting,
-    inspectedBuildings: state.inspect.inspectedBuildings,
-    isDesignating: state.designator.isDesignating,
+    // inspectedBuildings: state.inspect.inspectedBuildings,
+    // isDesignating: state.designator.isDesignating,
     strictMode: state.settings.strictMode,
-    buildingList: state.building.buildingList,
-    buildingIds: state.building.buildingIds,
+    // buildingList: state.building.buildingList,
+    // buildingIds: state.building.buildingIds,
 });
 
 const mapDispatchToProps = (dispatch) => ({
-    selectMenu: (id) => dispatch(selectMenu(id)),
-    selectMenuItem: (id) => dispatch(selectMenuItem(id)),
+    // selectMenu: (id) => dispatch(selectMenu(id)),
+    selectMenuItem: (id) => dispatch(selectMenu(id)),
     setStrictMode: (val) => dispatch(setStrictMode(val)),
-    inspectTileAtMapCoord: (coord, add) => dispatch(inspectRequestAtMapCoord(coord, add)),
+    // inspectTileAtMapCoord: (coord, add) => dispatch(inspectRequestAtMapCoord(coord, add)),
 });
 
 interface IGameMenuState {
@@ -59,8 +53,8 @@ class Menu extends Component<IMenuProps, IGameMenuState> {
     }
 
     componentDidMount = () => {
-        window.addEventListener("keydown", this.handleKeyDown);
-        window.addEventListener("keyup", this.handleKeyUp);
+        // window.addEventListener("keydown", this.handleKeyDown);
+        // window.addEventListener("keyup", this.handleKeyUp);
     }
 
     render = (props: IMenuProps) => {
@@ -91,7 +85,7 @@ class Menu extends Component<IMenuProps, IGameMenuState> {
         const breadcrumbs = [];
         if (this.props.currentMenu !== "top") {
             const activeItem = MENU.ITEMS[this.props.currentMenu];
-            breadcrumbs.push(<a href="#" data-id={activeItem.key} onClick={(e) => this.breadcrumbHandler(e)}>{activeItem.text}</a>);
+            breadcrumbs.push(<a href="#" data-id={activeItem.id} onClick={(e) => this.breadcrumbHandler(e)}>{activeItem.text}</a>);
 
             // let parent = activeItem.parent;
             // while (parent != null) {
@@ -112,11 +106,11 @@ class Menu extends Component<IMenuProps, IGameMenuState> {
     }
 
     renderMenuStatus = () => {
-        if (this.props.isDesignating) {
-            return (
-                <div>Designating {MENU.ITEMS[this.props.currentMenuItem].text}</div>
-            );
-        }
+        // if (this.props.isDesignating) {
+        //     return (
+        //         <div>Designating {MENU.ITEMS[this.props.currentMenuItem].text}</div>
+        //     );
+        // }
         if (this.props.currentMenuItem != null && this.props.currentMenuItem.length > 0) {
             if (this.props.currentMenuItem in BUILDINGS.IDS) {
                 return (
@@ -132,30 +126,30 @@ class Menu extends Component<IMenuProps, IGameMenuState> {
 
     renderMenuToolbar = () => {
         // shows if a building is selected
-        if (this.props.inspectedBuildings == null ||
-            this.props.inspectedBuildings.length === 0 ||
-            this.props.buildingIds == null) {
-            return null;
-        }
-        return (
-            <div class="menu-toolbar">
-                {this.props.inspectedBuildings.map((m) => {
-                    if (m in this.props.buildingIds) {
-                        return (
-                            <a href="#" onClick={() => this.handleInspectClick.bind(this, m)}>
-                                {BUILDINGS.IDS[this.props.buildingIds[m]].display_name}
-                            </a>
-                        );
-                    }
-                })}
-            </div>
-        );
+        // if (this.props.inspectedBuildings == null ||
+        //     this.props.inspectedBuildings.length === 0 ||
+        //     this.props.buildingIds == null) {
+        //     return null;
+        // }
+        // return (
+        //     <div class="menu-toolbar">
+        //         {this.props.inspectedBuildings.map((m) => {
+        //             if (m in this.props.buildingIds) {
+        //                 return (
+        //                     <a href="#" onClick={() => this.handleInspectClick.bind(this, m)}>
+        //                         {BUILDINGS.IDS[this.props.buildingIds[m]].display_name}
+        //                     </a>
+        //                 );
+        //             }
+        //         })}
+        //     </div>
+        // );
     }
 
     handleInspectClick = (key, e) => {
         e.preventDefault();
         const coord: Point = key.substr(key.indexOf(":") + 1).split(":").map((m) => +m);
-        this.props.inspectTileAtMapCoord(coord, this.state.shiftDown);
+        // this.props.inspectTileAtMapCoord(coord, this.state.shiftDown);
     }
 
     handleMenuEvent = (e: string) => {
@@ -167,34 +161,6 @@ class Menu extends Component<IMenuProps, IGameMenuState> {
 
     handleStrictModeChange = (e: Event) => {
         this.props.setStrictMode((e.currentTarget as HTMLInputElement).checked);
-    }
-
-    handleKeyDown = (e: KeyboardEvent) => {
-        let key = "";
-        if (this.props.currentMenu !== "top") {
-            key = MENU.ITEMS[this.props.currentMenu].parsedKey + ":";
-        }
-        key += e.key;
-        if (key in MENU.KEYS) {
-            e.preventDefault();
-            this.handleMenuEvent(MENU.KEYS[key].id);
-        } else if (key in BUILDINGS.KEYS) {
-            e.preventDefault();
-            this.handleMenuEvent(BUILDINGS.KEYS[key].id);
-        }
-        if (e.keyCode === KEYS.VK_SHIFT) {
-            this.setState({
-                shiftDown: true,
-            });
-        }
-    }
-
-    handleKeyUp = (e: KeyboardEvent) => {
-        if (e.keyCode === KEYS.VK_SHIFT) {
-            this.setState({
-                shiftDown: false,
-            });
-        }
     }
 
     getMenuItemsCss = () => {

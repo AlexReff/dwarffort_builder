@@ -1,17 +1,16 @@
-import { ACTION_TYPE } from "../../constants/";
-import { IBuildingState } from "./reducer";
+import { ACTION_TYPE, FlatGetState } from "../store";
 
-export function setBuildingListData(
-    list: IBuildingState["buildingList"],
-    tiles: IBuildingState["buildingTiles"],
-    ids: IBuildingState["buildingIds"],
-    bounds: IBuildingState["buildingBounds"],
-    ) {
-    return {
-        type: ACTION_TYPE.BUILDING_LIST_SET,
-        list,
-        tiles,
-        ids,
-        bounds,
-    };
-}
+// export function setCursorPos(cursorX: number, cursorY: number) {
+//     return {
+//         type: ACTION_TYPE.SET_CURSOR_POS,
+//         cursorX,
+//         cursorY,
+//     };
+// }
+
+// export function moveCursorDirection(dir: DIRECTION, shiftPressed: boolean = false) {
+//     return (dispatch, getState) => {
+//         const state = FlatGetState({}, getState);
+//         //
+//     };
+// }

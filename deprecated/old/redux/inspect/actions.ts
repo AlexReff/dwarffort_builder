@@ -1,6 +1,7 @@
-import { ACTION_TYPE, Point } from "../../constants/";
-import { IInspectState } from "./reducer";
+import { Point } from "../../../components/constantsnts/constants";
 import { IBuildingState } from "../building/reducer";
+import { ACTION_TYPE } from "../store";
+import { IInspectState } from "./reducer";
 
 export function inspectClear() {
     return {

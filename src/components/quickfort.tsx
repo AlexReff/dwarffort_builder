@@ -5,11 +5,11 @@ import { ICameraState } from "./redux/camera/reducer";
 import { ReduxState } from "./redux/store";
 
 interface IQuickfortProps {
-    zLevel: ICameraState["zLevel"];
+    cameraZ: ICameraState["cameraZ"];
 }
 
 const mapStateToProps = (state: ReduxState) => ({
-    zLevel: state.camera.zLevel,
+    cameraZ: state.camera.cameraZ,
 });
 
 interface IQuickfortState {

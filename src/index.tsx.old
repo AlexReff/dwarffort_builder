@@ -2,15 +2,14 @@
 import _ from "lodash";
 import { Component, h, render } from "preact";
 import { Provider } from "react-redux";
+import { Game } from "../deprecated/old/game/game";
+import store from "../deprecated/old/redux/storee
 //components
-import { HEADER_H, MENU_W, TILE_URL, TILE_W } from "./components/constants";
-import { Game } from "./components/game";
+import { DEBUG, HEADER_H, KEYS, MENU_W, TILE_URL, TILE_W } from "./components/constants";
+import { DebugMenu } from "./components/debug";
 import Header from "./components/header";
 import GameHighlighter from "./components/highlighter";
 import Menu from "./components/menu";
-import { resizeWindow } from "./components/redux/camera/actions";
-import { Initialize } from "./components/redux/settings/actions";
-import store from "./components/redux/store";
 
 require("./css/index.scss");
 
@@ -26,6 +25,7 @@ class FortressDesigner extends Component<{}, IFortressDesignerState> {
     private gridElement: HTMLElement;
     private tileSheetImage: HTMLImageElement;
     private game: Game;
+    private canvasRef: any;
 
     constructor() {
         super();
@@ -46,24 +46,22 @@ class FortressDesigner extends Component<{}, IFortressDesignerState> {
 
         this.tileSheetImage = new Image();
         this.tileSheetImage.crossOrigin = "Anonymous";
-        this.tileSheetImage.id = "tilesheet";
         this.tileSheetImage.onload = () => {
             this.initGame();
         };
+        this.tileSheetImage.src = TILE_URL;
 
-        // window.addEventListener("keydown", this.handleKeyPress);
+        window.addEventListener("keydown", this.handleKeyPress);
         window.addEventListener("resize", this.handleWindowResize);
 
-        store.dispatch(Initialize(this.gridElement));
-
-        this.tileSheetImage.src = TILE_URL; //ensure onload runs after
+        store.dispatch(setDOMRefs(this.canvasRef));
     }
 
     initGame = () => {
         if (this.game == null) {
-            this.game = new Game(document.getElementById("canvas") as HTMLCanvasElement, this.tileSheetImage);
+            this.game = new Game(this.tileSheetImage, this.gridElement, this.canvasRef);
         } else {
-            this.game.restart();
+            this.game.init(this.gridElement);
         }
 
         this.setState({
@@ -77,18 +75,11 @@ class FortressDesigner extends Component<{}, IFortressDesignerState> {
         }
 
         this.game.destroy();
-        // this.game = null;
-
-        this.setState({
-            gameLoading: true,
-        });
     }
 
     componentWillUnmount = () => {
         this.destroyGame();
     }
-
-    //#region window resizing
 
     setWindowResizing = () => {
         this.destroyGame();
@@ -97,17 +88,15 @@ class FortressDesigner extends Component<{}, IFortressDesignerState> {
         });
     }
 
+    // tslint:disable-next-line: member-ordering
+    windowResizeBouncer = _.debounce(this.setWindowResizing, 300, { leading: true, trailing: false });
+
     endWindowResizing = () => {
-        // console.log("what");
         this.updateWrapperCss(() => {
-            store.dispatch(resizeWindow(this.gridElement));
             this.initGame();
             this.setState({ windowResizing: false });
         });
     }
-
-    // tslint:disable-next-line: member-ordering
-    windowResizeBouncer = _.debounce(this.setWindowResizing, 300, { leading: true, trailing: false });
 
     // tslint:disable-next-line: member-ordering
     windowResizeEndBouncer = _.debounce(this.endWindowResizing, 400, { leading: false, trailing: true });
@@ -117,9 +106,6 @@ class FortressDesigner extends Component<{}, IFortressDesignerState> {
         this.windowResizeEndBouncer();
     }
 
-    //#endregion
-
-    //#region wrapper CSS
     updateWrapperCss = (callback?: () => void) => {
         //update the grid's width in css to divisible by grid
         const wOff = (this.gridElement.offsetWidth + this.state.gridColumnLayout) % TILE_W;
@@ -139,11 +125,28 @@ class FortressDesigner extends Component<{}, IFortressDesignerState> {
         }
         return null;
     }
-    //#endregion
+
+    handleKeyPress = (e: KeyboardEvent) => {
+        if (e.getModifierState("Control")) {
+            return;
+        }
+        switch (e.keyCode) {
+            case KEYS.VK_BACK_QUOTE:
+            case KEYS.VK_TILDE:
+                e.preventDefault();
+                this.setState((prevState) => ({
+                    debug: !prevState.debug,
+                }));
+                break;
+            default:
+                break;
+        }
+    }
 
     render(props, state: IFortressDesignerState) {
         return (
             <div id="page">
+                {DEBUG ? <DebugMenu isActive={state.debug} /> : null}
                 <GameHighlighter />
                 <div id="wrapper" style={this.getWrapperCss()}>
                     <div id="header">
@@ -159,7 +162,7 @@ class FortressDesigner extends Component<{}, IFortressDesignerState> {
                         <div class="loading">
                             Loading...
                         </div>
-                        <canvas id="canvas"></canvas>
+                        <canvas ref={(e) => this.canvasRef = e}></canvas>
                     </div>
                     <Menu />
                     <footer id="footer">

@@ -1,27 +1,26 @@
 import { Component, h } from "preact";
 import { connect } from "react-redux";
 import { KEYS, Point, TILE_H, TILE_W } from "./constants/";
-import { IBuildingState } from "./redux/building/reducer";
 import { ICameraState } from "./redux/camera/reducer";
-import { inspectMoveSelectionRequest, inspectRequestAtMapCoord, inspectRequestAtPos, inspectRequestRange } from "./redux/inspect/actions";
-import { IInspectState } from "./redux/inspect/reducer";
 import { ReduxState } from "./redux/store";
 
 interface IGameHighlighterProps {
     canvasRef: any;
     //redux props
-    camera: ICameraState["camera"];
-    inspecting: IInspectState["inspecting"];
-    buildingList: IBuildingState["buildingList"];
-    buildingBounds: IBuildingState["buildingBounds"];
-    inspectedBuildings: IInspectState["inspectedBuildings"];
-    zLevel: ICameraState["zLevel"];
-    mapSize: ICameraState["mapSize"];
+    cameraX: ICameraState["cameraX"];
+    cameraY: ICameraState["cameraY"];
+    // inspecting: IInspectState["inspecting"];
+    // buildingList: IBuildingState["buildingList"];
+    // buildingBounds: IBuildingState["buildingBounds"];
+    // inspectedBuildings: IInspectState["inspectedBuildings"];
+    cameraZ: ICameraState["cameraZ"];
+    mapHeight: ICameraState["mapHeight"];
+    mapWidth: ICameraState["mapWidth"];
     //redux dispatch
-    inspectTileAtPos: typeof inspectRequestAtPos;
-    inspectTileAtMapCoord: typeof inspectRequestAtMapCoord;
-    inspectTileRange: typeof inspectRequestRange;
-    inspectMoveSelectionRequest: typeof inspectMoveSelectionRequest;
+    // inspectTileAtPos: typeof inspectRequestAtPos;
+    // inspectTileAtMapCoord: typeof inspectRequestAtMapCoord;
+    // inspectTileRange: typeof inspectRequestRange;
+    // inspectMoveSelectionRequest: typeof inspectMoveSelectionRequest;
 }
 
 interface IGameHighlighterState {
@@ -39,20 +38,21 @@ interface IGameHighlighterState {
 }
 
 const mapStateToProps = (state: ReduxState) => ({
-    camera: state.camera.camera,
-    inspecting: state.inspect.inspecting,
-    inspectedBuildings: state.inspect.inspectedBuildings,
-    buildingList: state.building.buildingList,
-    buildingBounds: state.building.buildingBounds,
-    zLevel: state.camera.zLevel,
-    mapSize: state.camera.mapSize,
+    cameraX: state.camera.cameraX,
+    cameraY: state.camera.cameraY,
+    // inspecting: state.inspect.inspecting,
+    // inspectedBuildings: state.inspect.inspectedBuildings,
+    // buildingList: state.building.buildingList,
+    // buildingBounds: state.building.buildingBounds,
+    mapHeight: state.camera.mapHeight,
+    mapWidth: state.camera.mapWidth,
 });
 
 const mapDispatchToProps = (dispatch) => ({
-    inspectTileAtPos: (x, y, add) => dispatch(inspectRequestAtPos(x, y, add)),
-    inspectTileRange: (first, second, add) => dispatch(inspectRequestRange(first, second, add)),
-    inspectTileAtMapCoord: (coord, shift) => dispatch(inspectRequestAtMapCoord(coord, shift)),
-    inspectMoveSelectionRequest: (payload) => dispatch(inspectMoveSelectionRequest(payload)),
+    // inspectTileAtPos: (x, y, add) => dispatch(inspectRequestAtPos(x, y, add)),
+    // inspectTileRange: (first, second, add) => dispatch(inspectRequestRange(first, second, add)),
+    // inspectTileAtMapCoord: (coord, shift) => dispatch(inspectRequestAtMapCoord(coord, shift)),
+    // inspectMoveSelectionRequest: (payload) => dispatch(inspectMoveSelectionRequest(payload)),
 });
 
 class GameHighlighter extends Component<IGameHighlighterProps, IGameHighlighterState> {
@@ -96,54 +96,54 @@ class GameHighlighter extends Component<IGameHighlighterProps, IGameHighlighterS
     }
 
     handleMouseMove = (e: MouseEvent | TouchEvent) => {
-        if (this.props.canvasRef != null && this.props.inspecting) {
-            const targ: any = "touches" in e ? e.touches : e;
-            const newPos = this.getHighlighterGridPosition(targ.clientX, targ.clientY);
-            this.setState((prevState: IGameHighlighterState) => ({
-                showHighlighter: prevState.showHighlighter ? true : prevState.mouseDown && (prevState.highlightingStart[0] !== newPos[0] || prevState.highlightingStart[1] !== newPos[1]),
-                currentPosition: newPos,
-                mouseX: targ.clientX,
-                mouseY: targ.clientY,
-            }));
-        }
+        // if (this.props.canvasRef != null && this.props.inspecting) {
+        //     const targ: any = "touches" in e ? e.touches : e;
+        //     const newPos = this.getHighlighterGridPosition(targ.clientX, targ.clientY);
+        //     this.setState((prevState: IGameHighlighterState) => ({
+        //         showHighlighter: prevState.showHighlighter ? true : prevState.mouseDown && (prevState.highlightingStart[0] !== newPos[0] || prevState.highlightingStart[1] !== newPos[1]),
+        //         currentPosition: newPos,
+        //         mouseX: targ.clientX,
+        //         mouseY: targ.clientY,
+        //     }));
+        // }
     }
 
     handleMouseDown = (e: MouseEvent | TouchEvent) => {
-        if (this.props.canvasRef != null && this.props.inspecting) {
-            const path = e.composedPath();
-            if (path.some((p: any) => p.nodeName != null && p.nodeName.toLowerCase() === "canvas")) {
-                const targ: any = "touches" in e ? e.touches : e;
-                this.setState({
-                    mouseDown: true,
-                    mouseDownCoord: [targ.clientX, targ.clientY],
-                    showHighlighter: false,
-                    highlightingStart: this.getHighlighterGridPosition(targ.clientX, targ.clientY),
-                });
-            }
-        }
+        // if (this.props.canvasRef != null && this.props.inspecting) {
+        //     const path = e.composedPath();
+        //     if (path.some((p: any) => p.nodeName != null && p.nodeName.toLowerCase() === "canvas")) {
+        //         const targ: any = "touches" in e ? e.touches : e;
+        //         this.setState({
+        //             mouseDown: true,
+        //             mouseDownCoord: [targ.clientX, targ.clientY],
+        //             showHighlighter: false,
+        //             highlightingStart: this.getHighlighterGridPosition(targ.clientX, targ.clientY),
+        //         });
+        //     }
+        // }
     }
 
     handleMouseUp = (e: MouseEvent | TouchEvent) => {
-        if (this.props.canvasRef != null) {
-            const path = e.composedPath();
-            if (path.some((p: any) => p.nodeName != null && p.nodeName.toLowerCase() === "canvas")) {
-                const eTarg: any = "touches" in e ? e.touches : e;
-                if (this.props.inspecting) {
-                    if (this.state.showHighlighter) {
-                        //handle area selection
-                        this.props.inspectTileRange(this.state.mouseDownCoord, this.state.currentPosition, this.state.shiftDown);
-                    } else {
-                        //handle single-click on item
-                        this.props.inspectTileAtPos(eTarg.clientX, eTarg.clientY, this.state.shiftDown);
-                    }
-                }
-                this.setState({
-                    mouseDown: false,
-                    mouseDownCoord: null,
-                    showHighlighter: false,
-                });
-            }
-        }
+        // if (this.props.canvasRef != null) {
+        //     const path = e.composedPath();
+        //     if (path.some((p: any) => p.nodeName != null && p.nodeName.toLowerCase() === "canvas")) {
+        //         const eTarg: any = "touches" in e ? e.touches : e;
+        //         if (this.props.inspecting) {
+        //             if (this.state.showHighlighter) {
+        //                 //handle area selection
+        //                 this.props.inspectTileRange(this.state.mouseDownCoord, this.state.currentPosition, this.state.shiftDown);
+        //             } else {
+        //                 //handle single-click on item
+        //                 this.props.inspectTileAtPos(eTarg.clientX, eTarg.clientY, this.state.shiftDown);
+        //             }
+        //         }
+        //         this.setState({
+        //             mouseDown: false,
+        //             mouseDownCoord: null,
+        //             showHighlighter: false,
+        //         });
+        //     }
+        // }
     }
 
     getHighlighterStyle = () => {
@@ -182,144 +182,144 @@ class GameHighlighter extends Component<IGameHighlighterProps, IGameHighlighterS
     }
 
     getInspectTiles = () => {
-        if (this.props.canvasRef == null ||
-            this.props.mapSize == null ||
-            this.props.buildingList == null ||
-            this.props.buildingList.length === 0) {
-            return null;
-        }
+        // if (this.props.canvasRef == null ||
+        //     this.props.mapSize == null ||
+        //     this.props.buildingList == null ||
+        //     this.props.buildingList.length === 0) {
+        //     return null;
+        // }
 
-        const result = [];
+        // const result = [];
 
-        let minX = +TILE_W * (this.props.mapSize[0] * 2);
-        let minY = +TILE_H * (this.props.mapSize[1] * 2);
-        let maxX = -1, maxY = -1;
-        let hasInspectTargets = false;
-        const canvasBounds = this.props.canvasRef.getBoundingClientRect();
+        // let minX = +TILE_W * (this.props.mapSize[0] * 2);
+        // let minY = +TILE_H * (this.props.mapSize[1] * 2);
+        // let maxX = -1, maxY = -1;
+        // let hasInspectTargets = false;
+        // const canvasBounds = this.props.canvasRef.getBoundingClientRect();
 
-        for (const key of Object.values(this.props.buildingList)) {
-            if (this.props.zLevel.toString() !== key.split(":")[0]) {
-                continue;
-            }
+        // for (const key of Object.values(this.props.buildingList)) {
+        //     if (this.props.cameraZ.toString() !== key.split(":")[0]) {
+        //         continue;
+        //     }
 
-            const range = this.props.buildingBounds[key];
+        //     const range = this.props.buildingBounds[key];
 
-            const width = +TILE_W + (+TILE_W * Math.abs(range[1][0] - range[0][0]));
-            const height = +TILE_H + (+TILE_H * Math.abs(range[1][1] - range[0][1]));
+        //     const width = +TILE_W + (+TILE_W * Math.abs(range[1][0] - range[0][0]));
+        //     const height = +TILE_H + (+TILE_H * Math.abs(range[1][1] - range[0][1]));
 
-            const leftGrid = Math.min(range[1][0], range[0][0]) - this.props.camera[0];
-            const topGrid = Math.min(range[1][1], range[0][1]) - this.props.camera[1];
+        //     const leftGrid = Math.min(range[1][0], range[0][0]) - this.props.camera[0];
+        //     const topGrid = Math.min(range[1][1], range[0][1]) - this.props.camera[1];
 
-            const left = canvasBounds.left + (+TILE_W * leftGrid);
-            const top = canvasBounds.top + (+TILE_H * topGrid);
+        //     const left = canvasBounds.left + (+TILE_W * leftGrid);
+        //     const top = canvasBounds.top + (+TILE_H * topGrid);
 
-            const style = {
-                width: `${width}px`,
-                height: `${height}px`,
-                left: `${left}px`,
-                top: `${top}px`,
-            };
+        //     const style = {
+        //         width: `${width}px`,
+        //         height: `${height}px`,
+        //         left: `${left}px`,
+        //         top: `${top}px`,
+        //     };
 
-            let thisClass = "building_inspect";
+        //     let thisClass = "building_inspect";
 
-            if (this.props.inspectedBuildings != null) {
-                for (let x = range[0][0]; x <= range[1][0]; x++) {
-                    for (let y = range[0][1]; y <= range[1][1]; y++) {
-                        if (this.props.inspectedBuildings.some((m) => m === `${this.props.zLevel}:${x}:${y}`)) {
-                            thisClass += " inspecting";
-                            minX = Math.min(minX, left);
-                            minY = Math.min(minY, top);
-                            maxX = Math.max(maxX, left + width);
-                            maxY = Math.max(maxY, top + height);
-                            hasInspectTargets = true;
-                            x = range[1][0]; //break both loops
-                            break;
-                        }
-                    }
-                }
-            }
+        //     if (this.props.inspectedBuildings != null) {
+        //         for (let x = range[0][0]; x <= range[1][0]; x++) {
+        //             for (let y = range[0][1]; y <= range[1][1]; y++) {
+        //                 if (this.props.inspectedBuildings.some((m) => m === `${this.props.cameraZ}:${x}:${y}`)) {
+        //                     thisClass += " inspecting";
+        //                     minX = Math.min(minX, left);
+        //                     minY = Math.min(minY, top);
+        //                     maxX = Math.max(maxX, left + width);
+        //                     maxY = Math.max(maxY, top + height);
+        //                     hasInspectTargets = true;
+        //                     x = range[1][0]; //break both loops
+        //                     break;
+        //                 }
+        //             }
+        //         }
+        //     }
 
-            const handleClick = (e: TouchEvent | MouseEvent) => {
-                e.preventDefault();
-                this.props.inspectTileAtMapCoord(range[0], this.state.shiftDown);
-            };
+        //     const handleClick = (e: TouchEvent | MouseEvent) => {
+        //         e.preventDefault();
+        //         this.props.inspectTileAtMapCoord(range[0], this.state.shiftDown);
+        //     };
 
-            result.push((
-                <a class={thisClass} title={range.display_name} onClick={handleClick} style={style}></a>
-            ));
-        }
+        //     result.push((
+        //         <a class={thisClass} title={range.display_name} onClick={handleClick} style={style}></a>
+        //     ));
+        // }
 
-        if (hasInspectTargets) {
-            const width = maxX - minX;
-            let allStyleLeft = minX;
-            let allStyleTop = minY;
-            if (this.state.toolbarMoveDragging) {
-                allStyleLeft = +TILE_W + this.state.mouseX - ((this.state.mouseX - canvasBounds.left) % +TILE_W) - width;
-                allStyleTop = +TILE_H + this.state.mouseY - ((this.state.mouseY - canvasBounds.top) % +TILE_H);
-            }
-            const allStyle = {
-                width: `${width}px`,
-                height: `${maxY - minY}px`,
-                left: `${allStyleLeft}px`,
-                top: `${allStyleTop}px`,
-            };
+        // if (hasInspectTargets) {
+        //     const width = maxX - minX;
+        //     let allStyleLeft = minX;
+        //     let allStyleTop = minY;
+        //     if (this.state.toolbarMoveDragging) {
+        //         allStyleLeft = +TILE_W + this.state.mouseX - ((this.state.mouseX - canvasBounds.left) % +TILE_W) - width;
+        //         allStyleTop = +TILE_H + this.state.mouseY - ((this.state.mouseY - canvasBounds.top) % +TILE_H);
+        //     }
+        //     const allStyle = {
+        //         width: `${width}px`,
+        //         height: `${maxY - minY}px`,
+        //         left: `${allStyleLeft}px`,
+        //         top: `${allStyleTop}px`,
+        //     };
 
-            this.allInspectStartLeft = minX,
-            this.allInspectStartTop = minY,
-            this.allInspectLeft = allStyleLeft,
-            this.allInspectTop = allStyleTop,
+        //     this.allInspectStartLeft = minX,
+        //     this.allInspectStartTop = minY,
+        //     this.allInspectLeft = allStyleLeft,
+        //     this.allInspectTop = allStyleTop,
 
-            result.push((
-                <div class="all_inspect" style={allStyle}></div>
-            ));
-        }
+        //     result.push((
+        //         <div class="all_inspect" style={allStyle}></div>
+        //     ));
+        // }
 
-        let toolbarStyle = {};
-        if (hasInspectTargets) {
-            if (this.state.toolbarMoveDragging) {
-                toolbarStyle = {
-                    left: `${maxX - +TILE_W - (this.state.dragStartX - this.state.mouseX)}px`,
-                    top: `${minY - (this.state.dragStartY - this.state.mouseY)}px`,
-                };
-            } else {
-                toolbarStyle = {
-                    left: `${maxX - +TILE_W}px`,
-                    top: `${minY}px`,
-                };
-            }
-        } else {
-            //render offscreen to get the image(s) to download
-            toolbarStyle = {
-                left: "-100vw",
-                top: "-100vh",
-            };
-        }
+        // let toolbarStyle = {};
+        // if (hasInspectTargets) {
+        //     if (this.state.toolbarMoveDragging) {
+        //         toolbarStyle = {
+        //             left: `${maxX - +TILE_W - (this.state.dragStartX - this.state.mouseX)}px`,
+        //             top: `${minY - (this.state.dragStartY - this.state.mouseY)}px`,
+        //         };
+        //     } else {
+        //         toolbarStyle = {
+        //             left: `${maxX - +TILE_W}px`,
+        //             top: `${minY}px`,
+        //         };
+        //     }
+        // } else {
+        //     //render offscreen to get the image(s) to download
+        //     toolbarStyle = {
+        //         left: "-100vw",
+        //         top: "-100vh",
+        //     };
+        // }
 
-        result.push((
-            <div class="toolbar_wrapper" style={toolbarStyle}>
-                <div class="inspect_toolbar">
-                    <div class="toolbar_move" onMouseDown={this.handleMoveMouseDown} onMouseUp={this.handleMoveMouseUp}>
-                        <a class="drag_inner_target">
-                            <i class="fas fa-arrows-alt"></i>
-                        </a>
-                    </div>
-                </div>
-            </div>
-        ));
+        // result.push((
+        //     <div class="toolbar_wrapper" style={toolbarStyle}>
+        //         <div class="inspect_toolbar">
+        //             <div class="toolbar_move" onMouseDown={this.handleMoveMouseDown} onMouseUp={this.handleMoveMouseUp}>
+        //                 <a class="drag_inner_target">
+        //                     <i class="fas fa-arrows-alt"></i>
+        //                 </a>
+        //             </div>
+        //         </div>
+        //     </div>
+        // ));
 
-        let wrapperClass = "inspect_wrapper";
-        if (this.props.inspecting) {
-            wrapperClass += " inspecting";
-        }
-        if (this.state.mouseDown) {
-            wrapperClass += " dragging";
-        }
+        // let wrapperClass = "inspect_wrapper";
+        // if (this.props.inspecting) {
+        //     wrapperClass += " inspecting";
+        // }
+        // if (this.state.mouseDown) {
+        //     wrapperClass += " dragging";
+        // }
 
-        return (
-            <div class={wrapperClass}>
-                {result}
-            </div>
-        );
+        // return (
+        //     <div class={wrapperClass}>
+        //         {result}
+        //     </div>
+        // );
     }
 
     handleMoveMouseDown = (e: MouseEvent) => {
@@ -337,17 +337,17 @@ class GameHighlighter extends Component<IGameHighlighterProps, IGameHighlighterS
     }
 
     handleMoveMouseUp = (e: MouseEvent) => {
-        if (e.button !== 0) {
-            return;
-        }
-        e.preventDefault();
-        this.props.inspectMoveSelectionRequest({
-            diffX: this.allInspectLeft - this.allInspectStartLeft,
-            diffY: this.allInspectTop - this.allInspectStartTop,
-        });
-        this.setState({
-            toolbarMoveDragging: false,
-        });
+        // if (e.button !== 0) {
+        //     return;
+        // }
+        // e.preventDefault();
+        // this.props.inspectMoveSelectionRequest({
+        //     diffX: this.allInspectLeft - this.allInspectStartLeft,
+        //     diffY: this.allInspectTop - this.allInspectStartTop,
+        // });
+        // this.setState({
+        //     toolbarMoveDragging: false,
+        // });
     }
 
     render = (props: IGameHighlighterProps, state: IGameHighlighterState) => {

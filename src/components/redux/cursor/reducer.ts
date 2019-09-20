@@ -1,86 +1,56 @@
-import { ACTION_TYPE, BUILDINGS, Point } from "../../constants/";
+import { BUILDINGS, DEFAULTS, IRenderTile } from "../../constants";
+import { ACTION_TYPE } from "../store";
 
 export interface ICursorState {
-    cursorVisible: boolean;
+    // cursorVisible: boolean;
     cursorBuilding: boolean;
-    cursorPosition: Point;
+    cursorX: number;
+    cursorY: number;
+    cursorTiles: IRenderTile[];
     cursorDiameter: number;
-    cursorRadius: number;
+    // cursorRadius: number;
 }
 
 const initialState: ICursorState = {
-    cursorVisible: true,
+    // cursorVisible: true,
     cursorBuilding: false,
-    cursorPosition: [0, 0] as Point,
-    cursorDiameter: 0 as number,
-    cursorRadius: 0 as number,
+    cursorX: 0,
+    cursorY: 0,
+    cursorTiles: [],
+    cursorDiameter: 0,
+    // cursorRadius: 0,
+};
+
+const getCursorTiles = (state: ICursorState): IRenderTile[] => {
+    return [{
+        x: state.cursorX,
+        y: state.cursorY,
+        char: DEFAULTS.CURSOR.CHAR,
+        color: DEFAULTS.COLORS.CURSOR_DEFAULT,
+    }];
 };
 
 export default (state = initialState, action) => {
     switch (action.type) {
         case ACTION_TYPE.INITIALIZE: {
-            return {
-                ...state,
-                cursorPosition: action.cursorPosition,
-            };
+            state.cursorX = action.cursorX;
+            state.cursorY = action.cursorY;
+            break;
         }
-        case ACTION_TYPE.MENU_SUBMENU: {
-            return {
-                ...state,
-                cursorBuilding: false,
-                cursorDiameter: 0,
-            };
+        case ACTION_TYPE.SET_CURSOR_POS: {
+            state.cursorX = action.cursorX;
+            state.cursorY = action.cursorY;
+            break;
         }
-        case ACTION_TYPE.MENU_ITEM: {
-            return {
-                ...state,
-                cursorBuilding: action.val != null && BUILDINGS.IDS[action.val] != null,
-                cursorDiameter: action.val != null && BUILDINGS.IDS[action.val] != null ? BUILDINGS.IDS[action.val].tiles.length : 0,
-                cursorRadius: action.val != null && BUILDINGS.IDS[action.val] != null ? Math.floor(BUILDINGS.IDS[action.val].tiles.length / 2.0) : 0,
-            };
+        case ACTION_TYPE.SET_MENU: {
+            if (action.currentMenuItem in BUILDINGS.KEYS) {
+                state.cursorBuilding = true;
+            } else {
+                state.cursorBuilding = false;
+            }
+            break;
         }
-        case ACTION_TYPE.CURSOR_HIDE: {
-            return {
-                ...state,
-                cursorVisible: false,
-            };
-        }
-        case ACTION_TYPE.CURSOR_SHOW: {
-            return {
-                ...state,
-                cursorVisible: true,
-            };
-        }
-        case ACTION_TYPE.CURSOR_SETDIAMETER: {
-            return {
-                ...state,
-                cursorDiameter: action.cursorDiameter,
-                cursorRadius: action.cursorDiameter != null && action.cursorDiameter > 0 ? Math.floor(action.cursorDiameter / 2.0) : 0,
-            };
-        }
-        case ACTION_TYPE.CURSOR_MOVE: {
-            return {
-                ...state,
-                cursorPosition: action.pos,
-            };
-        }
-        case ACTION_TYPE.CURSOR_BUILDING_START:
-            return {
-                ...state,
-                cursorBuilding: true,
-            };
-        case ACTION_TYPE.CURSOR_BUILDING_END:
-            return {
-                ...state,
-                cursorBuilding: false,
-            };
-        case ACTION_TYPE.INSPECT_TILES: {
-            return {
-                ...state,
-                cursorVisible: action.val != null && action.val.length > 0 ? false : state.cursorVisible,
-            };
-        }
-        default:
-            return state;
     }
+    state.cursorTiles = getCursorTiles(state);
+    return state;
 };

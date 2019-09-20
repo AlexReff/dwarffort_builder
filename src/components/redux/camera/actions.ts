@@ -1,47 +1,41 @@
-import { ACTION_TYPE, Point } from "../../constants/";
+import { TILE_H, TILE_W } from "../../constants";
+import { ACTION_TYPE, FlatGetState } from "../store";
 
-export function zLevelUp() {
+export function setCameraPos(x: number, y: number) {
     return {
-        type: ACTION_TYPE.ZLEVEL_INC,
+        type: ACTION_TYPE.SET_CAMERA_POS,
+        x,
+        y,
     };
 }
 
-export function zLevelDown() {
+export function setCameraZ(z: number) {
     return {
-        type: ACTION_TYPE.ZLEVEL_DEC,
+        type: ACTION_TYPE.SET_ZLEVEL,
+        z,
     };
 }
 
-export function zLevelGoto(level: number) {
-    return {
-        type: ACTION_TYPE.ZLEVEL_GOTO,
-        level,
+export function resizeWindow(container: HTMLElement) {
+    return (dispatch, getState) => {
+        const state = FlatGetState({}, getState);
+
+        const gridWidth = Math.floor(container.offsetWidth / TILE_W);
+        const gridHeight = Math.floor(container.offsetHeight / TILE_H);
+
+        const mapWidth = Math.max(state.mapWidth, gridWidth);
+        const mapHeight = Math.max(state.mapHeight, gridHeight);
+
+        dispatch(setMapSize(mapWidth, mapHeight, gridWidth, gridHeight));
     };
 }
 
-export function toggleAnimation() {
+export function setMapSize(mapWidth: number, mapHeight: number, gridWidth: number, gridHeight: number) {
     return {
-        type: ACTION_TYPE.ANIMATION_TOGGLE,
-    };
-}
-
-export function moveCamera(coord: Point) {
-    return {
-        type: ACTION_TYPE.CAMERA_GOTO,
-        coord,
-    };
-}
-
-export function setGridSize(size: Point) {
-    return {
-        type: ACTION_TYPE.CAMERA_GRID_SETSIZE,
-        size,
-    };
-}
-
-export function setMapSize(size: Point) {
-    return {
-        type: ACTION_TYPE.CAMERA_MAP_SETSIZE,
-        size,
+        type: ACTION_TYPE.SET_MAP_SIZE,
+        mapWidth,
+        mapHeight,
+        gridWidth,
+        gridHeight,
     };
 }

@@ -1,7 +1,7 @@
 import * as _ from "lodash";
 import { Component, h } from "preact";
+import { Tile } from "../../deprecated/old/game/tile";
 import { TILE_H, TILE_URL, TILE_W } from "./constants/";
-import { Tile } from "./game/tile";
 
 interface IDebugMenuProps {
     isActive: boolean;

@@ -40,7 +40,10 @@ module.exports = (env, argv) => {
                 {
                     test: /\.(t|j)sx?$/,
                     include: path.resolve(__dirname, "src"),
-                    exclude: /\bnode-modules\b/,
+                    exclude: [
+                        /\bnode-modules\b/,
+                        /\bdeprecated\b/,
+                    ],
                     use: [
                         "babel-loader",
                         "awesome-typescript-loader",

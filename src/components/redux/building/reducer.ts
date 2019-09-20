@@ -1,44 +1,39 @@
-import { ACTION_TYPE, Point } from "../../constants/";
+import { IRenderTile } from "../../constants";
+import { ACTION_TYPE } from "../store";
 
 export interface IBuildingState {
-    /** a list of building KEYS: `zLevel:x:y` */
-    buildingList: string[];
-    /** the map bounds of the building */
-    buildingBounds: { [key: number]: [Point, Point] };
-    /** key: all tiles that have a building | value: buildingList::key */
-    buildingTiles: { [key: string]: string };
-    /** buildingList::key to BUILDINGS::key mapping */
-    buildingIds: { [key: string]: string };
+    buildingTiles: IRenderTile[];
+    // gridHeight: number;
+    // gridWidth: number;
+    // mapHeight: number;
+    // mapWidth: number;
+    // cameraX: number;
+    // cameraY: number;
+    // cameraZ: number;
 }
 
 const initialState: IBuildingState = {
-    buildingList: [],
-    buildingBounds: {},
-    buildingTiles: {},
-    buildingIds: {},
+    buildingTiles: [],
+    // gridHeight: 0,
+    // gridWidth: 0,
+    // mapHeight: 0,
+    // mapWidth: 0,
+    // cameraX: 0,
+    // cameraY: 0,
+    // cameraZ: 0,
 };
 
-export default (state = initialState, action) => {
+export default (state: IBuildingState = initialState, action) => {
     switch (action.type) {
-        case ACTION_TYPE.BUILDING_LIST_SET: {
-            return {
-                ...state,
-                buildingList: [...action.list],
-                buildingTiles: {...action.tiles},
-                buildingIds: {...action.ids},
-                buildingBounds: {...action.bounds},
-            };
+        case ACTION_TYPE.INITIALIZE: {
+            // state.gridHeight = action.gridHeight;
+            // state.gridWidth = action.gridWidth;
+            // state.mapHeight = action.mapHeight;
+            // state.mapWidth = action.mapWidth;
+            // state.cameraX = action.cameraX;
+            // state.cameraY = action.cameraY;
+            break;
         }
-        case ACTION_TYPE.INSPECT_MOVE_SELECTION_FINISH: {
-            return {
-                ...state,
-                buildingList: [...action.list],
-                buildingTiles: {...action.tiles},
-                buildingIds: {...action.ids},
-                buildingBounds: {...action.bounds},
-            };
-        }
-        default:
-            return state;
     }
+    return state;
 };

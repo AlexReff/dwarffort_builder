@@ -2,13 +2,13 @@ const styles = require("../.././css/_variables.scss");
 
 import { buildings } from "../../data/buildings.json";
 import { items } from "../../data/menu_flat.json";
-import { CURSOR_BEHAVIOR } from "./_enums";
-import { IBuildingTileData, IFlatMenuItem } from "./_interfaces";
+import { CURSOR_BEHAVIOR, MENU_ITEM } from "./_enums";
+import { IBuildingData, IBuildingTileData, IFlatMenuItem } from "./_interfaces";
 
 export type Point = [number, number];
 
 export const DEFAULTS = {
-    STRICT_MODE: false,
+    STRICT_MODE: true,
     PAINT_OVERWRITE: true,
     MAP_MIN_W: 48 * 2,
     MAP_MIN_H: 48 * 2,
@@ -139,15 +139,6 @@ export const TILE_MAP: { [key: string]: Point; } = ((): { [key: string]: Point; 
 
     return val;
 })();
-
-interface IBuildingData {
-    "id": string;
-    "display_name": string;
-    "hotkey": string;
-    "submenu": string;
-    "tiles": IBuildingTileData[][];
-    "parsedHotkey"?: string;
-}
 
 /** Building data, key=building id */
 // export const BUILDINGS: { [key: string]: IBuildingData } = buildings as any;

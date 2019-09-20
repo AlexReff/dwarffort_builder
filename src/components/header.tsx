@@ -1,15 +1,14 @@
-import * as _ from "lodash";
 import { Component, h } from "preact";
 import { connect } from "react-redux";
 import { ICameraState } from "./redux/camera/reducer";
 import { ReduxState } from "./redux/store";
 
 interface IHeaderProps {
-    zLevel: ICameraState["zLevel"];
+    cameraZ: ICameraState["cameraZ"];
 }
 
 const mapStateToProps = (state: ReduxState) => ({
-    zLevel: state.camera.zLevel,
+    cameraZ: state.camera.cameraZ,
 });
 
 interface IHeaderState {
@@ -21,13 +20,8 @@ class Header extends Component<IHeaderProps, IHeaderState> {
         super();
     }
 
-    componentDidMount = () => {
-        // window.addEventListener("keydown", this.handleKeyDown);
-        // window.addEventListener("keyup", this.handleKeyUp);
-    }
-
     render = (props: IHeaderProps, state: IHeaderState) => {
-        if (props.zLevel !== 0 && !state.zLevelChanged) {
+        if (props.cameraZ !== 0 && !state.zLevelChanged) {
             this.setState({
                 zLevelChanged: true,
             });
@@ -36,7 +30,7 @@ class Header extends Component<IHeaderProps, IHeaderState> {
             <div class="header_info">
                 {state.zLevelChanged ? (
                     <div class="zlevel">
-                        Z:{props.zLevel}
+                        Z:{props.cameraZ}
                     </div>
                 ) : null}
             </div>

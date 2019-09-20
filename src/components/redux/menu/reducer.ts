@@ -1,51 +1,24 @@
-import { ACTION_TYPE, BUILDINGS, MENU, MENU_ITEM, Point } from "../../constants/";
+import { AnyAction } from "redux";
+import { IMenuItem, MENU_ITEM } from "../../constants";
+import { ACTION_TYPE } from "../store";
 
 export interface IMenuState {
-    currentMenu: string;
+    currentSubmenu: IMenuItem["id"];
     currentMenuItem: MENU_ITEM;
 }
 
-const initialState = {
-    currentMenu: "top",
+const initialState: IMenuState = {
+    currentSubmenu: "top",
     currentMenuItem: null,
 };
 
-export default (state = initialState, action) => {
+export default (state = initialState, action: AnyAction) => {
     switch (action.type) {
-        case ACTION_TYPE.MENU_SUBMENU: {
-            return {
-                ...state,
-                currentMenu: action.val,
-                currentMenuItem: null,
-            };
+        case ACTION_TYPE.SET_MENU: {
+            state.currentMenuItem = action.currentMenuItem;
+            state.currentSubmenu = action.currentSubmenu;
+            break;
         }
-        case ACTION_TYPE.MENU_ITEM: {
-            if (action.val == null || action.val.length === 0) {
-                return {
-                    ...state,
-                    currentMenuItem: null,
-                };
-            }
-            if (action.val in MENU.SUBMENUS) {
-                return {
-                    ...state,
-                    currentMenu: action.val,
-                    currentMenuItem: null,
-                };
-            }
-            return {
-                ...state,
-                currentMenuItem: action.val,
-            };
-        }
-        case ACTION_TYPE.INSPECT_TILES: {
-            return {
-                ...state,
-                currentMenu: "top",
-                currentMenuItem: "inspect",
-            };
-        }
-        default:
-            return state;
     }
+    return state;
 };

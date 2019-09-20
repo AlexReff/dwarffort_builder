@@ -1,25 +1,25 @@
 // import * as _ from "lodash";
 import { default as OpenSimplexNoise } from "open-simplex-noise";
-import store, { getUpdatedStoreData, IFlatReduxState } from "../redux/store";
-import { default as Display } from "../rot/display";
+import { default as Display } from "../../../src/components/rot/display";
+import store, { getUpdatedStoreData, IFlatReduxState } from "../redux/store;
 
-import { BUILDINGS, DEFAULTS, DIRECTION, IGridRange, KEYS, MENU_ITEM, Point, TILE_H, TILE_MAP, TILE_W } from "../constants/";
-import { setBuildingListData } from "../redux/building/actions";
-import { IBuildingState } from "../redux/building/reducer";
-import { zLevelGoto } from "../redux/camera/actions";
-import { ICameraState } from "../redux/camera/reducer";
-import { moveCursor } from "../redux/cursor/actions";
-import { ICursorState } from "../redux/cursor/reducer";
-import { designatorEnd, designatorStart } from "../redux/designator/actions";
-import { IDesignatorState } from "../redux/designator/reducer";
-import { IHighlighterState } from "../redux/highlighter/reducer";
-import { inspectClear, inspectMoveSelectionRequestClear, inspectMoveSelectionRequestFinish, inspectTiles } from "../redux/inspect/actions";
-import { IInspectState } from "../redux/inspect/reducer";
-import { goPrevSubmenu, selectMenuItem } from "../redux/menu/actions";
-import { IMenuState } from "../redux/menu/reducer";
-import { Initialize } from "../redux/settings/actions";
-import { ISettingsState } from "../redux/settings/reducer";
-import rng from "../rot/rng";
+import { BUILDINGS, DEFAULTS, DIRECTION, IGridRange, KEYS, MENU_ITEM, Point, TILE_H, TILE_MAP, TILE_W } from "../../../src/components/constants";
+import rng from "../../../src/components/rot/rng";
+import { setBuildingListData } from "../redux/building/actions;
+import { IBuildingState } from "../redux/building/reducer;
+import { zLevelGoto } from "../redux/camera/actions;
+import { ICameraState } from "../redux/camera/reducer;
+import { moveCursor } from "../redux/cursor/actions;
+import { ICursorState } from "../redux/cursor/reducer;
+import { designatorEnd, designatorStart } from "../redux/designator/actions;
+import { IDesignatorState } from "../redux/designator/reducer;
+import { IHighlighterState } from "../redux/highlighter/reducer;
+import { inspectClear, inspectMoveSelectionRequestClear, inspectMoveSelectionRequestFinish, inspectTiles } from "../redux/inspect/actions;
+import { IInspectState } from "../redux/inspect/reducer;
+import { goPrevSubmenu, selectMenuItem } from "../redux/menu/actions;
+import { IMenuState } from "../redux/menu/reducer;
+import { Initialize } from "../redux/settings/actions;
+import { ISettingsState } from "../redux/settings/reducer;
 import { Tile, TILETYPE } from "./tile";
 
 class Game implements IFlatReduxState {
@@ -153,7 +153,7 @@ class Game implements IFlatReduxState {
             canvasElement: this.canvasRef,
             width: this.gridSize[0],
             height: this.gridSize[1],
-            layout: Display.TileGL.isSupported ? "tile-gl" : "tile",
+            layout: Display.TileGL.isSupported() ? "tile-gl" : "tile",
             tileWidth: TILE_W,
             tileHeight: TILE_H,
             tileSet: this.tileSheetImage,
@@ -184,9 +184,7 @@ class Game implements IFlatReduxState {
     //#region handlers
     handleAnimToggle = () => {
         this.animationToggle = !this.animationToggle;
-        if (this.display != null) {
-            this.render();
-        }
+        this.render();
     }
 
     inspectBuildings = (newTiles: string[]) => {
@@ -946,10 +944,6 @@ class Game implements IFlatReduxState {
 
         return true;
     }
-
-    removeBuilding = () => {
-        //
-    }
     //#endregion
 
     //#region render
@@ -982,6 +976,9 @@ class Game implements IFlatReduxState {
      * Render the entire grid
      */
     render = () => {
+        if (this.display == null) {
+            return;
+        }
         for (let x = this.camera[0]; x < this.camera[0] + this.gridSize[0]; x++) {
             for (let y = this.camera[1]; y < this.camera[1] + this.gridSize[1]; y++) {
                 this.renderPosition([x, y]);

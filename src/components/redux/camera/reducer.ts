@@ -1,74 +1,57 @@
-import { ACTION_TYPE, Point } from "../../constants/";
+import { IRenderTile } from "../../constants";
+import { ACTION_TYPE } from "../store";
+import DecoratorInstance from "./decorator";
 
 export interface ICameraState {
-    animationToggle: boolean;
-    zLevel: number;
-    camera: Point;
-    gridSize: Point;
-    mapSize: Point;
+    gridHeight: number;
+    gridWidth: number;
+    mapHeight: number;
+    mapWidth: number;
+    cameraX: number;
+    cameraY: number;
+    cameraZ: number;
+    decoratorTiles: IRenderTile[];
 }
 
 const initialState: ICameraState = {
-    animationToggle: false,
-    zLevel: 0,
-    camera: [0, 0] as Point,
-    gridSize: null as Point,
-    mapSize: null as Point,
+    gridHeight: 0,
+    gridWidth: 0,
+    mapHeight: 0,
+    mapWidth: 0,
+    cameraX: 0,
+    cameraY: 0,
+    cameraZ: 0,
+    decoratorTiles: [],
 };
 
-export default (state = initialState, action) => {
+export default (state: ICameraState = initialState, action) => {
     switch (action.type) {
         case ACTION_TYPE.INITIALIZE: {
-            return {
-                ...state,
-                gridSize: action.gridSize,
-                mapSize: action.mapSize,
-                camera: action.camera,
-            };
+            state.gridHeight = action.gridHeight;
+            state.gridWidth = action.gridWidth;
+            state.mapHeight = action.mapHeight;
+            state.mapWidth = action.mapWidth;
+            state.cameraX = action.cameraX;
+            state.cameraY = action.cameraY;
+            break;
         }
-        case ACTION_TYPE.ANIMATION_TOGGLE: {
-            return {
-                ...state,
-                animationToggle: !state.animationToggle,
-            };
+        case ACTION_TYPE.SET_MAP_SIZE: {
+            state.mapWidth = action.mapWidth;
+            state.mapHeight = action.mapHeight;
+            state.gridWidth = action.gridWidth;
+            state.gridHeight = action.gridHeight;
+            break;
         }
-        case ACTION_TYPE.ZLEVEL_INC: {
-            return {
-                ...state,
-                zLevel: state.zLevel + 1,
-            };
+        case ACTION_TYPE.SET_CAMERA_POS: {
+            state.cameraX = action.x;
+            state.cameraY = action.y;
+            break;
         }
-        case ACTION_TYPE.ZLEVEL_DEC: {
-            return {
-                ...state,
-                zLevel: state.zLevel - 1,
-            };
+        case ACTION_TYPE.SET_ZLEVEL: {
+            state.cameraZ = action.z;
+            break;
         }
-        case ACTION_TYPE.ZLEVEL_GOTO: {
-            return {
-                ...state,
-                zLevel: action.level,
-            };
-        }
-        case ACTION_TYPE.CAMERA_GOTO: {
-            return {
-                ...state,
-                camera: action.coord,
-            };
-        }
-        case ACTION_TYPE.CAMERA_GRID_SETSIZE: {
-            return {
-                ...state,
-                size: action.size,
-            };
-        }
-        case ACTION_TYPE.CAMERA_MAP_SETSIZE: {
-            return {
-                ...state,
-                size: action.size,
-            };
-        }
-        default:
-            return state;
     }
+    state.decoratorTiles = DecoratorInstance.getTiles(state);
+    return state;
 };

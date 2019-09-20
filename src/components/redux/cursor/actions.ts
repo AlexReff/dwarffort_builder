@@ -1,91 +1,158 @@
-import { ACTION_TYPE, Point } from "../../constants/";
-import { moveCamera } from "../camera/actions";
+import { DIRECTION } from "../../constants";
+import { setCameraPos } from "../camera/actions";
+import { ACTION_TYPE, FlatGetState, FlatReduxState } from "../store";
 
-export function hideCursor() {
+// export function hideCursor() {
+//     return {
+//         type: ACTION_TYPE.CURSOR_HIDE,
+//     };
+// }
+
+// export function showCursor() {
+//     return {
+//         type: ACTION_TYPE.CURSOR_SHOW,
+//     };
+// }
+
+/** DO NOT CALL DIRECTLY -- USE 'moveCursorToPos' INSTEAD */
+export function setCursorPos(cursorX: number, cursorY: number) {
     return {
-        type: ACTION_TYPE.CURSOR_HIDE,
+        type: ACTION_TYPE.SET_CURSOR_POS,
+        cursorX,
+        cursorY,
     };
 }
 
-export function showCursor() {
-    return {
-        type: ACTION_TYPE.CURSOR_SHOW,
-    };
-}
-
-export function moveCursorRaw(pos: Point) {
-    return {
-        type: ACTION_TYPE.CURSOR_MOVE,
-        pos,
-    };
-}
-
-export function moveCursor(pos: Point) {
+export function moveCursorDirection(dir: DIRECTION, shiftPressed: boolean = false) {
     return (dispatch, getState) => {
-        const { camera, cursor } = getState();
+        const state = FlatGetState({}, getState);
+        const distance = shiftPressed ? 10 : 1;
 
-        if (camera == null || cursor == null ||
-            pos[0] < 0 || pos[1] < 0 ||
-            pos[0] > camera.mapSize[0] ||
-            pos[1] > camera.mapSize[1]) {
+        switch (dir) {
+            case DIRECTION.N:
+                if (state.cursorY - state.cursorDiameter > 0) {
+                    state.cursorY = Math.max(state.cursorDiameter, state.cursorY - distance);
+                }
+                break;
+            case DIRECTION.NE:
+                if (state.cursorY - state.cursorDiameter > 0 ||
+                    state.cursorX + state.cursorDiameter < state.mapWidth - 1) {
+                    state.cursorX = Math.min(state.mapWidth - 1 - state.cursorDiameter, state.cursorX + distance);
+                    state.cursorY = Math.max(state.cursorDiameter, state.cursorY - distance);
+                }
+                break;
+            case DIRECTION.E:
+                if (state.cursorX + state.cursorDiameter < state.mapWidth - 1) {
+                    state.cursorX = Math.min(state.mapWidth - 1 - state.cursorDiameter + 0, state.cursorX + distance);
+                }
+                break;
+            case DIRECTION.SE:
+                if (state.cursorX + state.cursorDiameter < state.mapWidth - 1 ||
+                    state.cursorY + state.cursorDiameter < state.mapHeight - 1) {
+                    state.cursorX = Math.min(state.mapWidth - 1 - state.cursorDiameter, state.cursorX + distance);
+                    state.cursorY = Math.min(state.mapHeight - 1 - state.cursorDiameter, state.cursorY + distance);
+                }
+                break;
+            case DIRECTION.S:
+                if (state.cursorY + state.cursorDiameter < state.mapHeight - 1) {
+                    state.cursorY = Math.min(state.mapHeight - 1 - state.cursorDiameter, state.cursorY + distance);
+                }
+                break;
+            case DIRECTION.SW:
+                if (state.cursorX - state.cursorDiameter > 0 ||
+                    state.cursorY + state.cursorDiameter < state.mapHeight - 1) {
+                    state.cursorX = Math.max(state.cursorDiameter, state.cursorX - 1);
+                    state.cursorY = Math.min(state.mapHeight - 1 - state.cursorDiameter, state.cursorY + distance);
+                }
+                break;
+            case DIRECTION.W:
+                if (state.cursorX - state.cursorDiameter > 0) {
+                    state.cursorX = Math.max(state.cursorDiameter, state.cursorX - distance);
+                }
+                break;
+            case DIRECTION.NW:
+                if (state.cursorX - state.cursorDiameter > 0 ||
+                    state.cursorY - state.cursorDiameter > 0) {
+                    state.cursorX = Math.max(state.cursorDiameter, state.cursorX - distance);
+                    state.cursorY = Math.max(state.cursorDiameter, state.cursorY - distance);
+                }
+                break;
+            default:
+                return;
+        }
+
+        dispatch(moveCursorToPos(state.cursorX, state.cursorY));
+    };
+}
+
+export function moveCursorToPos(x: number, y: number) {
+    return (dispatch, getState) => {
+        const state = FlatGetState({}, getState);
+
+        if (x < 0 || y < 0 ||
+            x > state.mapWidth ||
+            y > state.mapHeight) {
             return;
         }
+
         //ensure camera is moved to include cursor
-        const newPos = camera.camera.slice() as Point;
-        if (pos[0] - cursor.cursorDiameter < camera.camera[0]) {
+        const newState = {
+            cameraX: state.cameraX,
+            cameraY: state.cameraY,
+        } as Partial<FlatReduxState>;
+        if (y - state.cursorDiameter < state.cameraY) {
             //MOVE NORTH
-            const dist = Math.ceil((camera.camera[0] - pos[0] + cursor.cursorDiameter) / 10) * 10;
-            const toMove = Math.max(0, camera.camera[0] - dist);
-            newPos[0] = toMove;
-        } else if (pos[0] + cursor.cursorDiameter >= camera.camera[0] + camera.gridSize[0]) {
+            const dist = Math.ceil((state.cameraY - y + state.cursorDiameter) / 10) * 10;
+            const toMove = Math.max(0, state.cameraY - dist);
+            newState.cameraY = toMove;
+        } else if (y + state.cursorDiameter >= state.cameraY + state.gridHeight) {
             //MOVE SOUTH
-            const dist = Math.ceil((pos[0] + cursor.cursorDiameter - camera.camera[0] - (camera.gridSize[0] - 1)) / 10) * 10;
-            const toMove = Math.min(camera.mapSize[0] - camera.gridSize[0], camera.camera[0] + dist);
-            newPos[0] = toMove;
+            const dist = Math.ceil((y + state.cursorDiameter - state.cameraY - (state.gridHeight - 1)) / 10) * 10;
+            const toMove = Math.min(state.mapHeight - state.gridHeight, state.cameraY + dist);
+            newState.cameraY = toMove;
         }
-
-        if (pos[1] - cursor.cursorDiameter < camera.camera[1]) {
+        if (x - state.cursorDiameter < state.cameraX) {
             //MOVE WEST
-            const dist = Math.ceil((camera.camera[1] - pos[1] + cursor.cursorDiameter) / 10) * 10;
-            const toMove = Math.max(0, camera.camera[1] - dist);
-            newPos[1] = toMove;
-        } else if (pos[1] + cursor.cursorDiameter >= camera.camera[1] + camera.gridSize[1]) {
+            const dist = Math.ceil((state.cameraX - x + state.cursorDiameter) / 10) * 10;
+            const toMove = Math.max(0, state.cameraX - dist);
+            newState.cameraX = toMove;
+        } else if (x + state.cursorDiameter >= state.cameraX + state.gridWidth) {
             //MOVE EAST
-            const dist = Math.ceil((pos[1] + cursor.cursorDiameter - camera.camera[1] - (camera.gridSize[1] - 1)) / 10) * 10;
-            const toMove = Math.min(camera.mapSize[1] - camera.gridSize[1], camera.camera[1] + dist);
-            newPos[1] = toMove;
+            const dist = Math.ceil((x + state.cursorDiameter - state.cameraX - (state.gridWidth - 1)) / 10) * 10;
+            const toMove = Math.min(state.mapWidth - state.gridWidth, state.cameraX + dist);
+            newState.cameraX = toMove;
         }
 
-        if (camera.camera[0] !== newPos[0] || camera.camera[1] !== newPos[1]) {
-            dispatch(moveCamera(newPos));
+        if (state.cameraX !== newState.cameraX || state.cameraY !== newState.cameraY) {
+            dispatch(setCameraPos(newState.cameraX, newState.cameraY));
         }
 
-        dispatch(moveCursorRaw(pos));
+        dispatch(setCursorPos(x, y));
     };
 }
 
-export function setCursorDiameter(diam: number) {
-    return {
-        type: ACTION_TYPE.CURSOR_SETDIAMETER,
-        cursorDiameter: diam,
-    };
-}
+// export function setCursorDiameter(diam: number) {
+//     return {
+//         type: ACTION_TYPE.CURSOR_SETDIAMETER,
+//         cursorDiameter: diam,
+//     };
+// }
 
-export function setCursorCharacter(char: string) {
-    return {
-        type: ACTION_TYPE.CURSOR_SETCHAR,
-        char,
-    };
-}
+// export function setCursorCharacter(char: string) {
+//     return {
+//         type: ACTION_TYPE.CURSOR_SETCHAR,
+//         char,
+//     };
+// }
 
-export function setCursorBuilding(building: boolean) {
-    if (building) {
-        return {
-            type: ACTION_TYPE.CURSOR_BUILDING_START,
-        };
-    } else {
-        return {
-            type: ACTION_TYPE.CURSOR_BUILDING_END,
-        };
-    }
-}
+// export function setCursorBuilding(building: boolean) {
+//     if (building) {
+//         return {
+//             type: ACTION_TYPE.CURSOR_BUILDING_START,
+//         };
+//     } else {
+//         return {
+//             type: ACTION_TYPE.CURSOR_BUILDING_END,
+//         };
+//     }
+// }

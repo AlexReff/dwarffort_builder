@@ -20,7 +20,6 @@ export {
 } from "./_constants";
 
 export {
-    ACTION_TYPE,
     CURSOR_BEHAVIOR,
     DIRECTION,
     KEYS,
@@ -30,7 +29,9 @@ export {
 
 export {
     IBuildingTileData,
+    IBuildingData,
     IFlatMenuItem,
     IGridRange,
     IMenuItem,
+    IRenderTile,
 } from "./_interfaces";

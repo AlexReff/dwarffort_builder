@@ -8,8 +8,8 @@ import { BUILDINGS,
     Point,
     TILETYPE,
     WALL_TILES,
-} from "../constants/";
-import RNG from "./../rot/rng";
+} from "../../../src/components/constants";
+import RNG from "../../../src/components/rot/rng";
 
 class Tile {
     static Floor = new Tile(TILETYPE.Floor);
@@ -276,4 +276,4 @@ class Tile {
     }
 }
 
-export { Tile, TILETYPE };
+export { Tile };

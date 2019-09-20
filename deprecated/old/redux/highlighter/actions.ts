@@ -1,4 +1,5 @@
-import { ACTION_TYPE, Point } from "../../constants/";
+import { Point } from "../../../components/constantsnts/constants";
+import { ACTION_TYPE } from "../store";
 
 export function startHighlight() {
     return {

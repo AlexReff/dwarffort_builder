@@ -1,119 +1,91 @@
-import { applyMiddleware, combineReducers, createStore } from "redux";
+import { produce as createNextState } from "immer";
+import { Action, AnyAction, applyMiddleware, createStore, Reducer, ReducersMapObject } from "redux";
 import thunk, { ThunkMiddleware } from "redux-thunk";
-import { setBuildingListData } from "./building/actions";
-import building, { IBuildingState } from "./building/reducer";
-import { moveCamera, setGridSize, setMapSize, toggleAnimation, zLevelDown, zLevelGoto, zLevelUp } from "./camera/actions";
-import camera, { ICameraState } from "./camera/reducer";
-import { hideCursor, moveCursorRaw, setCursorBuilding, setCursorCharacter, setCursorDiameter, showCursor } from "./cursor/actions";
-import cursor, { ICursorState } from "./cursor/reducer";
-import { designatorEnd, designatorStart } from "./designator/actions";
-import designator, { IDesignatorState } from "./designator/reducer";
-import { endHighlight, setHighlightPos, startHighlight } from "./highlighter/actions";
-import highlighter, { IHighlighterState } from "./highlighter/reducer";
-import { inspectClear, inspectMoveSelectionRequest, inspectRequestAtMapCoord, inspectRequestAtPos, inspectRequestRange, inspectTiles, inspectMoveSelectionRequestClear } from "./inspect/actions";
-import inspect, { IInspectState } from "./inspect/reducer";
-import { selectMenu, selectMenuItem } from "./menu/actions";
-import menu, { IMenuState } from "./menu/reducer";
+import building from "./building/reducer";
+import { setCameraPos, setCameraZ, setMapSize } from "./camera/actions";
+import camera from "./camera/reducer";
+import { setCursorPos } from "./cursor/actions";
+import cursor from "./cursor/reducer";
+import { setMenus } from "./menu/actions";
+import menu from "./menu/reducer";
 import { Initialize, setStrictMode } from "./settings/actions";
-import settings, { ISettingsState } from "./settings/reducer";
+import settings from "./settings/reducer";
 
 export const ALL_REDUCERS = {
     building,
     camera,
     cursor,
-    designator,
-    highlighter,
-    inspect,
     menu,
     settings,
 };
 
-type NON_THUNK_ACTIONS =
-    ReturnType<typeof hideCursor> |
-    ReturnType<typeof showCursor> |
-    ReturnType<typeof moveCursorRaw> |
-    ReturnType<typeof setCursorDiameter> |
-    ReturnType<typeof setCursorCharacter> |
-    ReturnType<typeof setCursorBuilding> |
-    ReturnType<typeof zLevelUp> |
-    ReturnType<typeof zLevelDown> |
-    ReturnType<typeof zLevelGoto> |
-    ReturnType<typeof toggleAnimation> |
-    ReturnType<typeof moveCamera> |
-    ReturnType<typeof setGridSize> |
-    ReturnType<typeof setMapSize> |
-    ReturnType<typeof designatorStart> |
-    ReturnType<typeof designatorEnd> |
-    ReturnType<typeof startHighlight> |
-    ReturnType<typeof setHighlightPos> |
-    ReturnType<typeof endHighlight> |
-    ReturnType<typeof selectMenu> |
-    ReturnType<typeof selectMenuItem> |
-    ReturnType<typeof setStrictMode> |
-    ReturnType<typeof inspectClear> |
-    ReturnType<typeof inspectRequestAtPos> |
-    ReturnType<typeof inspectRequestAtMapCoord> |
-    ReturnType<typeof inspectTiles> |
-    ReturnType<typeof inspectRequestRange> |
-    ReturnType<typeof inspectMoveSelectionRequest> |
-    ReturnType<typeof inspectMoveSelectionRequestClear> |
-    ReturnType<typeof setBuildingListData> |
-    ReturnType<typeof Initialize>;
+export const enum ACTION_TYPE {
+    INITIALIZE,
+    SET_MENU,
+    SELECT_PREV_MENU,
+    SET_STRICT_MODE,
+    SET_CAMERA_POS,
+    SET_CURSOR_POS,
+    SET_MAP_SIZE,
+    SET_ZLEVEL,
+}
 
-const COMBINED_REDUCERS = combineReducers(ALL_REDUCERS);
+function combineReducersImmer<S, A extends Action = AnyAction>(produce, reducers: ReducersMapObject<S, A> = {} as ReducersMapObject): Reducer<S, A> {
+    const keys = Object.keys(reducers);
+    const initialState = keys.reduce((a, k) => {
+        a[k] = reducers[k](undefined, {});
+        return a;
+    }, {});
+
+    return produce((draft, action) => {
+        for (const key of keys) {
+            draft[key] = reducers[key](draft[key], action);
+        }
+        return draft;
+    }, initialState);
+}
+
+const COMBINED_REDUCERS = combineReducersImmer(createNextState, ALL_REDUCERS);
 
 export type ReduxState = ReturnType<typeof COMBINED_REDUCERS>;
 
-export type IFlatReduxState =
-    IBuildingState &
-    ICameraState &
-    ICursorState &
-    IDesignatorState &
-    IHighlighterState &
-    IInspectState &
-    IMenuState &
-    ISettingsState;
+type CombinedParamTypes<T extends {
+    [key: string]: (state: any, action: any) => any;
+}> = T extends {
+    [key: string]: (state: infer R, action: any) => any;
+} ? R : never;
 
-export default createStore(COMBINED_REDUCERS, applyMiddleware(thunk as ThunkMiddleware<ReduxState, NON_THUNK_ACTIONS>));
+type CombinedReturnTypes<T extends {
+    [key: string]: (...args: any) => any;
+}> = T extends {
+    [key: string]: (...args) => infer R;
+} ? R : never;
 
-/** Updates redux variables & returns an object containing previous values of updated fields */
-export const getUpdatedStoreData = (_this: Partial<IFlatReduxState>, store: any): Partial<IFlatReduxState> => {
-    const newState: ReduxState = store.getState();
-    const updated = {};
-    for (const cat in newState) {
-        if (newState.hasOwnProperty(cat)) {
-            for (const prop in newState[cat]) {
-                if (newState[cat].hasOwnProperty(prop) && _this.hasOwnProperty(prop)) {
-                    if (newState[cat][prop] != null) {
-                        if (newState[cat][prop] instanceof Array) {
-                            if (_this[prop] == null ||
-                                !(_this[prop] instanceof Array) ||
-                                _this[prop].length !== newState[cat][prop].length) {
-                                updated[prop] = _this[prop];
-                            } else {
-                                for (let i = 0; i < newState[cat][prop].length; i++) {
-                                    if (_this[prop][i] != newState[cat][prop][i]) {
-                                        updated[prop] = _this[prop].slice();
-                                        break;
-                                    }
-                                }
-                            }
-                            _this[prop] = newState[cat][prop].slice();
-                        } else {
-                            if (_this[prop] != newState[cat][prop]) {
-                                updated[prop] = _this[prop];
-                            }
-                            _this[prop] = newState[cat][prop];
-                        }
-                    } else {
-                        if (_this[prop] !== null) {
-                            updated[prop] = _this[prop];
-                            _this[prop] = null;
-                        }
-                    }
-                }
-            }
+export type FlatReduxState = CombinedParamTypes<typeof ALL_REDUCERS>;
+
+type NON_THUNK_ACTIONS =
+    ReturnType<typeof Initialize> |
+    ReturnType<typeof setStrictMode> |
+    ReturnType<typeof setMenus> |
+    ReturnType<typeof setCursorPos> |
+    ReturnType<typeof setMapSize> |
+    ReturnType<typeof setCameraPos> |
+    ReturnType<typeof setCameraZ>;
+
+const store = createStore(COMBINED_REDUCERS, applyMiddleware(thunk as ThunkMiddleware<ReduxState, NON_THUNK_ACTIONS>));
+
+export function GetFlattenedState(_this: FlatReduxState, _store: typeof store) {
+    return FlatGetState(_this, _store.getState);
+}
+
+export function FlatGetState(_this: Partial<FlatReduxState>, getState: typeof store.getState): FlatReduxState {
+    const newState = getState();
+    for (const reducer of Object.keys(newState)) {
+        for (const prop of Object.keys(newState[reducer])) {
+            _this[prop] = newState[reducer][prop];
         }
     }
-    return updated;
-};
+    return _this as FlatReduxState;
+}
+
+export default store;

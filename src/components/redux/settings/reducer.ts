@@ -1,30 +1,24 @@
-import { ACTION_TYPE, CURSOR_BEHAVIOR, DEFAULTS, Point } from "../../constants/";
+import { AnyAction } from "redux";
+import { DEFAULTS } from "../../constants";
+import { ACTION_TYPE } from "../store";
 
 export interface ISettingsState {
+    // canvasRef: HTMLCanvasElement;
+    debugMode: boolean;
     strictMode: boolean;
-    cursorMode: CURSOR_BEHAVIOR;
 }
 
 const initialState: ISettingsState = {
+    // canvasRef: null,
+    debugMode: false,
     strictMode: DEFAULTS.STRICT_MODE,
-    cursorMode: DEFAULTS.CURSOR.MODE,
 };
 
-export default (state = initialState, action) => {
+export default (state = initialState, action: AnyAction) => {
     switch (action.type) {
-        case ACTION_TYPE.STRICT_ENABLED: {
-            return {
-                ...state,
-                strictMode: true,
-            };
-        }
-        case ACTION_TYPE.STRICT_DISABLED: {
-            return {
-                ...state,
-                strictMode: false,
-            };
-        }
-        default:
-            return state;
+        case ACTION_TYPE.INITIALIZE:
+            //
+            break;
     }
+    return state;
 };
