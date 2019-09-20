@@ -80,6 +80,8 @@ export class Game extends GameComponent {
         const maxY = startY + this.gridHeight;
 
         const renderedPositions = {};
+        //TODO: Update this to use 'getTiles(state)' helper functions
+        //      instead of keeping tile arrays in redux state (unnecessary)
         for (const list of this.renderProps) {
             if (!(list in this)) {
                 continue;

@@ -1,6 +1,7 @@
-import { DIRECTION } from "../../constants";
+import { DEFAULTS, DIRECTION, IRenderTile } from "../../constants";
 import { setCameraPos } from "../camera/actions";
 import { ACTION_TYPE, FlatGetState, FlatReduxState } from "../store";
+import { getCursorTiles } from "./cursor";
 
 // export function hideCursor() {
 //     return {
@@ -20,6 +21,13 @@ export function setCursorPos(cursorX: number, cursorY: number) {
         type: ACTION_TYPE.SET_CURSOR_POS,
         cursorX,
         cursorY,
+    };
+}
+
+export function setCursorTiles(tiles: IRenderTile[]) {
+    return {
+        type: ACTION_TYPE.SET_CURSOR_TILES,
+        tiles,
     };
 }
 
@@ -85,6 +93,14 @@ export function moveCursorDirection(dir: DIRECTION, shiftPressed: boolean = fals
     };
 }
 
+export function moveCursorToGridPos(x: number, y: number) {
+    return (dispatch, getState) => {
+        const state = FlatGetState({}, getState);
+        // dispatch(setCursorTiles(tiles));
+        dispatch(moveCursorToPos(x + state.cameraX, y + state.cameraY));
+    };
+}
+
 export function moveCursorToPos(x: number, y: number) {
     return (dispatch, getState) => {
         const state = FlatGetState({}, getState);
@@ -97,9 +113,10 @@ export function moveCursorToPos(x: number, y: number) {
 
         //ensure camera is moved to include cursor
         const newState = {
-            cameraX: state.cameraX,
-            cameraY: state.cameraY,
-        } as Partial<FlatReduxState>;
+            ...state,
+            cursorX: x,
+            cursorY: y,
+        } as FlatReduxState;
         if (y - state.cursorDiameter < state.cameraY) {
             //MOVE NORTH
             const dist = Math.ceil((state.cameraY - y + state.cursorDiameter) / 10) * 10;
@@ -127,7 +144,9 @@ export function moveCursorToPos(x: number, y: number) {
             dispatch(setCameraPos(newState.cameraX, newState.cameraY));
         }
 
+        const tiles = getCursorTiles(newState);
         dispatch(setCursorPos(x, y));
+        dispatch(setCursorTiles(tiles));
     };
 }
 

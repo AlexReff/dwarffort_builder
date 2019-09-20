@@ -34,7 +34,7 @@ export default class TileGL extends Backend {
     }
 
     schedule(cb: () => void) { requestAnimationFrame(cb); }
-    getContainer() { return this._gl.canvas; }
+    getContainer() { return this._gl.canvas as HTMLCanvasElement; }
 
     setOptions(opts: IDisplayOptions) {
         super.setOptions(opts);
@@ -152,7 +152,7 @@ export default class TileGL extends Backend {
     }
 
     eventToPosition(x: number, y: number): [number, number] {
-        const canvas = this._gl.canvas;
+        const canvas = this._gl.canvas as HTMLCanvasElement;
         const rect = canvas.getBoundingClientRect();
         x -= rect.left;
         y -= rect.top;

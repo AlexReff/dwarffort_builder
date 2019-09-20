@@ -5,20 +5,18 @@ import { IMenuState } from "./reducer";
 export function selectMenu(val: IMenuState["currentSubmenu"]) {
     return (dispatch, getState) => {
         const state = FlatGetState({}, getState);
-        let currentMenuItem = state.currentMenuItem;
-        let currentSubmenu = state.currentSubmenu;
         if (val == null) { //deselect highlighted menu item
-            currentMenuItem = null;
+            state.currentMenuItem = null;
         } else if (val === "top") { //go to top menu
-            currentSubmenu = "top";
-            currentMenuItem = null;
+            state.currentSubmenu = "top";
+            state.currentMenuItem = null;
         } else if (val in MENU.SUBMENUS) { //change submenu
-            currentSubmenu = val;
-            currentMenuItem = null;
+            state.currentSubmenu = val;
+            state.currentMenuItem = null;
         } else { //highlight menu item
-            currentMenuItem = val;
+            state.currentMenuItem = val;
         }
-        dispatch(setMenus(currentSubmenu, currentMenuItem));
+        dispatch(setMenus(state.currentSubmenu, state.currentMenuItem));
     };
 }
 

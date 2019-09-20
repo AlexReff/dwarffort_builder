@@ -4,11 +4,11 @@ import thunk, { ThunkMiddleware } from "redux-thunk";
 import building from "./building/reducer";
 import { setCameraPos, setCameraZ, setMapSize } from "./camera/actions";
 import camera from "./camera/reducer";
-import { setCursorPos } from "./cursor/actions";
+import { setCursorPos, setCursorTiles } from "./cursor/actions";
 import cursor from "./cursor/reducer";
 import { setMenus } from "./menu/actions";
 import menu from "./menu/reducer";
-import { Initialize, setStrictMode } from "./settings/actions";
+import { _initialize, setStrictMode } from "./settings/actions";
 import settings from "./settings/reducer";
 
 export const ALL_REDUCERS = {
@@ -28,6 +28,8 @@ export const enum ACTION_TYPE {
     SET_CURSOR_POS,
     SET_MAP_SIZE,
     SET_ZLEVEL,
+    DESIGNATE_START,
+    SET_CURSOR_TILES,
 }
 
 function combineReducersImmer<S, A extends Action = AnyAction>(produce, reducers: ReducersMapObject<S, A> = {} as ReducersMapObject): Reducer<S, A> {
@@ -64,10 +66,11 @@ type CombinedReturnTypes<T extends {
 export type FlatReduxState = CombinedParamTypes<typeof ALL_REDUCERS>;
 
 type NON_THUNK_ACTIONS =
-    ReturnType<typeof Initialize> |
+    ReturnType<typeof _initialize> |
     ReturnType<typeof setStrictMode> |
     ReturnType<typeof setMenus> |
     ReturnType<typeof setCursorPos> |
+    ReturnType<typeof setCursorTiles> |
     ReturnType<typeof setMapSize> |
     ReturnType<typeof setCameraPos> |
     ReturnType<typeof setCameraZ>;

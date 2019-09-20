@@ -1,19 +1,29 @@
 import { DEFAULTS, TILE_H, TILE_W } from "../../constants";
-import { ACTION_TYPE } from "../store";
+import { getCursorTiles } from "../cursor/cursor";
+import { ACTION_TYPE, FlatGetState } from "../store";
 
 export function Initialize(container: any) {
-    const gridWidth = Math.floor(container.offsetWidth / TILE_W);
-    const gridHeight = Math.floor(container.offsetHeight / TILE_H);
+    return (dispatch, getState) => {
+        const state = FlatGetState({}, getState);
 
-    const mapWidth = Math.max(DEFAULTS.MAP_MIN_W, gridWidth);
-    const mapHeight = Math.max(DEFAULTS.MAP_MIN_H, gridHeight);
+        state.gridWidth = Math.floor(container.offsetWidth / TILE_W);
+        state.gridHeight = Math.floor(container.offsetHeight / TILE_H);
 
-    const cameraX = Math.floor((mapWidth - gridWidth) / 2);
-    const cameraY = Math.floor((mapHeight - gridHeight) / 2);
+        state.mapWidth = Math.max(DEFAULTS.MAP_MIN_W, state.gridWidth);
+        state.mapHeight = Math.max(DEFAULTS.MAP_MIN_H, state.gridHeight);
 
-    const cursorX = Math.floor(mapWidth / 2.0);
-    const cursorY = Math.floor(mapHeight / 2.0);
+        state.cameraX = Math.floor((state.mapWidth - state.gridWidth) / 2);
+        state.cameraY = Math.floor((state.mapHeight - state.gridHeight) / 2);
 
+        state.cursorX = Math.floor(state.mapWidth / 2.0);
+        state.cursorY = Math.floor(state.mapHeight / 2.0);
+
+        state.cursorTiles = getCursorTiles(state);
+        dispatch(_initialize(state.gridWidth, state.gridHeight, state.mapWidth, state.mapHeight, state.cameraX, state.cameraY, state.cursorX, state.cursorY, state.cursorTiles));
+    };
+}
+
+export function _initialize(gridWidth, gridHeight, mapWidth, mapHeight, cameraX, cameraY, cursorX, cursorY, cursorTiles) {
     return {
         type: ACTION_TYPE.INITIALIZE,
         gridWidth,
@@ -24,6 +34,7 @@ export function Initialize(container: any) {
         cameraY,
         cursorX,
         cursorY,
+        cursorTiles,
     };
 }
 

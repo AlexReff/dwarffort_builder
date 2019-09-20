@@ -5,11 +5,13 @@ import { ACTION_TYPE } from "../store";
 export interface IMenuState {
     currentSubmenu: IMenuItem["id"];
     currentMenuItem: MENU_ITEM;
+    isInspecting: boolean;
 }
 
 const initialState: IMenuState = {
     currentSubmenu: "top",
     currentMenuItem: null,
+    isInspecting: false,
 };
 
 export default (state = initialState, action: AnyAction) => {

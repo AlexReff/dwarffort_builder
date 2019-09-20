@@ -9,6 +9,7 @@ export class ReduxVariables implements FlatReduxState {
     buildingTiles: IBuildingState["buildingTiles"];
     currentSubmenu: IMenuState["currentSubmenu"];
     currentMenuItem: IMenuState["currentMenuItem"];
+    isInspecting: IMenuState["isInspecting"];
     strictMode: ISettingsState["strictMode"];
     // cursorVisible: ICursorState["cursorVisible"];
     cursorBuilding: ICursorState["cursorBuilding"];

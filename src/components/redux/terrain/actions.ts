@@ -1,7 +1,12 @@
+import { ACTION_TYPE, FlatGetState } from "../store";
 
-// export function moveCursorRaw(pos: Point) {
-//     return {
-//         type: ACTION_TYPE.CURSOR_MOVE,
-//         pos,
-//     };
-// }
+export function startDesignating(x: number, y: number) {
+    return (dispatch, getState) => {
+        const state = FlatGetState({}, getState);
+        return {
+            type: ACTION_TYPE.DESIGNATE_START,
+            x,
+            y,
+        };
+    };
+}

@@ -21,20 +21,12 @@ const initialState: ICursorState = {
     // cursorRadius: 0,
 };
 
-const getCursorTiles = (state: ICursorState): IRenderTile[] => {
-    return [{
-        x: state.cursorX,
-        y: state.cursorY,
-        char: DEFAULTS.CURSOR.CHAR,
-        color: DEFAULTS.COLORS.CURSOR_DEFAULT,
-    }];
-};
-
 export default (state = initialState, action) => {
     switch (action.type) {
         case ACTION_TYPE.INITIALIZE: {
             state.cursorX = action.cursorX;
             state.cursorY = action.cursorY;
+            state.cursorTiles = action.cursorTiles;
             break;
         }
         case ACTION_TYPE.SET_CURSOR_POS: {
@@ -45,12 +37,16 @@ export default (state = initialState, action) => {
         case ACTION_TYPE.SET_MENU: {
             if (action.currentMenuItem in BUILDINGS.KEYS) {
                 state.cursorBuilding = true;
+                //need to also update cursorTiles, cursorDiameter
             } else {
                 state.cursorBuilding = false;
             }
             break;
         }
+        case ACTION_TYPE.SET_CURSOR_TILES: {
+            state.cursorTiles = action.tiles;
+            break;
+        }
     }
-    state.cursorTiles = getCursorTiles(state);
     return state;
 };
