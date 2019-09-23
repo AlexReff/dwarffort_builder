@@ -1,0 +1,156 @@
+import produce from "immer";
+import { FLOOR_TILES, MENU_ITEM, TILETYPE, WALL_TILES } from "../../constants";
+import rng from "../../rot/rng";
+import { getMapCoord } from "../../util";
+import { ACTION_TYPE, FlatGetState, FlatReduxState } from "../store";
+import { IDiggerState } from "./reducer";
+
+//#region REDUX ACTIONS
+
+export function setDesignateStart(x: number, y: number, z: number) {
+    return {
+        type: ACTION_TYPE.DESIGNATE_START,
+        x,
+        y,
+        z,
+    };
+}
+
+export function setDigData(tiles: IDiggerState["terrainTiles"]) {
+    return {
+        type: ACTION_TYPE.DESIGNATE_SET_TILES,
+        tiles,
+    };
+}
+
+//#endregion
+//#region THUNK ACTIONS
+
+export function submitDesignating() {
+    return (dispatch, getState) => {
+        const state = FlatGetState({}, getState);
+        const tiles = produce(state.terrainTiles, (draft) => {
+            let startZ = state.cameraZ;
+            let endZ = state.cameraZ;
+            if (state.cameraZ !== state.designateStartZ) {
+                //range of z levels
+                startZ = Math.min(+state.cameraZ, +state.designateStartZ);
+                endZ = Math.max(+state.cameraZ, +state.designateStartZ);
+            }
+            const startX = Math.min(state.designateStartX, state.cursorX);
+            const endX = Math.max(state.designateStartX, state.cursorX);
+            const startY = Math.min(state.designateStartY, state.cursorY);
+            const endY = Math.max(state.designateStartY, state.cursorY);
+            for (let z = startZ; z <= endZ; z++) {
+                if (!(z in draft)) {
+                    draft[z] = {};
+                }
+                for (let y = startY; y <= endY; y++) {
+                    for (let x = startX; x <= endX; x++) {
+                        const key = `${x}:${y}`;
+                        switch (state.currentMenuItem) {
+                            case MENU_ITEM.remove:
+                                if (key in draft[z]) {
+                                    delete draft[z][key];
+                                }
+                                break;
+                            case MENU_ITEM.wall:
+                                //check neighbors to determine tile char
+                                //const flags = getNeighborFlags(draft, state, x, y, z);
+                                draft[z][key] = {
+                                    posX: x,
+                                    posY: y,
+                                    posZ: z,
+                                    type: TILETYPE.Wall,
+                                    //characterVariant: flags,
+                                };
+                                break;
+                            case MENU_ITEM.mine:
+                                draft[z][key] = {
+                                    posX: x,
+                                    posY: y,
+                                    posZ: z,
+                                    type: TILETYPE.Floor,
+                                    characterVariant: rng.getUniformInt(0, FLOOR_TILES.length - 1).toString(),
+                                };
+                                break;
+                        }
+                    }
+                }
+                for (let y = 0; y < state.mapHeight; y++) {
+                    for (let x = 0; x < state.mapWidth; x++) {
+                        const key = `${x}:${y}`;
+                        if (key in draft[z]) {
+                            if (draft[z][key].type === TILETYPE.Wall) {
+                                draft[z][key].characterVariant = getNeighborFlags(draft, state, x, y, z);
+                            }
+                        }
+                    }
+                }
+            }
+        });
+        dispatch(setDigData(tiles));
+    };
+}
+
+export function startDesignatingGrid(gridX: number, gridY: number) {
+    return (dispatch, getState) => {
+        const state = FlatGetState({}, getState);
+        const [x, y] = getMapCoord(gridX, gridY, state);
+        dispatch(setDesignateStart(x, y, state.cameraZ));
+    };
+}
+
+//#endregion
+
+//#region Helper functions
+
+function getNeighborFlags(tiles: IDiggerState["terrainTiles"], state: FlatReduxState, x: number, y: number, z: number) {
+    let flags = 0;
+    if (y > 0) {
+        const nKey = `${x}:${y - 1}`;
+        if (nKey in tiles[z]) {
+            if (tiles[z][nKey].type === TILETYPE.Wall) {
+                flags += 1;
+            }
+        }
+    }
+    if (x < state.mapWidth - 1) {
+        const eKey = `${x + 1}:${y}`;
+        if (eKey in tiles[z]) {
+            if (tiles[z][eKey].type === TILETYPE.Wall) {
+                flags += 2;
+            }
+        }
+    }
+    if (y < state.mapHeight - 1) {
+        const sKey = `${x}:${y + 1}`;
+        if (sKey in tiles[z]) {
+            if (tiles[z][sKey].type === TILETYPE.Wall) {
+                flags += 4;
+            }
+        }
+    }
+    if (x > 0) {
+        const wKey = `${x - 1}:${y}`;
+        if (wKey in tiles[z]) {
+            if (tiles[z][wKey].type === TILETYPE.Wall) {
+                flags += 8;
+            }
+        }
+    }
+    let result = flags.toString();
+    if (WALL_TILES[flags].length > 1) {
+        const rnd = rng.getUniformInt(0, WALL_TILES[flags].length - 1);
+        result += String.fromCharCode(rnd + 97);
+    }
+    //     // for (let i = 0; i < WALL_TILES[flags].length; i++) {
+    //     //     val[`w${flags + String.fromCharCode(i + 97)}`] = WALL_TILES[flags][i];
+    //     // }
+    // } else {
+    //     val[`w${key}`] = WALL_TILES[key][0];
+    // }
+    return result;
+}
+
+//#endregion

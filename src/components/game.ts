@@ -1,7 +1,15 @@
 import { TILE_H, TILE_MAP, TILE_W } from "./constants";
+import { ITileCollection } from "./constants/_interfaces";
 import { GameInput } from "./input";
 import { GameComponent } from "./redux/FlatReduxState";
+import { toggleAnimation } from "./redux/settings/actions";
+import store from "./redux/store";
 import Display from "./rot/display";
+import { ITileGeneratorComponent } from "./tiles/_base";
+import { Builder } from "./tiles/builder";
+import { Cursor } from "./tiles/cursor";
+import Decorator from "./tiles/decorator";
+import { Digger } from "./tiles/digger";
 import { renderTile } from "./util";
 
 export class Game extends GameComponent {
@@ -9,23 +17,34 @@ export class Game extends GameComponent {
     displayContainer: HTMLElement;
     canvasRef: HTMLCanvasElement;
     tilesheet: HTMLImageElement;
+    animationTimer: any;
+
     inputManager: GameInput;
+    cursor: Cursor;
+    decorator: Decorator;
+    digger: Digger;
+    builder: Builder;
     /** List of tile fields to render, in order */
-    renderProps: string[];
+    renderObjs: ITileGeneratorComponent[];
 
     constructor(canvas: HTMLCanvasElement, tilesheet: HTMLImageElement) {
         super();
-        // this.RenderTiles = [];
         this.canvasRef = canvas;
         this.tilesheet = tilesheet;
 
         this.inputManager = new GameInput();
+        this.cursor = new Cursor();
+        this.decorator = new Decorator();
+        this.digger = new Digger();
+        this.builder = new Builder();
 
-        this.renderProps = [
-            "cursorTiles",
-            "buildingTiles",
-            "digTiles",
-            "decoratorTiles",
+        this.animationTimer = setInterval(this.handleAnimationTick, 333);
+
+        this.renderObjs = [
+            this.cursor,    //cursor
+            this.builder,   //buildings
+            this.digger,    //walls/floors
+            this.decorator, //empty tiles
         ];
 
         this.init();
@@ -80,13 +99,8 @@ export class Game extends GameComponent {
         const maxY = startY + this.gridHeight;
 
         const renderedPositions = {};
-        //TODO: Update this to use 'getTiles(state)' helper functions
-        //      instead of keeping tile arrays in redux state (unnecessary)
-        for (const list of this.renderProps) {
-            if (!(list in this)) {
-                continue;
-            }
-            const tiles = this[list];
+        for (const cmpnt of this.renderObjs) {
+            const tiles = cmpnt.getTiles(this);
             for (const tile of tiles) {
                 const key = `${tile.x}:${tile.y}`;
                 if (key in renderedPositions) {
@@ -94,10 +108,14 @@ export class Game extends GameComponent {
                 }
                 if (tile.x >= startX && tile.x < maxX &&
                     tile.y >= startY && tile.y < maxY) {
-                    renderTile(this.rotDisplay, tile);
+                    renderTile(this.rotDisplay, tile, this);
                     renderedPositions[key] = "";
                 }
             }
         }
+    }
+
+    handleAnimationTick = () => {
+        store.dispatch(toggleAnimation());
     }
 }

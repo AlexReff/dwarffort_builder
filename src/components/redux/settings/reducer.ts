@@ -3,22 +3,23 @@ import { DEFAULTS } from "../../constants";
 import { ACTION_TYPE } from "../store";
 
 export interface ISettingsState {
-    // canvasRef: HTMLCanvasElement;
+    animationFlag: boolean;
     debugMode: boolean;
-    strictMode: boolean;
+    // strictMode: boolean;
 }
 
 const initialState: ISettingsState = {
-    // canvasRef: null,
+    animationFlag: false,
     debugMode: false,
-    strictMode: DEFAULTS.STRICT_MODE,
+    // strictMode: DEFAULTS.STRICT_MODE,
 };
 
 export default (state = initialState, action: AnyAction) => {
     switch (action.type) {
-        case ACTION_TYPE.INITIALIZE:
-            //
+        case ACTION_TYPE.ANIMATION_TOGGLE: {
+            state.animationFlag = !state.animationFlag;
             break;
+        }
     }
     return state;
 };

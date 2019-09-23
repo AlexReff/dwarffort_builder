@@ -1,6 +1,37 @@
 import { DEFAULTS, TILE_H, TILE_W } from "../../constants";
-import { getCursorTiles } from "../cursor/cursor";
 import { ACTION_TYPE, FlatGetState } from "../store";
+
+//#region REDUX ACTIONS
+
+export const _initialize = (gridWidth, gridHeight, mapWidth, mapHeight, cameraX, cameraY, cursorX, cursorY) => {
+    return {
+        type: ACTION_TYPE.INITIALIZE,
+        gridWidth,
+        gridHeight,
+        mapWidth,
+        mapHeight,
+        cameraX,
+        cameraY,
+        cursorX,
+        cursorY,
+    };
+};
+
+export const toggleAnimation = () => {
+    return {
+        type: ACTION_TYPE.ANIMATION_TOGGLE,
+    };
+};
+
+// export const setStrictMode = (val: boolean) => {
+//     return {
+//         type: ACTION_TYPE.SET_STRICT_MODE,
+//         val,
+//     };
+// };
+
+//#endregion
+//#region THUNK ACTIONS
 
 export function Initialize(container: any) {
     return (dispatch, getState) => {
@@ -18,29 +49,8 @@ export function Initialize(container: any) {
         state.cursorX = Math.floor(state.mapWidth / 2.0);
         state.cursorY = Math.floor(state.mapHeight / 2.0);
 
-        state.cursorTiles = getCursorTiles(state);
-        dispatch(_initialize(state.gridWidth, state.gridHeight, state.mapWidth, state.mapHeight, state.cameraX, state.cameraY, state.cursorX, state.cursorY, state.cursorTiles));
+        dispatch(_initialize(state.gridWidth, state.gridHeight, state.mapWidth, state.mapHeight, state.cameraX, state.cameraY, state.cursorX, state.cursorY));
     };
 }
 
-export function _initialize(gridWidth, gridHeight, mapWidth, mapHeight, cameraX, cameraY, cursorX, cursorY, cursorTiles) {
-    return {
-        type: ACTION_TYPE.INITIALIZE,
-        gridWidth,
-        gridHeight,
-        mapWidth,
-        mapHeight,
-        cameraX,
-        cameraY,
-        cursorX,
-        cursorY,
-        cursorTiles,
-    };
-}
-
-export const setStrictMode = (val: boolean) => {
-    return {
-        type: ACTION_TYPE.SET_STRICT_MODE,
-        val,
-    };
-};
+//#endregion

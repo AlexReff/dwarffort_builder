@@ -1,25 +1,24 @@
 import * as _ from "lodash";
 import { Component, h } from "preact";
 import { connect } from "react-redux";
-import { BUILDINGS, MENU, Point, SUBMENU_MAX_H } from "./constants/";
-import { selectMenu } from "./redux/menu/actions";
-import { IMenuState } from "./redux/menu/reducer";
-import { setStrictMode } from "./redux/settings/actions";
-import { ISettingsState } from "./redux/settings/reducer";
-import { ReduxState } from "./redux/store";
+import { BUILDINGS, MENU, Point, SUBMENU_MAX_H } from "../constants";
+import { selectMenu } from "../redux/menu/actions";
+import { IMenuState } from "../redux/menu/reducer";
+import { ISettingsState } from "../redux/settings/reducer";
+import { ReduxState } from "../redux/store";
 
 interface IMenuProps {
     currentMenu: IMenuState["currentSubmenu"];
     currentMenuItem: IMenuState["currentMenuItem"];
     // inspectedBuildings: IInspectState["inspectedBuildings"];
     // isDesignating: IDesignatorState["isDesignating"];
-    strictMode: ISettingsState["strictMode"];
+    // strictMode: ISettingsState["strictMode"];
     // buildingList: IBuildingState["buildingList"];
     // buildingIds: IBuildingState["buildingIds"];
 
     // selectMenu: (id: string) => void;
     selectMenuItem: (id: string) => void;
-    setStrictMode: (val: boolean) => void;
+    // setStrictMode: (val: boolean) => void;
     // inspectTileAtMapCoord: (coord: Point, add: boolean) => void;
 }
 
@@ -28,7 +27,7 @@ const mapStateToProps = (state: ReduxState) => ({
     currentMenuItem: state.menu.currentMenuItem,
     // inspectedBuildings: state.inspect.inspectedBuildings,
     // isDesignating: state.designator.isDesignating,
-    strictMode: state.settings.strictMode,
+    // strictMode: state.settings.strictMode,
     // buildingList: state.building.buildingList,
     // buildingIds: state.building.buildingIds,
 });
@@ -36,7 +35,7 @@ const mapStateToProps = (state: ReduxState) => ({
 const mapDispatchToProps = (dispatch) => ({
     // selectMenu: (id) => dispatch(selectMenu(id)),
     selectMenuItem: (id) => dispatch(selectMenu(id)),
-    setStrictMode: (val) => dispatch(setStrictMode(val)),
+    // setStrictMode: (val) => dispatch(setStrictMode(val)),
     // inspectTileAtMapCoord: (coord, add) => dispatch(inspectRequestAtMapCoord(coord, add)),
 });
 
@@ -71,10 +70,10 @@ class Menu extends Component<IMenuProps, IGameMenuState> {
                     <div class="menu-status">
                         {this.renderMenuStatus()}
                     </div>
-                    <div class="strict-mode">
+                    {/* <div class="strict-mode">
                         <input id="strictmode" checked={props.strictMode} type="checkbox" onChange={this.handleStrictModeChange} />
                         <label title="Toggle Strict Mode" for="strictmode">Strict Mode:</label>
-                    </div>
+                    </div> */}
                     <div class="copy">&copy; {new Date().getFullYear()} Alex Reff</div>
                 </div>
             </div>
@@ -159,9 +158,9 @@ class Menu extends Component<IMenuProps, IGameMenuState> {
         this.props.selectMenuItem(e);
     }
 
-    handleStrictModeChange = (e: Event) => {
-        this.props.setStrictMode((e.currentTarget as HTMLInputElement).checked);
-    }
+    // handleStrictModeChange = (e: Event) => {
+    //     this.props.setStrictMode((e.currentTarget as HTMLInputElement).checked);
+    // }
 
     getMenuItemsCss = () => {
         return {

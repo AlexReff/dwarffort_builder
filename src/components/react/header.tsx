@@ -1,7 +1,7 @@
 import { Component, h } from "preact";
 import { connect } from "react-redux";
-import { ICameraState } from "./redux/camera/reducer";
-import { ReduxState } from "./redux/store";
+import { ICameraState } from "../redux/camera/reducer";
+import { ReduxState } from "../redux/store";
 
 interface IHeaderProps {
     cameraZ: ICameraState["cameraZ"];

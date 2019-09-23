@@ -4,17 +4,20 @@ import thunk, { ThunkMiddleware } from "redux-thunk";
 import building from "./building/reducer";
 import { setCameraPos, setCameraZ, setMapSize } from "./camera/actions";
 import camera from "./camera/reducer";
-import { setCursorPos, setCursorTiles } from "./cursor/actions";
+import { setCursorPos } from "./cursor/actions";
 import cursor from "./cursor/reducer";
-import { setMenus } from "./menu/actions";
+import { setDesignateStart, setDigData } from "./digger/actions";
+import digger from "./digger/reducer";
+import { _setMenus } from "./menu/actions";
 import menu from "./menu/reducer";
-import { _initialize, setStrictMode } from "./settings/actions";
+import { _initialize, toggleAnimation } from "./settings/actions";
 import settings from "./settings/reducer";
 
 export const ALL_REDUCERS = {
     building,
     camera,
     cursor,
+    digger,
     menu,
     settings,
 };
@@ -29,7 +32,8 @@ export const enum ACTION_TYPE {
     SET_MAP_SIZE,
     SET_ZLEVEL,
     DESIGNATE_START,
-    SET_CURSOR_TILES,
+    ANIMATION_TOGGLE,
+    DESIGNATE_SET_TILES,
 }
 
 function combineReducersImmer<S, A extends Action = AnyAction>(produce, reducers: ReducersMapObject<S, A> = {} as ReducersMapObject): Reducer<S, A> {
@@ -66,14 +70,22 @@ type CombinedReturnTypes<T extends {
 export type FlatReduxState = CombinedParamTypes<typeof ALL_REDUCERS>;
 
 type NON_THUNK_ACTIONS =
-    ReturnType<typeof _initialize> |
-    ReturnType<typeof setStrictMode> |
-    ReturnType<typeof setMenus> |
-    ReturnType<typeof setCursorPos> |
-    ReturnType<typeof setCursorTiles> |
+    //camera
     ReturnType<typeof setMapSize> |
     ReturnType<typeof setCameraPos> |
-    ReturnType<typeof setCameraZ>;
+    ReturnType<typeof setCameraZ> |
+    //cursor
+    ReturnType<typeof setCursorPos> |
+    // ReturnType<typeof setCursorTiles> |
+    //digger
+    ReturnType<typeof setDesignateStart> |
+    ReturnType<typeof setDigData> |
+    //menu
+    ReturnType<typeof _setMenus> |
+    //settings
+    ReturnType<typeof toggleAnimation> |
+    // ReturnType<typeof setStrictMode> |
+    ReturnType<typeof _initialize>;
 
 const store = createStore(COMBINED_REDUCERS, applyMiddleware(thunk as ThunkMiddleware<ReduxState, NON_THUNK_ACTIONS>));
 

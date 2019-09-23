@@ -1,25 +1,15 @@
 import { IBuildingState } from "./building/reducer";
 import { ICameraState } from "./camera/reducer";
 import { ICursorState } from "./cursor/reducer";
+import { IDiggerState } from "./digger/reducer";
 import { IMenuState } from "./menu/reducer";
 import { ISettingsState } from "./settings/reducer";
 import store, { FlatReduxState, GetFlattenedState } from "./store";
 
 export class ReduxVariables implements FlatReduxState {
+    //building
     buildingTiles: IBuildingState["buildingTiles"];
-    currentSubmenu: IMenuState["currentSubmenu"];
-    currentMenuItem: IMenuState["currentMenuItem"];
-    isInspecting: IMenuState["isInspecting"];
-    strictMode: ISettingsState["strictMode"];
-    // cursorVisible: ICursorState["cursorVisible"];
-    cursorBuilding: ICursorState["cursorBuilding"];
-    cursorX: ICursorState["cursorX"];
-    cursorY: ICursorState["cursorY"];
-    cursorTiles: ICursorState["cursorTiles"];
-    cursorDiameter: ICursorState["cursorDiameter"];
-    // cursorDiameter: ICursorState["cursorDiameter"];
-    // cursorRadius: ICursorState["cursorRadius"];
-    debugMode: ISettingsState["debugMode"];
+    //camera
     gridHeight: ICameraState["gridHeight"];
     decoratorTiles: ICameraState["decoratorTiles"];
     gridWidth: ICameraState["gridWidth"];
@@ -28,6 +18,26 @@ export class ReduxVariables implements FlatReduxState {
     cameraX: ICameraState["cameraX"];
     cameraY: ICameraState["cameraY"];
     cameraZ: ICameraState["cameraZ"];
+    //digger
+    designateStartX: IDiggerState["designateStartX"];
+    designateStartY: IDiggerState["designateStartY"];
+    designateStartZ: IDiggerState["designateStartZ"];
+    isDesignating: IDiggerState["isDesignating"];
+    terrainTiles: IDiggerState["terrainTiles"];
+    //menu
+    currentSubmenu: IMenuState["currentSubmenu"];
+    currentMenuItem: IMenuState["currentMenuItem"];
+    isInspecting: IMenuState["isInspecting"];
+    //cursor
+    cursorBuilding: ICursorState["cursorBuilding"];
+    cursorX: ICursorState["cursorX"];
+    cursorY: ICursorState["cursorY"];
+    // cursorTiles: ICursorState["cursorTiles"];
+    cursorRadius: ICursorState["cursorRadius"];
+    //settings
+    // strictMode: ISettingsState["strictMode"];
+    animationFlag: ISettingsState["animationFlag"];
+    debugMode: ISettingsState["debugMode"];
 }
 
 export abstract class GameComponent extends ReduxVariables {

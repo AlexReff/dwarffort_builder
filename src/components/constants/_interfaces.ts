@@ -3,8 +3,8 @@ import { MENU_ITEM } from "./_enums";
 export interface IRenderTile {
     x: number;
     y: number;
-    char: string;
-    color: string;
+    char: string | string[];
+    color: string | string[];
 }
 
 export interface IBuildingTileData {
@@ -12,6 +12,11 @@ export interface IBuildingTileData {
     bg: string;
     fg: string;
     walkable: number;
+}
+
+/** First key is cameraZ, second is `${x}:${y}` */
+export interface ITileCollection<T> {
+    [key: string]: { [key: string]: T };
 }
 
 export interface IBuildingData {

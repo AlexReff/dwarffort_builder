@@ -5,9 +5,9 @@ import { Provider } from "react-redux";
 //components
 import { HEADER_H, MENU_W, TILE_URL, TILE_W } from "./components/constants";
 import { Game } from "./components/game";
-import Header from "./components/header";
-import GameHighlighter from "./components/highlighter";
-import Menu from "./components/menu";
+import Header from "./components/react/header";
+import GameHighlighter from "./components/react/highlighter";
+import Menu from "./components/react/menu";
 import { resizeWindow } from "./components/redux/camera/actions";
 import { Initialize } from "./components/redux/settings/actions";
 import store from "./components/redux/store";

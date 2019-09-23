@@ -1,6 +1,8 @@
 import { TILE_H, TILE_W } from "../../constants";
 import { ACTION_TYPE, FlatGetState } from "../store";
 
+//#region REDUX ACTIONS
+
 export function setCameraPos(x: number, y: number) {
     return {
         type: ACTION_TYPE.SET_CAMERA_POS,
@@ -16,6 +18,19 @@ export function setCameraZ(z: number) {
     };
 }
 
+export function setMapSize(mapWidth: number, mapHeight: number, gridWidth: number, gridHeight: number) {
+    return {
+        type: ACTION_TYPE.SET_MAP_SIZE,
+        mapWidth,
+        mapHeight,
+        gridWidth,
+        gridHeight,
+    };
+}
+
+//#endregion
+//#region THUNK ACTIONS
+
 export function resizeWindow(container: HTMLElement) {
     return (dispatch, getState) => {
         const state = FlatGetState({}, getState);
@@ -30,12 +45,4 @@ export function resizeWindow(container: HTMLElement) {
     };
 }
 
-export function setMapSize(mapWidth: number, mapHeight: number, gridWidth: number, gridHeight: number) {
-    return {
-        type: ACTION_TYPE.SET_MAP_SIZE,
-        mapWidth,
-        mapHeight,
-        gridWidth,
-        gridHeight,
-    };
-}
+//#endregion

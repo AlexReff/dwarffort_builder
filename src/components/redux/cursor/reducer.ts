@@ -6,9 +6,8 @@ export interface ICursorState {
     cursorBuilding: boolean;
     cursorX: number;
     cursorY: number;
-    cursorTiles: IRenderTile[];
-    cursorDiameter: number;
-    // cursorRadius: number;
+    // cursorTiles: IRenderTile[];
+    cursorRadius: number;
 }
 
 const initialState: ICursorState = {
@@ -16,9 +15,8 @@ const initialState: ICursorState = {
     cursorBuilding: false,
     cursorX: 0,
     cursorY: 0,
-    cursorTiles: [],
-    cursorDiameter: 0,
-    // cursorRadius: 0,
+    // cursorTiles: [],
+    cursorRadius: 0,
 };
 
 export default (state = initialState, action) => {
@@ -26,7 +24,6 @@ export default (state = initialState, action) => {
         case ACTION_TYPE.INITIALIZE: {
             state.cursorX = action.cursorX;
             state.cursorY = action.cursorY;
-            state.cursorTiles = action.cursorTiles;
             break;
         }
         case ACTION_TYPE.SET_CURSOR_POS: {
@@ -35,16 +32,12 @@ export default (state = initialState, action) => {
             break;
         }
         case ACTION_TYPE.SET_MENU: {
-            if (action.currentMenuItem in BUILDINGS.KEYS) {
+            if (action.currentMenuItem in BUILDINGS.IDS) {
                 state.cursorBuilding = true;
-                //need to also update cursorTiles, cursorDiameter
             } else {
                 state.cursorBuilding = false;
             }
-            break;
-        }
-        case ACTION_TYPE.SET_CURSOR_TILES: {
-            state.cursorTiles = action.tiles;
+            state.cursorRadius = action.cursorRadius;
             break;
         }
     }

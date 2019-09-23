@@ -1,9 +1,10 @@
 import OpenSimplexNoise from "open-simplex-noise";
-import { DEC_TILES, DEC_TILES_COLORS, IRenderTile } from "../../constants";
-import rng from "../../rot/rng";
-import { ICameraState } from "./reducer";
+import { DEC_TILES, DEC_TILES_COLORS, IRenderTile } from "../constants";
+import { FlatReduxState } from "../redux/store";
+import rng from "../rot/rng";
+import { ITileGeneratorComponent } from "./_base";
 
-class Decorator {
+class Decorator implements ITileGeneratorComponent {
     /** Key: zLevel */
     decoratorTiles: { [key: string]: { [key: string]: IRenderTile } };
     /** Used for tracking grid resizes | Key: zLevel */
@@ -16,12 +17,12 @@ class Decorator {
         this.noiseMaps = {};
     }
 
-    getTiles = (state: ICameraState) => {
+    getTiles = (state: FlatReduxState) => {
         this.initFloor(state);
         return Object.values(this.decoratorTiles[state.cameraZ]);
     }
 
-    initFloor = (state: ICameraState) => {
+    initFloor = (state: FlatReduxState) => {
         if (state.cameraZ in this.decoratorTiles) {
             //already populated, check to see if mapSize has expanded
             if (state.mapHeight <= this.decoratorMaxSizes[state.cameraZ].y &&
@@ -61,6 +62,4 @@ class Decorator {
     }
 }
 
-const DecoratorInstance = new Decorator();
-
-export default DecoratorInstance;
+export default Decorator;

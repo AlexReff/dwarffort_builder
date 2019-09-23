@@ -1,6 +1,7 @@
 import { BUILDINGS, DIRECTION, KEYS, MENU, TILE_H, TILE_W } from "./constants";
 import { setCameraZ } from "./redux/camera/actions";
 import { moveCursorDirection, moveCursorToGridPos } from "./redux/cursor/actions";
+import { startDesignatingGrid, submitDesignating } from "./redux/digger/actions";
 import { GameComponent } from "./redux/FlatReduxState";
 import { selectMenu, selectPrevSubmenu } from "./redux/menu/actions";
 import store from "./redux/store";
@@ -32,15 +33,27 @@ export class GameInput extends GameComponent {
         if (this.isInspecting) {
             //
         } else {
-            // const gridPos = this.display.eventToPosition(e);
-            // const mapPos = this.getMapCoord(gridPos);
-            // this.cursorPosition = mapPos.slice() as Point;
-            // this.moveCursorTo(mapPos);
-            // this.handleEnterRightClick();
+            const [gridX, gridY] = this.handleClick(e);
+            //start designation
+            if (this.cursorBuilding) {
+                //try to place a building
+            } else if (this.isDesignating) {
+                //finalize designation
+                //emit a "designate range"
+                store.dispatch(submitDesignating());
+            } else {
+                if (this.currentMenuItem != null && this.currentMenuItem in MENU.ITEMS) {
+                    if (MENU.ITEMS[this.currentMenuItem].parent === "designate") {
+                        //if designation item selected
+                        store.dispatch(startDesignatingGrid(gridX, gridY));
+                    }
+                }
+            }
         }
     }
 
-    handleClick = (e: MouseEvent | TouchEvent) => {
+    /** @returns the GRID position of the click */
+    handleClick = (e: MouseEvent | TouchEvent): [number, number] => {
         e.preventDefault();
         let x, y;
         if ("touches" in e) {
@@ -55,6 +68,7 @@ export class GameInput extends GameComponent {
         if (gridX >= 0 && gridY >= 0) {
             store.dispatch(moveCursorToGridPos(gridX, gridY));
         }
+        return [gridX, gridY];
     }
 
     handleKeyPress = (e: KeyboardEvent) => {

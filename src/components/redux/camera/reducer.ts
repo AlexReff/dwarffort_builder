@@ -1,6 +1,5 @@
 import { IRenderTile } from "../../constants";
 import { ACTION_TYPE } from "../store";
-import DecoratorInstance from "./decorator";
 
 export interface ICameraState {
     gridHeight: number;
@@ -52,6 +51,5 @@ export default (state: ICameraState = initialState, action) => {
             break;
         }
     }
-    state.decoratorTiles = DecoratorInstance.getTiles(state);
     return state;
 };

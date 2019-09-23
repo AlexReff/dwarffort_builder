@@ -1,8 +1,8 @@
 import { Component, h } from "preact";
 import { connect } from "react-redux";
-import { KEYS, Point, TILE_H, TILE_W } from "./constants/";
-import { ICameraState } from "./redux/camera/reducer";
-import { ReduxState } from "./redux/store";
+import { KEYS, Point, TILE_H, TILE_W } from "../constants";
+import { ICameraState } from "../redux/camera/reducer";
+import { ReduxState } from "../redux/store";
 
 interface IGameHighlighterProps {
     canvasRef: any;

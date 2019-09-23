@@ -21,6 +21,8 @@ export const DEFAULTS = {
         CURSOR_PASSABLE: "rgba(0,255,0,1)",
         CURSOR_IMPASSABLE: "rgba(0,128,0,1)",
         CURSOR_INVALID: "rgba(128,0,0,1)",
+        DESIGNATE_START: "rgba(28, 58, 22, .5)",
+        DESIGNATE_RANGE: "rgba(72, 36, 12, .3)",
     },
 };
 

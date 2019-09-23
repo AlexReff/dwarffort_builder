@@ -8,7 +8,6 @@ export const enum TILETYPE {
     Empty,
     Wall,
     Floor,
-    Building,
 }
 
 export const enum DIRECTION {

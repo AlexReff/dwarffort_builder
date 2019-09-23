@@ -1,7 +1,6 @@
 import * as _ from "lodash";
 import { Component, h } from "preact";
-import { Tile } from "../../deprecated/old/game/tile";
-import { TILE_H, TILE_URL, TILE_W } from "./constants/";
+import { TILE_H, TILE_URL, TILE_W } from "../constants";
 
 interface IDebugMenuProps {
     isActive: boolean;
@@ -10,7 +9,7 @@ interface IDebugMenuProps {
 interface IDebugMenuState {
     mouseLeft: number;
     mouseTop: number;
-    highlightedTile: Tile;
+    // highlightedTile: Tile;
 }
 
 class DebugMenu extends Component<IDebugMenuProps, IDebugMenuState> {

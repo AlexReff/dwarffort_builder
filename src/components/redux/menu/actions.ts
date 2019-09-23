@@ -1,6 +1,40 @@
-import { MENU } from "../../constants";
+import { BUILDINGS, MENU } from "../../constants";
 import { ACTION_TYPE, FlatGetState } from "../store";
 import { IMenuState } from "./reducer";
+
+//#region REDUX ACTIONS
+
+export function _setMenus(currentSubmenu, currentMenuItem, cursorRadius) {
+    return {
+        type: ACTION_TYPE.SET_MENU,
+        currentSubmenu,
+        currentMenuItem,
+        cursorRadius,
+    };
+}
+
+//#endregion
+//#region THUNK ACTIONS
+
+export function selectMenus(currentSubmenu, currentMenuItem) {
+    return (dispatch, getState) => {
+        // const state = FlatGetState({}, getState);
+        let cursorRange = 0;
+        if (currentMenuItem in BUILDINGS.IDS) {
+            const tiles = BUILDINGS.IDS[currentMenuItem];
+            if (tiles) {
+                cursorRange = Math.floor(tiles.tiles.length / 2.0);
+            }
+        }
+        dispatch(_setMenus(currentSubmenu, currentMenuItem, cursorRange));
+        // return {
+        //     type: ACTION_TYPE.SET_MENU,
+        //     currentSubmenu,
+        //     currentMenuItem,
+        //     cursorRadius,
+        // };
+    };
+}
 
 export function selectMenu(val: IMenuState["currentSubmenu"]) {
     return (dispatch, getState) => {
@@ -16,7 +50,7 @@ export function selectMenu(val: IMenuState["currentSubmenu"]) {
         } else { //highlight menu item
             state.currentMenuItem = val;
         }
-        dispatch(setMenus(state.currentSubmenu, state.currentMenuItem));
+        dispatch(selectMenus(state.currentSubmenu, state.currentMenuItem));
     };
 }
 
@@ -37,14 +71,8 @@ export function selectPrevSubmenu() {
                 state.currentSubmenu = "top";
             }
         }
-        dispatch(setMenus(state.currentSubmenu, state.currentMenuItem));
+        dispatch(selectMenus(state.currentSubmenu, state.currentMenuItem));
     };
 }
 
-export function setMenus(currentSubmenu, currentMenuItem) {
-    return {
-        type: ACTION_TYPE.SET_MENU,
-        currentSubmenu,
-        currentMenuItem,
-    };
-}
+//#endregion
