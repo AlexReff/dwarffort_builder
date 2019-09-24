@@ -1,10 +1,12 @@
 import { BUILDINGS, DIRECTION, KEYS, MENU, TILE_H, TILE_W } from "./constants";
+import { placeCursorBuilding } from "./redux/building/actions";
 import { setCameraZ } from "./redux/camera/actions";
 import { moveCursorDirection, moveCursorToGridPos } from "./redux/cursor/actions";
 import { startDesignatingGrid, submitDesignating } from "./redux/digger/actions";
 import { GameComponent } from "./redux/FlatReduxState";
 import { selectMenu, selectPrevSubmenu } from "./redux/menu/actions";
 import store from "./redux/store";
+import { getMapCoord } from "./util";
 
 export class GameInput extends GameComponent {
     shiftDown: boolean;
@@ -34,12 +36,9 @@ export class GameInput extends GameComponent {
             //
         } else {
             const [gridX, gridY] = this.handleClick(e);
-            //start designation
             if (this.cursorBuilding) {
-                //try to place a building
+                store.dispatch(placeCursorBuilding());
             } else if (this.isDesignating) {
-                //finalize designation
-                //emit a "designate range"
                 store.dispatch(submitDesignating());
             } else {
                 if (this.currentMenuItem != null && this.currentMenuItem in MENU.ITEMS) {
@@ -63,7 +62,6 @@ export class GameInput extends GameComponent {
             x = e.clientX;
             y = e.clientY;
         }
-        //single left click -> move cursor to position
         const [gridX, gridY] = this.eventToPosition(x, y);
         if (gridX >= 0 && gridY >= 0) {
             store.dispatch(moveCursorToGridPos(gridX, gridY));

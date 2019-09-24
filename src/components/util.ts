@@ -1,30 +1,37 @@
-import { IRenderTile, Point } from "./constants";
+import { IRenderTile, Point, TILETYPE } from "./constants";
+import { Game } from "./game";
 import store, { FlatGetState, FlatReduxState } from "./redux/store";
 import Display from "./rot/display";
 
-export const renderTile = (display: Display, tile: IRenderTile, _state?: FlatReduxState) => {
-    const parms = getDisplayParms(tile, _state);
-    display.draw.apply(display, parms);
+// export const renderTile = (display: Display, tile: IRenderTile, _state?: FlatReduxState) => {
+//     const parms = getDisplayParms(tile, _state);
+//     display.draw.apply(display, parms);
+// };
+
+export const renderTile = (_this: Game, tile: IRenderTile) => {
+    const parms = getDisplayParms(tile, _this);
+    _this.rotDisplay.draw.apply(_this.rotDisplay, parms);
 };
 
 export const getDisplayParms = (tile: IRenderTile, _state?: FlatReduxState) => {
     const [x, y] = getGridCoord(tile.x, tile.y, _state);
     if (Array.isArray(tile.color)) {
-        const colorArray = tile.color.map((z) => "transparent");
+        const bg = typeof tile.bg !== "undefined" ? tile.bg : tile.color.map((z) => "transparent");
         return [
             x,
             y,
             tile.char,
             tile.color,
-            colorArray,
+            bg,
         ];
     } else {
+        const bg = typeof tile.bg !== "undefined" ? tile.bg : "transparent";
         return [
             x,
             y,
             tile.char,
             tile.color,
-            "transparent",
+            bg,
         ];
     }
 };
@@ -104,4 +111,26 @@ export const getNeighborsOfRange = (
         result.push(dict[key]);
     }
     return result;
+};
+
+/** @returns true if a building can be placed on the specified tile  */
+export const isBuildingPlaceable = (state: FlatReduxState, x: number, y: number): boolean => {
+    if (!(state.cameraZ in state.terrainTiles)) {
+        return false;
+    }
+    const key = `${x}:${y}`;
+    if (!(key in state.terrainTiles[state.cameraZ])) {
+        return false;
+    }
+    if (state.cameraZ in state.buildingPositions) {
+        if (key in state.buildingPositions[state.cameraZ]) {
+            return false;
+        }
+    }
+    const tile = state.terrainTiles[state.cameraZ][key];
+    if (tile != null && tile.type === TILETYPE.Floor) {
+        return true;
+    }
+
+    return false;
 };

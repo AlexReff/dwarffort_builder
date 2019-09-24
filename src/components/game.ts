@@ -1,5 +1,4 @@
 import { TILE_H, TILE_MAP, TILE_W } from "./constants";
-import { ITileCollection } from "./constants/_interfaces";
 import { GameInput } from "./input";
 import { GameComponent } from "./redux/FlatReduxState";
 import { toggleAnimation } from "./redux/settings/actions";
@@ -108,7 +107,7 @@ export class Game extends GameComponent {
                 }
                 if (tile.x >= startX && tile.x < maxX &&
                     tile.y >= startY && tile.y < maxY) {
-                    renderTile(this.rotDisplay, tile, this);
+                    renderTile(this, tile);
                     renderedPositions[key] = "";
                 }
             }

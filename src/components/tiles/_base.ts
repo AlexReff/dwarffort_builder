@@ -6,7 +6,7 @@ export interface ITileGeneratorComponent {
     getTiles: (state: FlatReduxState) => IRenderTile[];
 }
 
-/*
+/* Example:
 export class NEW_THING implements ITileGeneratorComponent {
     getTiles = (state: FlatReduxState): IRenderTile[] => {
         return [];

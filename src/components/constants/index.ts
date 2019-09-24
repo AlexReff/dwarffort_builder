@@ -34,4 +34,5 @@ export {
     IGridRange,
     IMenuItem,
     IRenderTile,
+    ITileCollection,
 } from "./_interfaces";

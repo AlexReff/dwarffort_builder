@@ -1,5 +1,6 @@
 import { BUILDINGS, DEFAULTS, IRenderTile } from "../constants";
 import { FlatReduxState } from "../redux/store";
+import { isBuildingPlaceable } from "../util";
 import { ITileGeneratorComponent } from "./_base";
 
 export class Cursor implements ITileGeneratorComponent {
@@ -15,9 +16,12 @@ export class Cursor implements ITileGeneratorComponent {
                 const endY = state.cursorY + range;
                 for (let x = startX, ix = 0; x <= endX; x++ && ix++) {
                     for (let y = startY, iy = 0; y <= endY; y++ && iy++) {
-                        //TODO: Check to see if terrain is a valid spot to place
                         const trgTile = tiles.tiles[iy][ix];
-                        const color = trgTile.walkable === 0 ? DEFAULTS.COLORS.CURSOR_IMPASSABLE : DEFAULTS.COLORS.CURSOR_PASSABLE;
+                        const color = !isBuildingPlaceable(state, x, y) ?
+                            DEFAULTS.COLORS.CURSOR_INVALID :
+                            trgTile.walkable === 0 ?
+                                DEFAULTS.COLORS.CURSOR_IMPASSABLE :
+                                DEFAULTS.COLORS.CURSOR_PASSABLE;
                         result.push({
                             x,
                             y,
@@ -29,9 +33,6 @@ export class Cursor implements ITileGeneratorComponent {
                 return result;
             }
         } else if (state.isDesignating) {
-            //return a range of tiles
-            //the first tile should display slightly differently
-            //this will be animated
             if (state.animationFlag) {
                 //do not draw
             } else if (state.designateStartX !== -1 && state.designateStartY !== -1) {

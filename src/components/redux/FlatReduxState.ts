@@ -9,6 +9,7 @@ import store, { FlatReduxState, GetFlattenedState } from "./store";
 export class ReduxVariables implements FlatReduxState {
     //building
     buildingTiles: IBuildingState["buildingTiles"];
+    buildingPositions: IBuildingState["buildingPositions"];
     //camera
     gridHeight: ICameraState["gridHeight"];
     decoratorTiles: ICameraState["decoratorTiles"];

@@ -18,7 +18,6 @@ export class Digger implements ITileGeneratorComponent {
             const tile: ITerrainTile = theseTiles[key];
             switch (tile.type) {
                 case TILETYPE.Wall:
-                    //TODO: neighbor calculation to determine
                     result.push({
                         x: tile.posX,
                         y: tile.posY,

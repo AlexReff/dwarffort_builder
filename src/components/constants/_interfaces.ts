@@ -5,6 +5,7 @@ export interface IRenderTile {
     y: number;
     char: string | string[];
     color: string | string[];
+    bg?: string | string[];
 }
 
 export interface IBuildingTileData {

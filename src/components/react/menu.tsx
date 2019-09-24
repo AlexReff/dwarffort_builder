@@ -110,16 +110,16 @@ class Menu extends Component<IMenuProps, IGameMenuState> {
         //         <div>Designating {MENU.ITEMS[this.props.currentMenuItem].text}</div>
         //     );
         // }
-        if (this.props.currentMenuItem != null && this.props.currentMenuItem.length > 0) {
-            if (this.props.currentMenuItem in BUILDINGS.IDS) {
-                return (
-                    <div>Placing {BUILDINGS.IDS[this.props.currentMenuItem].display_name}</div>
-                );
-            }
-            return (
-                <div>Designating {MENU.ITEMS[this.props.currentMenuItem].text}</div>
-            );
-        }
+        // if (this.props.currentMenuItem != null && this.props.currentMenuItem.length > 0) {
+        //     if (this.props.currentMenuItem in BUILDINGS.IDS) {
+        //         return (
+        //             <div>Placing {BUILDINGS.IDS[this.props.currentMenuItem].display_name}</div>
+        //         );
+        //     }
+        //     return (
+        //         <div>Designating {MENU.ITEMS[this.props.currentMenuItem].text}</div>
+        //     );
+        // }
         return <div></div>;
     }
 

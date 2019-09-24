@@ -1,4 +1,4 @@
-import { BUILDINGS, DEFAULTS, IRenderTile } from "../../constants";
+import { BUILDINGS } from "../../constants";
 import { ACTION_TYPE } from "../store";
 
 export interface ICursorState {
@@ -6,7 +6,6 @@ export interface ICursorState {
     cursorBuilding: boolean;
     cursorX: number;
     cursorY: number;
-    // cursorTiles: IRenderTile[];
     cursorRadius: number;
 }
 
@@ -15,7 +14,6 @@ const initialState: ICursorState = {
     cursorBuilding: false,
     cursorX: 0,
     cursorY: 0,
-    // cursorTiles: [],
     cursorRadius: 0,
 };
 
@@ -38,6 +36,10 @@ export default (state = initialState, action) => {
                 state.cursorBuilding = false;
             }
             state.cursorRadius = action.cursorRadius;
+            break;
+        }
+        case ACTION_TYPE.SET_BUILDINGS: {
+            state.cursorBuilding = false;
             break;
         }
     }

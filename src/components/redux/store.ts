@@ -1,6 +1,7 @@
 import { produce as createNextState } from "immer";
 import { Action, AnyAction, applyMiddleware, createStore, Reducer, ReducersMapObject } from "redux";
 import thunk, { ThunkMiddleware } from "redux-thunk";
+import { setBuildings } from "./building/actions";
 import building from "./building/reducer";
 import { setCameraPos, setCameraZ, setMapSize } from "./camera/actions";
 import camera from "./camera/reducer";
@@ -34,6 +35,7 @@ export const enum ACTION_TYPE {
     DESIGNATE_START,
     ANIMATION_TOGGLE,
     DESIGNATE_SET_TILES,
+    SET_BUILDINGS,
 }
 
 function combineReducersImmer<S, A extends Action = AnyAction>(produce, reducers: ReducersMapObject<S, A> = {} as ReducersMapObject): Reducer<S, A> {
@@ -70,6 +72,8 @@ type CombinedReturnTypes<T extends {
 export type FlatReduxState = CombinedParamTypes<typeof ALL_REDUCERS>;
 
 type NON_THUNK_ACTIONS =
+    //builder
+    ReturnType<typeof setBuildings> |
     //camera
     ReturnType<typeof setMapSize> |
     ReturnType<typeof setCameraPos> |

@@ -29,6 +29,9 @@ export function setDigData(tiles: IDiggerState["terrainTiles"]) {
 export function submitDesignating() {
     return (dispatch, getState) => {
         const state = FlatGetState({}, getState);
+        if (!state.isDesignating) {
+            return;
+        }
         const tiles = produce(state.terrainTiles, (draft) => {
             let startZ = state.cameraZ;
             let endZ = state.cameraZ;
@@ -48,6 +51,11 @@ export function submitDesignating() {
                 for (let y = startY; y <= endY; y++) {
                     for (let x = startX; x <= endX; x++) {
                         const key = `${x}:${y}`;
+                        if (z in state.buildingPositions) {
+                            if (key in state.buildingPositions[z]) {
+                                continue; //do not modify tiles under buildings
+                            }
+                        }
                         switch (state.currentMenuItem) {
                             case MENU_ITEM.remove:
                                 if (key in draft[z]) {
@@ -55,14 +63,11 @@ export function submitDesignating() {
                                 }
                                 break;
                             case MENU_ITEM.wall:
-                                //check neighbors to determine tile char
-                                //const flags = getNeighborFlags(draft, state, x, y, z);
                                 draft[z][key] = {
                                     posX: x,
                                     posY: y,
                                     posZ: z,
                                     type: TILETYPE.Wall,
-                                    //characterVariant: flags,
                                 };
                                 break;
                             case MENU_ITEM.mine:

@@ -21,6 +21,7 @@ export default (state = initialState, action: AnyAction) => {
             state.currentSubmenu = action.currentSubmenu;
             break;
         }
+        case ACTION_TYPE.SET_BUILDINGS:
         case ACTION_TYPE.DESIGNATE_SET_TILES: {
             state.currentMenuItem = null;
             break;
