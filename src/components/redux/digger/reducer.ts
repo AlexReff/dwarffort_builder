@@ -25,7 +25,6 @@ export interface ITerrainTile {
     posZ: number;
     type: TILETYPE;
     characterVariant?: string;
-    wallFlags?: number;
 }
 
 export default (state = initialState, action) => {

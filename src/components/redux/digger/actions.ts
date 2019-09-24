@@ -1,7 +1,7 @@
 import produce from "immer";
 import { FLOOR_TILES, MENU_ITEM, TILETYPE, WALL_TILES } from "../../constants";
 import rng from "../../rot/rng";
-import { getMapCoord } from "../../util";
+import { getMapCoord, getNeighborsOfRange } from "../../util";
 import { ACTION_TYPE, FlatGetState, FlatReduxState } from "../store";
 import { IDiggerState } from "./reducer";
 
@@ -77,6 +77,21 @@ export function submitDesignating() {
                         }
                     }
                 }
+                if (state.currentMenuItem === MENU_ITEM.mine) {
+                    //create walls around designated area (if empty)
+                    const points = getNeighborsOfRange(startX, startY, endX, endY, state);
+                    for (const point of points) {
+                        const key = `${point[0]}:${point[1]}`;
+                        if (!(key in draft[z])) {
+                            draft[z][key] = {
+                                posX: point[0],
+                                posY: point[1],
+                                posZ: z,
+                                type: TILETYPE.Wall,
+                            };
+                        }
+                    }
+                }
                 for (let y = 0; y < state.mapHeight; y++) {
                     for (let x = 0; x < state.mapWidth; x++) {
                         const key = `${x}:${y}`;
@@ -139,17 +154,15 @@ function getNeighborFlags(tiles: IDiggerState["terrainTiles"], state: FlatReduxS
             }
         }
     }
+
     let result = flags.toString();
+
     if (WALL_TILES[flags].length > 1) {
+        //append 'a'/'b' etc to end for variant mapping
         const rnd = rng.getUniformInt(0, WALL_TILES[flags].length - 1);
         result += String.fromCharCode(rnd + 97);
     }
-    //     // for (let i = 0; i < WALL_TILES[flags].length; i++) {
-    //     //     val[`w${flags + String.fromCharCode(i + 97)}`] = WALL_TILES[flags][i];
-    //     // }
-    // } else {
-    //     val[`w${key}`] = WALL_TILES[key][0];
-    // }
+
     return result;
 }
 
