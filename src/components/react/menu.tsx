@@ -1,41 +1,45 @@
 import * as _ from "lodash";
 import { Component, h } from "preact";
 import { connect } from "react-redux";
-import { BUILDINGS, MENU, Point, SUBMENU_MAX_H } from "../constants";
+import { BUILDINGS, KEYS, MENU, SUBMENU_MAX_H } from "../constants";
+import { IBuildingState } from "../redux/building/reducer";
+import { ICameraState } from "../redux/camera/reducer";
+import { IDiggerState } from "../redux/digger/reducer";
+import { removeInspectBuilding, setInspectBuildings } from "../redux/inspect/actions";
+import { IInspectState } from "../redux/inspect/reducer";
 import { selectMenu } from "../redux/menu/actions";
 import { IMenuState } from "../redux/menu/reducer";
-import { ISettingsState } from "../redux/settings/reducer";
 import { ReduxState } from "../redux/store";
 
 interface IMenuProps {
     currentMenu: IMenuState["currentSubmenu"];
     currentMenuItem: IMenuState["currentMenuItem"];
-    // inspectedBuildings: IInspectState["inspectedBuildings"];
-    // isDesignating: IDesignatorState["isDesignating"];
-    // strictMode: ISettingsState["strictMode"];
-    // buildingList: IBuildingState["buildingList"];
-    // buildingIds: IBuildingState["buildingIds"];
+    isInspecting: IMenuState["isInspecting"];
+    buildingTiles: IBuildingState["buildingTiles"];
+    isDesignating: IDiggerState["isDesignating"];
+    inspectedBuildings: IInspectState["inspectedBuildings"];
+    cameraZ: ICameraState["cameraZ"];
 
-    // selectMenu: (id: string) => void;
     selectMenuItem: (id: string) => void;
-    // setStrictMode: (val: boolean) => void;
+    removeInspectBuilding: (item: string) => void;
+    setInspectBuildings: (item: string[]) => void;
     // inspectTileAtMapCoord: (coord: Point, add: boolean) => void;
 }
 
 const mapStateToProps = (state: ReduxState) => ({
     currentMenu: state.menu.currentSubmenu,
     currentMenuItem: state.menu.currentMenuItem,
-    // inspectedBuildings: state.inspect.inspectedBuildings,
-    // isDesignating: state.designator.isDesignating,
-    // strictMode: state.settings.strictMode,
-    // buildingList: state.building.buildingList,
-    // buildingIds: state.building.buildingIds,
+    isInspecting: state.menu.isInspecting,
+    inspectedBuildings: state.inspect.inspectedBuildings,
+    buildingTiles: state.building.buildingTiles,
+    cameraZ: state.camera.cameraZ,
+    isDesignating: state.digger.isDesignating,
 });
 
 const mapDispatchToProps = (dispatch) => ({
-    // selectMenu: (id) => dispatch(selectMenu(id)),
     selectMenuItem: (id) => dispatch(selectMenu(id)),
-    // setStrictMode: (val) => dispatch(setStrictMode(val)),
+    removeInspectBuilding: (item) => dispatch(removeInspectBuilding(item)),
+    setInspectBuildings: (items) => dispatch(setInspectBuildings(items)),
     // inspectTileAtMapCoord: (coord, add) => dispatch(inspectRequestAtMapCoord(coord, add)),
 });
 
@@ -52,8 +56,24 @@ class Menu extends Component<IMenuProps, IGameMenuState> {
     }
 
     componentDidMount = () => {
-        // window.addEventListener("keydown", this.handleKeyDown);
-        // window.addEventListener("keyup", this.handleKeyUp);
+        window.addEventListener("keydown", this.handleKeyPress);
+        window.addEventListener("keyup", this.handleKeyUp);
+    }
+
+    handleKeyPress = (e) => {
+        if (e.keyCode === KEYS.VK_SHIFT) {
+            this.setState({
+                shiftDown: true,
+            });
+        }
+    }
+
+    handleKeyUp = (e) => {
+        if (e.keyCode === KEYS.VK_SHIFT) {
+            this.setState({
+                shiftDown: false,
+            });
+        }
     }
 
     render = (props: IMenuProps) => {
@@ -105,50 +125,56 @@ class Menu extends Component<IMenuProps, IGameMenuState> {
     }
 
     renderMenuStatus = () => {
-        // if (this.props.isDesignating) {
-        //     return (
-        //         <div>Designating {MENU.ITEMS[this.props.currentMenuItem].text}</div>
-        //     );
-        // }
-        // if (this.props.currentMenuItem != null && this.props.currentMenuItem.length > 0) {
-        //     if (this.props.currentMenuItem in BUILDINGS.IDS) {
-        //         return (
-        //             <div>Placing {BUILDINGS.IDS[this.props.currentMenuItem].display_name}</div>
-        //         );
-        //     }
-        //     return (
-        //         <div>Designating {MENU.ITEMS[this.props.currentMenuItem].text}</div>
-        //     );
-        // }
+        if (this.props.isInspecting) {
+            return <div></div>;
+        }
+        if (this.props.isDesignating) {
+            return (
+                <div>Designating {MENU.ITEMS[this.props.currentMenuItem].text}</div>
+            );
+        }
+        if (this.props.currentMenuItem != null && this.props.currentMenuItem.length > 0) {
+            if (this.props.currentMenuItem in BUILDINGS.IDS) {
+                return (
+                    <div>Placing {BUILDINGS.IDS[this.props.currentMenuItem].display_name}</div>
+                );
+            }
+            return (
+                <div>Designating {MENU.ITEMS[this.props.currentMenuItem].text}</div>
+            );
+        }
         return <div></div>;
+    }
+
+    handleInspectClick = (key, e: TouchEvent | MouseEvent) => {
+        e.preventDefault();
+        if (this.state.shiftDown) {
+            //remove this from inspected bldg list
+            this.props.removeInspectBuilding(key);
+        } else {
+            //set this as only inspected bldg
+            this.props.setInspectBuildings([key]);
+        }
     }
 
     renderMenuToolbar = () => {
         // shows if a building is selected
-        // if (this.props.inspectedBuildings == null ||
-        //     this.props.inspectedBuildings.length === 0 ||
-        //     this.props.buildingIds == null) {
-        //     return null;
-        // }
-        // return (
-        //     <div class="menu-toolbar">
-        //         {this.props.inspectedBuildings.map((m) => {
-        //             if (m in this.props.buildingIds) {
-        //                 return (
-        //                     <a href="#" onClick={() => this.handleInspectClick.bind(this, m)}>
-        //                         {BUILDINGS.IDS[this.props.buildingIds[m]].display_name}
-        //                     </a>
-        //                 );
-        //             }
-        //         })}
-        //     </div>
-        // );
-    }
-
-    handleInspectClick = (key, e) => {
-        e.preventDefault();
-        const coord: Point = key.substr(key.indexOf(":") + 1).split(":").map((m) => +m);
-        // this.props.inspectTileAtMapCoord(coord, this.state.shiftDown);
+        if (this.props.inspectedBuildings == null ||
+            this.props.inspectedBuildings.length === 0) {
+            return null;
+        }
+        return (
+            <div class="menu-toolbar">
+                {this.props.inspectedBuildings.map((m) => {
+                    const bldg = this.props.buildingTiles[this.props.cameraZ][m];
+                    return (
+                        <a href="#" onClick={(e) => this.handleInspectClick(m, e)}>
+                            {BUILDINGS.IDS[bldg.key].display_name}
+                        </a>
+                    );
+                })}
+            </div>
+        );
     }
 
     handleMenuEvent = (e: string) => {
@@ -158,13 +184,9 @@ class Menu extends Component<IMenuProps, IGameMenuState> {
         this.props.selectMenuItem(e);
     }
 
-    // handleStrictModeChange = (e: Event) => {
-    //     this.props.setStrictMode((e.currentTarget as HTMLInputElement).checked);
-    // }
-
     getMenuItemsCss = () => {
         return {
-            minHeight: (SUBMENU_MAX_H * 21) + 10,
+            minHeight: (SUBMENU_MAX_H * 21),
         };
     }
 

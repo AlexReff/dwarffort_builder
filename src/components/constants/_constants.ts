@@ -228,8 +228,13 @@ for (const key of Object.keys(BUILDINGS.SUBMENUS)) {
 }
 
 export const SUBMENU_MAX_H: number = Object.keys(MENU.SUBMENUS).reduce((map, key) => {
-    if (MENU.SUBMENUS[key] != null) {
-        map = Math.max(map, MENU.SUBMENUS[key].length);
+    let length = 0;
+    if (key in MENU.SUBMENUS && MENU.SUBMENUS[key] != null) {
+        length += MENU.SUBMENUS[key].length;
     }
+    if (key in BUILDINGS.SUBMENUS && BUILDINGS.SUBMENUS[key] != null) {
+        length += BUILDINGS.SUBMENUS[key].length;
+    }
+    map = Math.max(map, length);
     return map;
 }, -1);

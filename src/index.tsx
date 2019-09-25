@@ -97,7 +97,6 @@ class FortressDesigner extends Component<{}, IFortressDesignerState> {
     }
 
     endWindowResizing = () => {
-        // console.log("what");
         this.updateWrapperCss(() => {
             store.dispatch(resizeWindow(this.gridElement));
             this.initGame();
@@ -120,13 +119,18 @@ class FortressDesigner extends Component<{}, IFortressDesignerState> {
 
     //#region wrapper CSS
     updateWrapperCss = (callback?: () => void) => {
-        //update the grid's width in css to divisible by grid
-        const wOff = (this.gridElement.offsetWidth + this.state.gridColumnLayout) % TILE_W;
-        const hOff = (this.gridElement.offsetHeight + this.state.gridRowLayout) % TILE_W;
         this.setState({
-            gridColumnLayout: wOff,
-            gridRowLayout: hOff,
-        }, callback);
+            gridColumnLayout: null,
+            gridRowLayout: null,
+        }, () => {
+            //update the grid's width in css to divisible by grid
+            const wOff = (this.gridElement.offsetWidth + this.state.gridColumnLayout) % TILE_W;
+            const hOff = (this.gridElement.offsetHeight + this.state.gridRowLayout) % TILE_W;
+            this.setState({
+                gridColumnLayout: wOff,
+                gridRowLayout: hOff,
+            }, callback);
+        });
     }
 
     getWrapperCss = () => {

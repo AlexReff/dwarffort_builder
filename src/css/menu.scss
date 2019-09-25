@@ -53,8 +53,8 @@
 }
 
 .menu-items {
-    @include font-consolas;
-    font-size: 14px;
+    @include font-roboto;
+    font-size: 12px;
     font-weight: bold;
     
     .submenu {

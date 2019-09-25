@@ -9,7 +9,7 @@ import { setCursorPos } from "./cursor/actions";
 import cursor from "./cursor/reducer";
 import { setDesignateStart, setDigData } from "./digger/actions";
 import digger from "./digger/reducer";
-import { _moveInspectedBuildings, removeInspectBuilding, setInspectBuildings } from "./inspect/actions";
+import { _moveInspectedBuildings, addInspectBuilding, removeInspectBuilding, setInspectBuildings } from "./inspect/actions";
 import inspect from "./inspect/reducer";
 import { _setMenus } from "./menu/actions";
 import menu from "./menu/reducer";
@@ -92,6 +92,7 @@ type NON_THUNK_ACTIONS =
     ReturnType<typeof setDigData> |
     //inspect
     ReturnType<typeof setInspectBuildings> |
+    ReturnType<typeof addInspectBuilding> |
     ReturnType<typeof removeInspectBuilding> |
     ReturnType<typeof _moveInspectedBuildings> |
     //menu

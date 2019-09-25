@@ -49,8 +49,8 @@ export function inspectGridRange(gridA: Point, gridB: Point, add: boolean = fals
             return;
         }
 
-        const mapA = getMapCoord(gridA[0], gridA[1]);
-        const mapB = getMapCoord(gridB[0], gridB[1]);
+        const mapA = getMapCoord(gridA[0], gridA[1], state);
+        const mapB = getMapCoord(gridB[0], gridB[1], state);
 
         const minX = Math.min(mapA[0], mapB[0]);
         const minY = Math.min(mapA[1], mapB[1]);
@@ -69,10 +69,6 @@ export function inspectGridRange(gridA: Point, gridB: Point, add: boolean = fals
         }
 
         const bldgVals = Array.from(bldgKeys.values());
-
-        // if (bldgVals.length === 0) {
-        //     return;
-        // }
 
         const inspectedBuildings = add ? state.inspectedBuildings.concat(bldgVals.filter((m) => !state.inspectedBuildings.some((n) => n === m))) : bldgVals;
 

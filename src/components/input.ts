@@ -10,13 +10,13 @@ import store from "./redux/store";
 import { eventToPosition } from "./util";
 
 export class GameInput extends GameComponent {
-    shiftDown: boolean;
+    // shiftDown: boolean;
     grid: HTMLElement;
     storeUpdated: () => any;
 
     constructor() {
         super();
-        this.shiftDown = false;
+        // this.shiftDown = false;
         this.init();
     }
 
@@ -67,8 +67,8 @@ export class GameInput extends GameComponent {
             return;
         }
         if (e.keyCode === KEYS.VK_SHIFT) {
-            e.preventDefault();
-            this.shiftDown = true;
+            // e.preventDefault();
+            // this.shiftDown = true;
             return;
         }
         //menu navigation
@@ -88,13 +88,13 @@ export class GameInput extends GameComponent {
         }
         //end menu navigation
         switch (e.keyCode) {
-            case KEYS.VK_BACK_QUOTE:
-            case KEYS.VK_TILDE:
-                e.preventDefault();
-                // this.setState((prevState) => ({
-                //     debug: !prevState.debug,
-                // }));
-                break;
+            // case KEYS.VK_BACK_QUOTE:
+            // case KEYS.VK_TILDE:
+            //     e.preventDefault();
+            //     // this.setState((prevState) => ({
+            //     //     debug: !prevState.debug,
+            //     // }));
+            //     break;
             case KEYS.VK_ESCAPE:
                 e.preventDefault();
                 if (this.isInspecting &&
@@ -167,9 +167,9 @@ export class GameInput extends GameComponent {
     }
 
     handleKeyUp = (e: KeyboardEvent) => {
-        if (e.keyCode === KEYS.VK_SHIFT) {
-            this.shiftDown = false;
-        }
+        // if (e.keyCode === KEYS.VK_SHIFT) {
+        //     this.shiftDown = false;
+        // }
     }
 
     handleResize = (e: Event) => {
