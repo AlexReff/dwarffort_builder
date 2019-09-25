@@ -5,6 +5,9 @@ import { ITileGeneratorComponent } from "./_base";
 
 export class Cursor implements ITileGeneratorComponent {
     getTiles = (state: FlatReduxState): IRenderTile[] => {
+        if (state.isInspecting) {
+            return [];
+        }
         if (state.cursorBuilding) {
             const tiles = BUILDINGS.IDS[state.currentMenuItem];
             if (tiles) {

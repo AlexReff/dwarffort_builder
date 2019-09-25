@@ -37,9 +37,9 @@ export interface IGridRange {
 }
 
 export interface IFlatMenuItem {
-    "id": MENU_ITEM;
-    "text": string;
-    "key": string;
+    "id": IMenuItem["id"];
+    "text": IMenuItem["text"];
+    "key": IMenuItem["key"];
     "parent": string;
     "parsedKey"?: string;
 }

@@ -10,6 +10,7 @@ export interface ICameraState {
     cameraY: number;
     cameraZ: number;
     decoratorTiles: IRenderTile[];
+    gridBounds: ReturnType<HTMLElement["getBoundingClientRect"]>;
 }
 
 const initialState: ICameraState = {
@@ -21,6 +22,7 @@ const initialState: ICameraState = {
     cameraY: 0,
     cameraZ: 0,
     decoratorTiles: [],
+    gridBounds: null,
 };
 
 export default (state: ICameraState = initialState, action) => {
@@ -32,6 +34,7 @@ export default (state: ICameraState = initialState, action) => {
             state.mapWidth = action.mapWidth;
             state.cameraX = action.cameraX;
             state.cameraY = action.cameraY;
+            state.gridBounds = action.gridBounds;
             break;
         }
         case ACTION_TYPE.SET_MAP_SIZE: {
@@ -48,6 +51,10 @@ export default (state: ICameraState = initialState, action) => {
         }
         case ACTION_TYPE.SET_ZLEVEL: {
             state.cameraZ = action.z;
+            break;
+        }
+        case ACTION_TYPE.SET_GRID_BOUNDS: {
+            state.gridBounds = action.bounds;
             break;
         }
     }

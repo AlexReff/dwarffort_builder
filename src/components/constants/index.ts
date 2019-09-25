@@ -20,11 +20,11 @@ export {
 } from "./_constants";
 
 export {
-    CURSOR_BEHAVIOR,
+    // CURSOR_BEHAVIOR,
     DIRECTION,
     KEYS,
     MENU_ITEM,
-    TILETYPE,
+    DIG_TYPE as TILETYPE,
 } from "./_enums";
 
 export {

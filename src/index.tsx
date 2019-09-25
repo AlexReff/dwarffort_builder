@@ -51,12 +51,11 @@ class FortressDesigner extends Component<{}, IFortressDesignerState> {
             this.initGame();
         };
 
-        // window.addEventListener("keydown", this.handleKeyPress);
         window.addEventListener("resize", this.handleWindowResize);
 
         store.dispatch(Initialize(this.gridElement));
 
-        this.tileSheetImage.src = TILE_URL; //ensure onload runs after
+        this.tileSheetImage.src = TILE_URL; //to ensure onload runs at end
     }
 
     initGame = () => {

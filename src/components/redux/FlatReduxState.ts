@@ -2,6 +2,7 @@ import { IBuildingState } from "./building/reducer";
 import { ICameraState } from "./camera/reducer";
 import { ICursorState } from "./cursor/reducer";
 import { IDiggerState } from "./digger/reducer";
+import { IInspectState } from "./inspect/reducer";
 import { IMenuState } from "./menu/reducer";
 import { ISettingsState } from "./settings/reducer";
 import store, { FlatReduxState, GetFlattenedState } from "./store";
@@ -19,24 +20,25 @@ export class ReduxVariables implements FlatReduxState {
     cameraX: ICameraState["cameraX"];
     cameraY: ICameraState["cameraY"];
     cameraZ: ICameraState["cameraZ"];
+    gridBounds: ICameraState["gridBounds"];
+    //cursor
+    cursorBuilding: ICursorState["cursorBuilding"];
+    cursorX: ICursorState["cursorX"];
+    cursorY: ICursorState["cursorY"];
+    cursorRadius: ICursorState["cursorRadius"];
     //digger
     designateStartX: IDiggerState["designateStartX"];
     designateStartY: IDiggerState["designateStartY"];
     designateStartZ: IDiggerState["designateStartZ"];
     isDesignating: IDiggerState["isDesignating"];
     terrainTiles: IDiggerState["terrainTiles"];
+    //inspect
+    inspectedBuildings: IInspectState["inspectedBuildings"];
     //menu
     currentSubmenu: IMenuState["currentSubmenu"];
     currentMenuItem: IMenuState["currentMenuItem"];
     isInspecting: IMenuState["isInspecting"];
-    //cursor
-    cursorBuilding: ICursorState["cursorBuilding"];
-    cursorX: ICursorState["cursorX"];
-    cursorY: ICursorState["cursorY"];
-    // cursorTiles: ICursorState["cursorTiles"];
-    cursorRadius: ICursorState["cursorRadius"];
     //settings
-    // strictMode: ISettingsState["strictMode"];
     animationFlag: ISettingsState["animationFlag"];
     debugMode: ISettingsState["debugMode"];
 }

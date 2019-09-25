@@ -1,9 +1,23 @@
 import { DEFAULTS, TILE_H, TILE_W } from "../../constants";
-import { ACTION_TYPE, FlatGetState } from "../store";
+import { ACTION_TYPE } from "../store";
 
 //#region REDUX ACTIONS
 
-export const _initialize = (gridWidth, gridHeight, mapWidth, mapHeight, cameraX, cameraY, cursorX, cursorY) => {
+export function Initialize(container: HTMLElement) {
+    const gridWidth = Math.floor(container.offsetWidth / TILE_W);
+    const gridHeight = Math.floor(container.offsetHeight / TILE_H);
+
+    const mapWidth = Math.max(DEFAULTS.MAP_MIN_W, gridWidth);
+    const mapHeight = Math.max(DEFAULTS.MAP_MIN_H, gridHeight);
+
+    const cameraX = Math.floor((mapWidth - gridWidth) / 2.0);
+    const cameraY = Math.floor((mapHeight - gridHeight) / 2.0);
+
+    const cursorX = Math.floor(mapWidth / 2.0);
+    const cursorY = Math.floor(mapHeight / 2.0);
+
+    const gridBounds = container.getBoundingClientRect();
+
     return {
         type: ACTION_TYPE.INITIALIZE,
         gridWidth,
@@ -14,8 +28,9 @@ export const _initialize = (gridWidth, gridHeight, mapWidth, mapHeight, cameraX,
         cameraY,
         cursorX,
         cursorY,
+        gridBounds,
     };
-};
+}
 
 export const toggleAnimation = () => {
     return {
@@ -32,25 +47,5 @@ export const toggleAnimation = () => {
 
 //#endregion
 //#region THUNK ACTIONS
-
-export function Initialize(container: any) {
-    return (dispatch, getState) => {
-        const state = FlatGetState({}, getState);
-
-        state.gridWidth = Math.floor(container.offsetWidth / TILE_W);
-        state.gridHeight = Math.floor(container.offsetHeight / TILE_H);
-
-        state.mapWidth = Math.max(DEFAULTS.MAP_MIN_W, state.gridWidth);
-        state.mapHeight = Math.max(DEFAULTS.MAP_MIN_H, state.gridHeight);
-
-        state.cameraX = Math.floor((state.mapWidth - state.gridWidth) / 2);
-        state.cameraY = Math.floor((state.mapHeight - state.gridHeight) / 2);
-
-        state.cursorX = Math.floor(state.mapWidth / 2.0);
-        state.cursorY = Math.floor(state.mapHeight / 2.0);
-
-        dispatch(_initialize(state.gridWidth, state.gridHeight, state.mapWidth, state.mapHeight, state.cameraX, state.cameraY, state.cursorX, state.cursorY));
-    };
-}
 
 //#endregion

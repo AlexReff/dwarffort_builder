@@ -9,9 +9,11 @@ import { setCursorPos } from "./cursor/actions";
 import cursor from "./cursor/reducer";
 import { setDesignateStart, setDigData } from "./digger/actions";
 import digger from "./digger/reducer";
+import { removeInspectBuilding, setInspectBuildings } from "./inspect/actions";
+import inspect from "./inspect/reducer";
 import { _setMenus } from "./menu/actions";
 import menu from "./menu/reducer";
-import { _initialize, toggleAnimation } from "./settings/actions";
+import { Initialize, toggleAnimation } from "./settings/actions";
 import settings from "./settings/reducer";
 
 export const ALL_REDUCERS = {
@@ -19,6 +21,7 @@ export const ALL_REDUCERS = {
     camera,
     cursor,
     digger,
+    inspect,
     menu,
     settings,
 };
@@ -27,7 +30,6 @@ export const enum ACTION_TYPE {
     INITIALIZE,
     SET_MENU,
     SELECT_PREV_MENU,
-    SET_STRICT_MODE,
     SET_CAMERA_POS,
     SET_CURSOR_POS,
     SET_MAP_SIZE,
@@ -36,6 +38,10 @@ export const enum ACTION_TYPE {
     ANIMATION_TOGGLE,
     DESIGNATE_SET_TILES,
     SET_BUILDINGS,
+    SET_INSPECT_BUILDINGS,
+    ADD_INSPECT_BUILDING,
+    SET_GRID_BOUNDS,
+    REMOVE_INSPECT_BUILDING,
 }
 
 function combineReducersImmer<S, A extends Action = AnyAction>(produce, reducers: ReducersMapObject<S, A> = {} as ReducersMapObject): Reducer<S, A> {
@@ -80,16 +86,17 @@ type NON_THUNK_ACTIONS =
     ReturnType<typeof setCameraZ> |
     //cursor
     ReturnType<typeof setCursorPos> |
-    // ReturnType<typeof setCursorTiles> |
     //digger
     ReturnType<typeof setDesignateStart> |
     ReturnType<typeof setDigData> |
+    //inspect
+    ReturnType<typeof setInspectBuildings> |
+    ReturnType<typeof removeInspectBuilding> |
     //menu
     ReturnType<typeof _setMenus> |
     //settings
     ReturnType<typeof toggleAnimation> |
-    // ReturnType<typeof setStrictMode> |
-    ReturnType<typeof _initialize>;
+    ReturnType<typeof Initialize>;
 
 const store = createStore(COMBINED_REDUCERS, applyMiddleware(thunk as ThunkMiddleware<ReduxState, NON_THUNK_ACTIONS>));
 

@@ -1,10 +1,10 @@
 
-export const enum CURSOR_BEHAVIOR {
-    CLASSIC, //classic df-style with 'x' on a tile
-    MODERN, //builder style, drag+select, mouse-centric UI behavior
-}
+// export const enum CURSOR_BEHAVIOR {
+//     CLASSIC, //classic df-style with 'x' on a tile
+//     MODERN, //builder style, drag+select, mouse-centric UI behavior
+// }
 
-export const enum TILETYPE {
+export const enum DIG_TYPE {
     Empty,
     Wall,
     Floor,

@@ -1,4 +1,4 @@
-import { IRenderTile, Point, TILETYPE } from "./constants";
+import { IRenderTile, Point, TILE_H, TILE_W, TILETYPE } from "./constants";
 import { Game } from "./game";
 import store, { FlatGetState, FlatReduxState } from "./redux/store";
 import Display from "./rot/display";
@@ -35,6 +35,30 @@ export const getDisplayParms = (tile: IRenderTile, _state?: FlatReduxState) => {
         ];
     }
 };
+
+export const eventToPosition = (e: TouchEvent | MouseEvent, rect: ReturnType<HTMLElement["getBoundingClientRect"]>): Point => {
+    let x, y;
+    if ("touches" in e) {
+        x = e.touches[0].clientX;
+        y = e.touches[1].clientY;
+    } else {
+        x = e.clientX;
+        y = e.clientY;
+    }
+    x -= rect.left;
+    y -= rect.top;
+
+    x *= rect.width / rect.width;
+    y *= rect.height / rect.height;
+
+    if (x < 0 || y < 0 || x >= rect.width || y >= rect.height) { return [-1, -1]; }
+
+    return _normalizedEventToPosition(x, y);
+};
+
+function _normalizedEventToPosition(x: number, y: number): Point {
+    return [Math.floor(x / TILE_W), Math.floor(y / TILE_H)];
+}
 
 /** Converts MAP coord to GRID coord */
 export const getGridCoord = (x: number, y: number, _state?: FlatReduxState): [number, number] => {
@@ -116,15 +140,15 @@ export const getNeighborsOfRange = (
 /** @returns true if a building can be placed on the specified tile  */
 export const isBuildingPlaceable = (state: FlatReduxState, x: number, y: number): boolean => {
     if (!(state.cameraZ in state.terrainTiles)) {
-        return false;
+        return false; //no terrain on this z-level
     }
     const key = `${x}:${y}`;
     if (!(key in state.terrainTiles[state.cameraZ])) {
-        return false;
+        return false; //no terrain for this position
     }
     if (state.cameraZ in state.buildingPositions) {
         if (key in state.buildingPositions[state.cameraZ]) {
-            return false;
+            return false; //building found at location
         }
     }
     const tile = state.terrainTiles[state.cameraZ][key];

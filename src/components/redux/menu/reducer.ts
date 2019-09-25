@@ -19,12 +19,19 @@ export default (state = initialState, action: AnyAction) => {
         case ACTION_TYPE.SET_MENU: {
             state.currentMenuItem = action.currentMenuItem;
             state.currentSubmenu = action.currentSubmenu;
+            state.isInspecting = action.currentMenuItem === MENU_ITEM.inspect;
             break;
         }
         case ACTION_TYPE.SET_BUILDINGS:
         case ACTION_TYPE.DESIGNATE_SET_TILES: {
             state.currentMenuItem = null;
             break;
+        }
+        case ACTION_TYPE.ADD_INSPECT_BUILDING:
+        case ACTION_TYPE.SET_INSPECT_BUILDINGS: {
+            //occurs when a building is clicked
+            state.currentMenuItem = MENU_ITEM.inspect;
+            state.currentSubmenu = "top";
         }
     }
     return state;

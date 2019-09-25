@@ -28,6 +28,13 @@ export function setMapSize(mapWidth: number, mapHeight: number, gridWidth: numbe
     };
 }
 
+export function setGridBounds(bounds: ReturnType<HTMLElement["getBoundingClientRect"]>) {
+    return {
+        type: ACTION_TYPE.SET_GRID_BOUNDS,
+        bounds,
+    };
+}
+
 //#endregion
 //#region THUNK ACTIONS
 

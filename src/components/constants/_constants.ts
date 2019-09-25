@@ -2,18 +2,17 @@ const styles = require("../.././css/_variables.scss");
 
 import { buildings } from "../../data/buildings.json";
 import { items } from "../../data/menu_flat.json";
-import { CURSOR_BEHAVIOR, MENU_ITEM } from "./_enums";
-import { IBuildingData, IBuildingTileData, IFlatMenuItem } from "./_interfaces";
+import { IBuildingData, IFlatMenuItem } from "./_interfaces";
 
 export type Point = [number, number];
 
 export const DEFAULTS = {
-    STRICT_MODE: true,
+    // STRICT_MODE: true,
     PAINT_OVERWRITE: true,
     MAP_MIN_W: 48 * 2,
     MAP_MIN_H: 48 * 2,
     CURSOR: {
-        MODE: CURSOR_BEHAVIOR.MODERN,
+        // MODE: CURSOR_BEHAVIOR.MODERN,
         CHAR: ".",
     },
     COLORS: {
@@ -74,13 +73,9 @@ export const WALL_TILES: Point[][] = [
 export const FLOOR_TILES: Point[] = [
     [192, 32],
     [224, 32],
-    // [0, 96],
-    // [0, 176],
-    // [16, 176],
-    // [32, 176],
 ];
 
-export const DEC_TILES: Array<[number, number]> = [
+export const DEC_TILES: Point[] = [
     [192, 16], // 3 spades
     [32, 128], // 3 ore
     [192, 144], // 3 ore
@@ -142,14 +137,16 @@ export const TILE_MAP: { [key: string]: Point; } = ((): { [key: string]: Point; 
     return val;
 })();
 
-/** Building data, key=building id */
-// export const BUILDINGS: { [key: string]: IBuildingData } = buildings as any;
 export const BUILDINGS: {
+    /** Flat array */
     LIST: IBuildingData[],
+    /** Keys == 'id' */
     IDS: { [key: string]: IBuildingData },
+    /** Keys == 'hotkey:path:full' */
     KEYS: {
         [key: string]: IBuildingData;
     },
+    /** Keys == submenu ids */
     SUBMENUS: {
         [key: string]: IBuildingData[];
     },
@@ -230,11 +227,9 @@ for (const key of Object.keys(BUILDINGS.SUBMENUS)) {
     }
 }
 
-const _tallestMenu: number = Object.keys(MENU.SUBMENUS).reduce((map, key) => {
+export const SUBMENU_MAX_H: number = Object.keys(MENU.SUBMENUS).reduce((map, key) => {
     if (MENU.SUBMENUS[key] != null) {
         map = Math.max(map, MENU.SUBMENUS[key].length);
     }
     return map;
 }, -1);
-
-export const SUBMENU_MAX_H = _tallestMenu;

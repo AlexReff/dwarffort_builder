@@ -98,8 +98,9 @@
     margin-top: auto;
     
     .copy {
-        @include font-px;
+        @include font-nunito;
         margin-top: 30px;
-        font-size: 12px;
+        font-size: 14px;
+        text-align: center;
     }
 }

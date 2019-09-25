@@ -29,28 +29,25 @@ export function placeCursorBuilding(_x?: number, _y?: number) {
         if (!(state.cameraZ in positions)) {
             positions[state.cameraZ] = {};
         }
-        const tiles = produce(state.buildingTiles, (draft) => {
-            const range = state.cursorRadius;
-            const startX = targetX - range;
-            const startY = targetY - range;
-            const endX = targetX + range;
-            const endY = targetY + range;
-            for (let y = startY; y <= endY; y++) {
-                for (let x = startX; x <= endX; x++) {
-                    if (!isBuildingPlaceable(state, x, y)) {
-                        return;
-                    }
-                    positions[state.cameraZ][`${x}:${y}`] = `${targetX}:${targetY}`;
+        const range = state.cursorRadius;
+        const startX = targetX - range;
+        const startY = targetY - range;
+        const endX = targetX + range;
+        const endY = targetY + range;
+        const centerKey = `${targetX}:${targetY}`;
+        for (let y = startY; y <= endY; y++) {
+            for (let x = startX; x <= endX; x++) {
+                if (!isBuildingPlaceable(state, x, y)) {
+                    return;
                 }
+                positions[state.cameraZ][`${x}:${y}`] = centerKey;
             }
+        }
+        const tiles = produce(state.buildingTiles, (draft) => {
             if (!(state.cameraZ in draft)) {
                 draft[state.cameraZ] = {};
             }
-            const key = `${targetX}:${targetY}`;
-            if (key in draft[state.cameraZ]) {
-                return;
-            }
-            draft[state.cameraZ][key] = {
+            draft[state.cameraZ][centerKey] = {
                 posX: targetX,
                 posY: targetY,
                 posZ: state.cameraZ,
