@@ -23,26 +23,30 @@ export function placeCursorBuilding(_x?: number, _y?: number) {
         if (!(state.currentMenuItem in BUILDINGS.IDS)) {
             return;
         }
-        const positions = state.buildingPositions;
+
         const targetX = _x || state.cursorX;
         const targetY = _y || state.cursorY;
-        if (!(state.cameraZ in positions)) {
-            positions[state.cameraZ] = {};
-        }
         const range = state.cursorRadius;
         const startX = targetX - range;
         const startY = targetY - range;
         const endX = targetX + range;
         const endY = targetY + range;
         const centerKey = `${targetX}:${targetY}`;
+
+        let newPositions = {};
+        if (state.cameraZ in state.buildingPositions) {
+            newPositions = {...state.buildingPositions[state.cameraZ]};
+        }
+
         for (let y = startY; y <= endY; y++) {
             for (let x = startX; x <= endX; x++) {
                 if (!isBuildingPlaceable(state, x, y)) {
                     return;
                 }
-                positions[state.cameraZ][`${x}:${y}`] = centerKey;
+                newPositions[`${x}:${y}`] = centerKey;
             }
         }
+
         const tiles = produce(state.buildingTiles, (draft) => {
             if (!(state.cameraZ in draft)) {
                 draft[state.cameraZ] = {};
@@ -54,11 +58,18 @@ export function placeCursorBuilding(_x?: number, _y?: number) {
                 key: state.currentMenuItem,
             };
         });
+
         if (!(state.cameraZ in tiles) || //no z-level in the result, so no buildings can exist
             (state.cameraZ in state.buildingTiles && //no new items
             Object.keys(state.buildingTiles[state.cameraZ]).length === Object.keys(tiles[state.cameraZ]).length)) {
             return;
         }
+
+        const positions = {
+            ...state.buildingPositions,
+            [state.cameraZ]: newPositions,
+        };
+
         dispatch(setBuildings(tiles, positions));
     };
 }

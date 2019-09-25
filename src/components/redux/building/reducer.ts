@@ -25,6 +25,11 @@ export default (state: IBuildingState = initialState, action) => {
             state.buildingPositions = action.positions;
             break;
         }
+        case ACTION_TYPE.MOVE_INSPECT_BUILDINGS: {
+            state.buildingTiles = action.buildingTiles;
+            state.buildingPositions = action.buildingPositions;
+            break;
+        }
     }
     return state;
 };

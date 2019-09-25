@@ -25,6 +25,7 @@ export default (state = initialState, action: AnyAction) => {
         case ACTION_TYPE.SET_BUILDINGS:
         case ACTION_TYPE.DESIGNATE_SET_TILES: {
             state.currentMenuItem = null;
+            state.isInspecting = false;
             break;
         }
         case ACTION_TYPE.ADD_INSPECT_BUILDING:
@@ -32,6 +33,7 @@ export default (state = initialState, action: AnyAction) => {
             //occurs when a building is clicked
             state.currentMenuItem = MENU_ITEM.inspect;
             state.currentSubmenu = "top";
+            state.isInspecting = true;
         }
     }
     return state;

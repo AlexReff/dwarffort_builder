@@ -20,13 +20,17 @@ export default (state = initialState, action: AnyAction) => {
             state.inspectedBuildings = action.items;
             break;
         }
+        case ACTION_TYPE.MOVE_INSPECT_BUILDINGS: {
+            state.inspectedBuildings = action.inspectedBuildings;
+            break;
+        }
         case ACTION_TYPE.ADD_INSPECT_BUILDING: {
             state.inspectedBuildings.push(action.item);
             break;
         }
         case ACTION_TYPE.REMOVE_INSPECT_BUILDING: {
             const idx = state.inspectedBuildings.indexOf(action.item);
-            if (idx > 0) {
+            if (idx >= 0) {
                 delete state.inspectedBuildings[idx];
             }
             break;

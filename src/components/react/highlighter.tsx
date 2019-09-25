@@ -3,7 +3,7 @@ import { connect } from "react-redux";
 import { BUILDINGS, IBuildingData, KEYS, Point, TILE_H, TILE_W } from "../constants";
 import { IBuildingState, IBuildingTile } from "../redux/building/reducer";
 import { ICameraState } from "../redux/camera/reducer";
-import { inspectGridPos } from "../redux/inspect/actions";
+import { inspectGridPos, inspectGridRange, moveInspectedBuildings } from "../redux/inspect/actions";
 import { IInspectState } from "../redux/inspect/reducer";
 import { IMenuState } from "../redux/menu/reducer";
 import { ReduxState } from "../redux/store";
@@ -25,6 +25,8 @@ interface IGameHighlighterProps {
     // buildingBounds: IBuildingState["buildingBounds"];
     //redux dispatch
     inspectGridPos: typeof inspectGridPos;
+    moveInspectedBuildings: typeof moveInspectedBuildings;
+    inspectGridRange: typeof inspectGridRange;
     // inspectTileAtPos: typeof inspectRequestAtPos;
     // inspectTileAtMapCoord: typeof inspectRequestAtMapCoord;
     // inspectTileRange: typeof inspectRequestRange;
@@ -32,8 +34,8 @@ interface IGameHighlighterProps {
 }
 
 interface IGameHighlighterState {
-    highlightingStart: Point;
-    currentPosition: Point;
+    highlightingStart: Point; //grid Position
+    currentPosition: Point; //grid Position
     mouseDown: boolean;
     mouseDownCoord: Point;
     showHighlighter: boolean;
@@ -61,9 +63,15 @@ const mapStateToProps = (state: ReduxState) => ({
 const mapDispatchToProps = (dispatch) => ({
     // inspectTileAtPos: (x, y, add) => dispatch(inspectRequestAtPos(x, y, add)),
     inspectGridPos: (x, y, shiftDown) => dispatch(inspectGridPos(x, y, shiftDown)),
+    moveInspectedBuildings: (diffX, diffY) => dispatch(moveInspectedBuildings(diffX, diffY)),
+    inspectGridRange: (a, b, add) => dispatch(inspectGridRange(a, b, add)),
 });
 
 class GameHighlighter extends Component<IGameHighlighterProps, IGameHighlighterState> {
+    allInspectStartLeft: number;
+    allInspectStartTop: number;
+    allInspectLeft: number;
+    allInspectTop: number;
     canvasElement: HTMLElement;
 
     constructor() {
@@ -80,8 +88,8 @@ class GameHighlighter extends Component<IGameHighlighterProps, IGameHighlighterS
 
     componentDidMount = () => {
         this.canvasElement = document.getElementById("canvas");
-        window.addEventListener("mousemove", this.handleMouseMove);
         this.canvasElement.addEventListener("mousedown", this.handleMouseDown);
+        window.addEventListener("mousemove", this.handleMouseMove);
         window.addEventListener("mouseup", this.handleMouseUp);
         window.addEventListener("keydown", this.handleKeyDown);
         window.addEventListener("keyup", this.handleKeyUp);
@@ -103,11 +111,8 @@ class GameHighlighter extends Component<IGameHighlighterProps, IGameHighlighterS
     handleMouseUp = (e: MouseEvent | TouchEvent) => {
         if (this.props.isInspecting) {
             if (this.state.showHighlighter) {
-                //inspect range -> mouseDownCoord, currentPosition
-                // this.props.inspectTileRange(this.state.mouseDownCoord, this.state.currentPosition, this.state.shiftDown);
                 e.preventDefault();
-            } else {
-                //
+                this.props.inspectGridRange(this.state.highlightingStart, this.state.currentPosition, this.state.shiftDown);
             }
         }
         this.setState({
@@ -164,10 +169,7 @@ class GameHighlighter extends Component<IGameHighlighterProps, IGameHighlighterS
             return;
         }
         e.preventDefault();
-        // this.props.inspectMoveSelectionRequest({
-        //     diffX: this.allInspectLeft - this.allInspectStartLeft,
-        //     diffY: this.allInspectTop - this.allInspectStartTop,
-        // });
+        this.props.moveInspectedBuildings(this.allInspectLeft - this.allInspectStartLeft, this.allInspectTop - this.allInspectStartTop);
         this.setState({
             toolbarMoveDragging: false,
         });
@@ -277,6 +279,11 @@ class GameHighlighter extends Component<IGameHighlighterProps, IGameHighlighterS
                 left: `${allStyleLeft}px`,
                 top: `${allStyleTop}px`,
             };
+
+            this.allInspectStartLeft = minX,
+            this.allInspectStartTop = minY,
+            this.allInspectLeft = allStyleLeft,
+            this.allInspectTop = allStyleTop,
 
             result.push((
                 <div class="all_inspect" style={allStyle}></div>

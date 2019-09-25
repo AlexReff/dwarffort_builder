@@ -1,5 +1,7 @@
-import { BUILDINGS, MENU } from "../../constants";
+import produce from "immer";
+import { BUILDINGS, MENU, Point, TILE_H, TILE_W, TILETYPE } from "../../constants";
 import { getMapCoord } from "../../util";
+import { IBuildingTile } from "../building/reducer";
 import { ACTION_TYPE, FlatGetState } from "../store";
 import { IInspectState } from "./reducer";
 
@@ -26,8 +28,123 @@ export function removeInspectBuilding(item: string) {
     };
 }
 
+export function _moveInspectedBuildings(buildingTiles, buildingPositions, inspectedBuildings) {
+    return {
+        type: ACTION_TYPE.MOVE_INSPECT_BUILDINGS,
+        buildingTiles,
+        buildingPositions,
+        inspectedBuildings,
+    };
+}
+
 //#endregion
 //#region THUNK ACTIONS
+
+export function inspectGridRange(gridA: Point, gridB: Point, add: boolean = false) {
+    return (dispatch, getState) => {
+        const state = FlatGetState({}, getState);
+        if (state.buildingPositions == null ||
+            !(state.cameraZ in state.buildingPositions) ||
+            Object.keys(state.buildingPositions[state.cameraZ]).length === 0) {
+            return;
+        }
+
+        const mapA = getMapCoord(gridA[0], gridA[1]);
+        const mapB = getMapCoord(gridB[0], gridB[1]);
+
+        const minX = Math.min(mapA[0], mapB[0]);
+        const minY = Math.min(mapA[1], mapB[1]);
+        const maxX = Math.max(mapA[0], mapB[0]);
+        const maxY = Math.max(mapA[1], mapB[1]);
+
+        const bldgKeys = new Set<string>();
+
+        for (let x = minX; x <= maxX; x++) {
+            for (let y = minY; y <= maxY; y++) {
+                const key = `${x}:${y}`;
+                if (key in state.buildingPositions[state.cameraZ]) {
+                    bldgKeys.add(state.buildingPositions[state.cameraZ][key]);
+                }
+            }
+        }
+
+        const bldgVals = Array.from(bldgKeys.values());
+
+        // if (bldgVals.length === 0) {
+        //     return;
+        // }
+
+        const inspectedBuildings = add ? state.inspectedBuildings.concat(bldgVals.filter((m) => !state.inspectedBuildings.some((n) => n === m))) : bldgVals;
+
+        dispatch(setInspectBuildings(inspectedBuildings));
+    };
+}
+
+export function moveInspectedBuildings(diffX: number, diffY: number) {
+    return (dispatch, getState) => {
+        const state = FlatGetState({}, getState);
+        const xGridDiff = Math.floor(diffX / +TILE_W);
+        const yGridDiff = Math.floor(diffY / +TILE_H);
+
+        const allNewPositions = [];
+        //validate no building is in the way
+        for (const bldgKey of state.inspectedBuildings) {
+            const bldgPositions = Object.keys(state.buildingPositions[state.cameraZ]).filter((m) => state.buildingPositions[state.cameraZ][m] === bldgKey);
+            for (const pos of bldgPositions) {
+                const parts = pos.split(":");
+                const newPos = `${+parts[0] + xGridDiff}:${+parts[1] + yGridDiff}`;
+                allNewPositions.push(newPos);
+                if (newPos in state.buildingPositions[state.cameraZ]) {
+                    if (!state.inspectedBuildings.some((e) => e === state.buildingPositions[state.cameraZ][newPos])) {
+                        return; //non-inspected building found at new position
+                    }
+                }
+            }
+        }
+        //validate terrain
+        for (const pos of allNewPositions) {
+            if (!(state.cameraZ in state.terrainTiles) ||
+                !(pos in state.terrainTiles[state.cameraZ])) {
+                return; //no floor
+            }
+            if (state.terrainTiles[state.cameraZ][pos].type !== TILETYPE.Floor) {
+                return; //non-floor detected
+            }
+        }
+        const buildingTiles = produce(state.buildingTiles, (draft) => {
+            for (const key of Object.keys(draft[state.cameraZ])) {
+                if (state.inspectedBuildings.some((m) => m === key)) {
+                    const plucked = draft[state.cameraZ][key];
+                    delete draft[state.cameraZ][key];
+                    plucked.posX += xGridDiff;
+                    plucked.posY += yGridDiff;
+                    const keyParts = key.split(":");
+                    const newKey = `${+keyParts[0] + xGridDiff}:${+keyParts[1] + yGridDiff}`;
+                    draft[state.cameraZ][newKey] = plucked;
+                }
+            }
+        });
+        const buildingPositions = produce(state.buildingPositions, (draft) => {
+            for (const key of Object.keys(draft[state.cameraZ])) {
+                if (state.inspectedBuildings.some((m) => m === draft[state.cameraZ][key])) {
+                    const plucked = draft[state.cameraZ][key];
+                    delete draft[state.cameraZ][key];
+                    const pluckParts = plucked.split(":");
+                    const newCenter = `${+pluckParts[0] + xGridDiff}:${+pluckParts[1] + yGridDiff}`;
+                    const keyParts = key.split(":");
+                    const newKey = `${+keyParts[0] + xGridDiff}:${+keyParts[1] + yGridDiff}`;
+                    draft[state.cameraZ][newKey] = newCenter;
+                }
+            }
+        });
+        const inspectedBuildings = state.inspectedBuildings.map((e) => {
+            const parts = e.split(":");
+            return `${+parts[0] + xGridDiff}:${+parts[1] + yGridDiff}`;
+        });
+
+        dispatch(_moveInspectedBuildings(buildingTiles, buildingPositions, inspectedBuildings));
+    };
+}
 
 export function toggleInspectBuilding(item: string) {
     return (dispatch, getState) => {
@@ -40,10 +157,10 @@ export function toggleInspectBuilding(item: string) {
     };
 }
 
-export function inspectGridPos(x: number, y: number, add?: boolean) {
+export function inspectGridPos(gridX: number, gridY: number, add?: boolean) {
     return (dispatch, getState) => {
         const state = FlatGetState({}, getState);
-        const [mapX, mapY] = getMapCoord(x, y, state);
+        const [mapX, mapY] = getMapCoord(gridX, gridY, state);
         const key = `${mapX}:${mapY}`;
         if (state.cameraZ in state.buildingPositions) {
             if (key in state.buildingPositions[state.cameraZ]) {
