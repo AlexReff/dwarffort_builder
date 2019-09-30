@@ -1,5 +1,5 @@
 import produce from "immer";
-import { FLOOR_TILES, MENU_ITEM, TILETYPE, WALL_TILES } from "../../constants";
+import { FLOOR_TILES, MENU_ITEM, WALL_TILES } from "../../constants";
 import rng from "../../rot/rng";
 import { getMapCoord, getNeighborsOfRange } from "../../util";
 import { ACTION_TYPE, FlatGetState, FlatReduxState } from "../store";
@@ -67,7 +67,7 @@ export function submitDesignating() {
                                     posX: x,
                                     posY: y,
                                     posZ: z,
-                                    type: TILETYPE.Wall,
+                                    type: MENU_ITEM.wall,
                                 };
                                 break;
                             case MENU_ITEM.mine:
@@ -75,7 +75,7 @@ export function submitDesignating() {
                                     posX: x,
                                     posY: y,
                                     posZ: z,
-                                    type: TILETYPE.Floor,
+                                    type: MENU_ITEM.mine,
                                     characterVariant: rng.getUniformInt(0, FLOOR_TILES.length - 1).toString(),
                                 };
                                 break;
@@ -92,7 +92,7 @@ export function submitDesignating() {
                                 posX: point[0],
                                 posY: point[1],
                                 posZ: z,
-                                type: TILETYPE.Wall,
+                                type: MENU_ITEM.wall,
                             };
                         }
                     }
@@ -101,7 +101,7 @@ export function submitDesignating() {
                     for (let x = 0; x < state.mapWidth; x++) {
                         const key = `${x}:${y}`;
                         if (key in draft[z]) {
-                            if (draft[z][key].type === TILETYPE.Wall) {
+                            if (draft[z][key].type === MENU_ITEM.wall) {
                                 draft[z][key].characterVariant = getNeighborFlags(draft, state, x, y, z);
                             }
                         }
@@ -130,7 +130,7 @@ function getNeighborFlags(tiles: IDiggerState["terrainTiles"], state: FlatReduxS
     if (y > 0) {
         const nKey = `${x}:${y - 1}`;
         if (nKey in tiles[z]) {
-            if (tiles[z][nKey].type === TILETYPE.Wall) {
+            if (tiles[z][nKey].type === MENU_ITEM.wall) {
                 flags += 1;
             }
         }
@@ -138,7 +138,7 @@ function getNeighborFlags(tiles: IDiggerState["terrainTiles"], state: FlatReduxS
     if (x < state.mapWidth - 1) {
         const eKey = `${x + 1}:${y}`;
         if (eKey in tiles[z]) {
-            if (tiles[z][eKey].type === TILETYPE.Wall) {
+            if (tiles[z][eKey].type === MENU_ITEM.wall) {
                 flags += 2;
             }
         }
@@ -146,7 +146,7 @@ function getNeighborFlags(tiles: IDiggerState["terrainTiles"], state: FlatReduxS
     if (y < state.mapHeight - 1) {
         const sKey = `${x}:${y + 1}`;
         if (sKey in tiles[z]) {
-            if (tiles[z][sKey].type === TILETYPE.Wall) {
+            if (tiles[z][sKey].type === MENU_ITEM.wall) {
                 flags += 4;
             }
         }
@@ -154,7 +154,7 @@ function getNeighborFlags(tiles: IDiggerState["terrainTiles"], state: FlatReduxS
     if (x > 0) {
         const wKey = `${x - 1}:${y}`;
         if (wKey in tiles[z]) {
-            if (tiles[z][wKey].type === TILETYPE.Wall) {
+            if (tiles[z][wKey].type === MENU_ITEM.wall) {
                 flags += 8;
             }
         }

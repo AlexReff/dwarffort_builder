@@ -24,6 +24,11 @@ body {
     user-select: none;
 }
 
+a {
+    @include whiteLinkHighlight;
+    text-decoration: none;
+}
+
 #wrapper {
     width: 100%;
     height: 100vh;
@@ -90,50 +95,50 @@ canvas {
     }
 }
 
-.strict-mode {
-    margin-top: 30px;
+// .strict-mode {
+//     margin-top: 30px;
 
-    input[type="checkbox"] {
-        opacity: 0;
-        position: absolute;
-        z-index: -1;
+//     input[type="checkbox"] {
+//         opacity: 0;
+//         position: absolute;
+//         z-index: -1;
         
-        + label {
-            position: relative;
-            cursor: pointer;
-            padding: 4px 6px;
+//         + label {
+//             position: relative;
+//             cursor: pointer;
+//             padding: 4px 6px;
 
-            &:before {
-                content: "";
-                background: rgba(128,0,0,.3);
-                position: absolute;
-                left: 0;
-                top: 0;
-                right: 0;
-                bottom: 0;
-            }
+//             &:before {
+//                 content: "";
+//                 background: rgba(128,0,0,.3);
+//                 position: absolute;
+//                 left: 0;
+//                 top: 0;
+//                 right: 0;
+//                 bottom: 0;
+//             }
 
-            &:after {
-                content: "Disabled";
-                // content: attr(data-unchecked);
-                text-transform: uppercase;
-                margin-left: 2px;
-            }
-        }
+//             &:after {
+//                 content: "Disabled";
+//                 // content: attr(data-unchecked);
+//                 text-transform: uppercase;
+//                 margin-left: 2px;
+//             }
+//         }
 
-        &:checked {
-            + label {
-                &:before {
-                    background: rgba(0,128,0,.3);
-                }
+//         &:checked {
+//             + label {
+//                 &:before {
+//                     background: rgba(0,128,0,.3);
+//                 }
 
-                &:after {
-                    content: "Enabled";
-                    // content: attr(data-checked);
-                }
-            }
-        }
-    }
-}
+//                 &:after {
+//                     content: "Enabled";
+//                     // content: attr(data-checked);
+//                 }
+//             }
+//         }
+//     }
+// }
 
 @import 'header', 'menu', 'grid', 'highlighter', 'inspect', 'footer';

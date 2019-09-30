@@ -1,5 +1,5 @@
+import { original } from "immer";
 import { AnyAction } from "redux";
-import { MENU_ITEM } from "../../constants";
 import { ACTION_TYPE } from "../store";
 
 export interface IInspectState {
@@ -29,9 +29,13 @@ export default (state = initialState, action: AnyAction) => {
             break;
         }
         case ACTION_TYPE.REMOVE_INSPECT_BUILDING: {
-            const idx = state.inspectedBuildings.indexOf(action.item);
+            // state.inspectedBuildings = state.inspectedBuildings.filter((m) => m !== action.item);
+            // original;
+            //use .splice
+            const idx = (original(state.inspectedBuildings) as string[]).indexOf(action.item);
             if (idx >= 0) {
-                delete state.inspectedBuildings[idx];
+                // delete state.inspectedBuildings[idx];
+                state.inspectedBuildings.splice(idx, 1);
             }
             break;
         }

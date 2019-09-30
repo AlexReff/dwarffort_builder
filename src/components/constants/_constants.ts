@@ -2,7 +2,7 @@ const styles = require("../.././css/_variables.scss");
 
 import { buildings } from "../../data/buildings.json";
 import { items } from "../../data/menu_flat.json";
-import { IBuildingData, IFlatMenuItem } from "./_interfaces";
+import { IBuildingData, IMenuItem } from "./_interfaces";
 
 export type Point = [number, number];
 
@@ -161,18 +161,18 @@ export const BUILDINGS: {
 };
 
 // Menu Data
-export const MENU_JSON = items as IFlatMenuItem[];
+export const MENU_JSON = items as IMenuItem[];
 //export const MENU_ITEMS = items.items as IMenuItem[];
 
 export const MENU: {
     ITEMS: {
-        [key: string]: IFlatMenuItem;
+        [key: string]: IMenuItem;
     },
     KEYS: {
-        [key: string]: IFlatMenuItem;
+        [key: string]: IMenuItem;
     },
     SUBMENUS: {
-        [key: string]: IFlatMenuItem[];
+        [key: string]: IMenuItem[];
     },
 } = {
     ITEMS: {},

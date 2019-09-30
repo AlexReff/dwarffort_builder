@@ -1,5 +1,5 @@
 import { ITileCollection } from "src/components/constants/_interfaces";
-import { IRenderTile, MENU, TILETYPE } from "../../constants";
+import { MENU, MENU_ITEM } from "../../constants";
 import { ACTION_TYPE } from "../store";
 
 export interface IDiggerState {
@@ -23,14 +23,13 @@ export interface ITerrainTile {
     posX: number;
     posY: number;
     posZ: number;
-    type: TILETYPE;
+    type: MENU_ITEM;
     characterVariant?: string;
 }
 
 export default (state = initialState, action) => {
     switch (action.type) {
         case ACTION_TYPE.INITIALIZE: {
-            // state.terrainTiles = { 0: {} };
             break;
         }
         case ACTION_TYPE.DESIGNATE_START: {

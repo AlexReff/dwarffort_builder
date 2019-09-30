@@ -1,4 +1,4 @@
-import { IRenderTile, TILETYPE } from "../constants";
+import { IRenderTile, MENU_ITEM } from "../constants";
 import { ITerrainTile } from "../redux/digger/reducer";
 import { FlatReduxState } from "../redux/store";
 import { ITileGeneratorComponent } from "./_base";
@@ -17,7 +17,7 @@ export class Digger implements ITileGeneratorComponent {
         for (const key of Object.keys(theseTiles)) {
             const tile: ITerrainTile = theseTiles[key];
             switch (tile.type) {
-                case TILETYPE.Wall:
+                case MENU_ITEM.wall:
                     result.push({
                         x: tile.posX,
                         y: tile.posY,
@@ -25,7 +25,7 @@ export class Digger implements ITileGeneratorComponent {
                         color: ["rgba(50, 50, 50, .2)", "transparent"],
                     });
                     break;
-                case TILETYPE.Floor:
+                case MENU_ITEM.mine:
                     result.push({
                         x: tile.posX,
                         y: tile.posY,

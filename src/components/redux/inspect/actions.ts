@@ -1,9 +1,7 @@
 import produce from "immer";
-import { BUILDINGS, MENU, Point, TILE_H, TILE_W, TILETYPE } from "../../constants";
+import { MENU_ITEM, Point, TILE_H, TILE_W } from "../../constants";
 import { getMapCoord } from "../../util";
-import { IBuildingTile } from "../building/reducer";
 import { ACTION_TYPE, FlatGetState } from "../store";
-import { IInspectState } from "./reducer";
 
 //#region REDUX ACTIONS
 
@@ -103,7 +101,7 @@ export function moveInspectedBuildings(diffX: number, diffY: number) {
                 !(pos in state.terrainTiles[state.cameraZ])) {
                 return; //no floor
             }
-            if (state.terrainTiles[state.cameraZ][pos].type !== TILETYPE.Floor) {
+            if (state.terrainTiles[state.cameraZ][pos].type !== MENU_ITEM.mine) {
                 return; //non-floor detected
             }
         }

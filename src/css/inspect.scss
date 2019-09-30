@@ -34,7 +34,7 @@ $all_inspect_z: 1;
     top: -100vh;
     left: -100vw;
     position: absolute;
-    border: 1px solid rgba(cyan, 1);
+    border: 1px dashed rgba(cyan, 1);
     z-index: $all_inspect_z;
     pointer-events: none;
 }

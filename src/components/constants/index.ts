@@ -24,14 +24,11 @@ export {
     DIRECTION,
     KEYS,
     MENU_ITEM,
-    DIG_TYPE as TILETYPE,
 } from "./_enums";
 
 export {
     IBuildingTileData,
     IBuildingData,
-    IFlatMenuItem,
-    IGridRange,
     IMenuItem,
     IRenderTile,
     ITileCollection,

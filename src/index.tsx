@@ -5,6 +5,7 @@ import { Provider } from "react-redux";
 //components
 import { HEADER_H, MENU_W, TILE_URL, TILE_W } from "./components/constants";
 import { Game } from "./components/game";
+import Footer from "./components/react/footer";
 import Header from "./components/react/header";
 import GameHighlighter from "./components/react/highlighter";
 import Menu from "./components/react/menu";
@@ -165,12 +166,7 @@ class FortressDesigner extends Component<{}, IFortressDesignerState> {
                         <canvas id="canvas"></canvas>
                     </div>
                     <Menu />
-                    <footer id="footer">
-                        <div class="inner">
-                            {/* <div class="data-cursor">Cursor: {this.renderFooterCursor()}</div>
-                            <div class="data-mouse">Mouse: {this.renderFooterMouse()}</div> */}
-                        </div>
-                    </footer>
+                    <Footer />
                 </div>
             </div>
         );

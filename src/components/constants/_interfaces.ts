@@ -21,7 +21,7 @@ export interface ITileCollection<T> {
 }
 
 export interface IBuildingData {
-    "id": "top" | MENU_ITEM;
+    "id": MENU_ITEM;
     "display_name": string;
     "hotkey": string;
     "submenu": string;
@@ -29,25 +29,10 @@ export interface IBuildingData {
     "parsedHotkey"?: string;
 }
 
-export interface IGridRange {
-    startX: number;
-    endX: number;
-    startY: number;
-    endY: number;
-}
-
-export interface IFlatMenuItem {
-    "id": IMenuItem["id"];
-    "text": IMenuItem["text"];
-    "key": IMenuItem["key"];
+export interface IMenuItem {
+    "id": "top" | MENU_ITEM;
+    "text": string;
+    "key": string;
     "parent": string;
     "parsedKey"?: string;
-}
-
-export interface IMenuItem {
-    "text"?: string;
-    "key"?: string;
-    "id": "top" | MENU_ITEM;
-    "children"?: IMenuItem[];
-    "parent"?: IMenuItem;
 }

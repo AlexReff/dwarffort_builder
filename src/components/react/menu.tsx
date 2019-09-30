@@ -90,10 +90,6 @@ class Menu extends Component<IMenuProps, IGameMenuState> {
                     <div class="menu-status">
                         {this.renderMenuStatus()}
                     </div>
-                    {/* <div class="strict-mode">
-                        <input id="strictmode" checked={props.strictMode} type="checkbox" onChange={this.handleStrictModeChange} />
-                        <label title="Toggle Strict Mode" for="strictmode">Strict Mode:</label>
-                    </div> */}
                     <div class="copy">&copy; {new Date().getFullYear()} Alex Reff</div>
                 </div>
             </div>
@@ -146,7 +142,7 @@ class Menu extends Component<IMenuProps, IGameMenuState> {
         return <div></div>;
     }
 
-    handleInspectClick = (key, e: TouchEvent | MouseEvent) => {
+    handleMenuToolbarClick = (key, e: TouchEvent | MouseEvent) => {
         e.preventDefault();
         if (this.state.shiftDown) {
             //remove this from inspected bldg list
@@ -168,7 +164,7 @@ class Menu extends Component<IMenuProps, IGameMenuState> {
                 {this.props.inspectedBuildings.map((m) => {
                     const bldg = this.props.buildingTiles[this.props.cameraZ][m];
                     return (
-                        <a href="#" onClick={(e) => this.handleInspectClick(m, e)}>
+                        <a href="#" onClick={(e) => this.handleMenuToolbarClick(m, e)}>
                             {BUILDINGS.IDS[bldg.key].display_name}
                         </a>
                     );

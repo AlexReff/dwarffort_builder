@@ -1,12 +1,6 @@
-import { IRenderTile, Point, TILE_H, TILE_W, TILETYPE } from "./constants";
+import { IRenderTile, MENU_ITEM, Point, TILE_H, TILE_W } from "./constants";
 import { Game } from "./game";
 import store, { FlatGetState, FlatReduxState } from "./redux/store";
-import Display from "./rot/display";
-
-// export const renderTile = (display: Display, tile: IRenderTile, _state?: FlatReduxState) => {
-//     const parms = getDisplayParms(tile, _state);
-//     display.draw.apply(display, parms);
-// };
 
 export const renderTile = (_this: Game, tile: IRenderTile) => {
     const parms = getDisplayParms(tile, _this);
@@ -152,7 +146,7 @@ export const isBuildingPlaceable = (state: FlatReduxState, x: number, y: number)
         }
     }
     const tile = state.terrainTiles[state.cameraZ][key];
-    if (tile != null && tile.type === TILETYPE.Floor) {
+    if (tile != null && tile.type === MENU_ITEM.mine) {
         return true;
     }
 

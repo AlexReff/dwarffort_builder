@@ -4,12 +4,6 @@
 //     MODERN, //builder style, drag+select, mouse-centric UI behavior
 // }
 
-export const enum DIG_TYPE {
-    Empty,
-    Wall,
-    Floor,
-}
-
 export const enum DIRECTION {
     N = 0,
     NE = 1,
@@ -22,6 +16,7 @@ export const enum DIRECTION {
 }
 
 export const enum MENU_ITEM {
+    //designations
     mine = "mine",
     wall = "wall",
     channel = "channel",
@@ -29,8 +24,13 @@ export const enum MENU_ITEM {
     downstair = "downstair",
     udstair = "udstair",
     upramp = "upramp",
-    stockpile = "stockpile",
     remove = "remove",
+    //misc
+    stockpile = "stockpile",
+    inspect = "inspect",
+    //buildings/workshops
+    building = "building",
+    workshops = "workshops",
     leatherworks = "leatherworks",
     quern = "quern",
     millstone = "millstone",
@@ -58,7 +58,6 @@ export const enum MENU_ITEM {
     bed = "bed",
     chair = "chair",
     door = "door",
-    inspect = "inspect",
 }
 
 export const enum KEYS {
