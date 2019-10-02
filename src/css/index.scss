@@ -64,7 +64,8 @@ canvas {
     height: calc(100vh - #{$header-height * 2}px);
     background: #000;
     display: none;
-    overflow-y: scroll;
+    overflow-x: hidden;
+    overflow-y: auto;
     z-index: 999;
 
     &.active {

@@ -20,19 +20,13 @@ export function selectMenus(currentSubmenu, currentMenuItem) {
     return (dispatch, getState) => {
         // const state = FlatGetState({}, getState);
         let cursorRange = 0;
-        if (currentMenuItem in BUILDINGS.IDS) {
-            const tiles = BUILDINGS.IDS[currentMenuItem];
+        if (currentMenuItem in BUILDINGS.ITEMS) {
+            const tiles = BUILDINGS.ITEMS[currentMenuItem];
             if (tiles) {
                 cursorRange = Math.floor(tiles.tiles.length / 2.0);
             }
         }
         dispatch(_setMenus(currentSubmenu, currentMenuItem, cursorRange));
-        // return {
-        //     type: ACTION_TYPE.SET_MENU,
-        //     currentSubmenu,
-        //     currentMenuItem,
-        //     cursorRadius,
-        // };
     };
 }
 

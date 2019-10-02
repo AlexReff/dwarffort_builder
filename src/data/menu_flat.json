@@ -13,20 +13,21 @@
             "parent": "building"
         },
         {
+            "id": "construction",
+            "text": "Construction",
+            "key": "C",
+            "parent": "building"
+        },
+        {
             "id": "designate",
             "text": "Designations",
             "key": "d",
             "parent": "top"
-        },{
-            "text": "Mine/Floor",
-            "key": "d",
-            "id": "mine",
-            "parent": "designate"
         },
         {
-            "text": "Wall",
-            "key": "w",
-            "id": "wall",
+            "text": "Mine (Floor)",
+            "key": "d",
+            "id": "mine",
             "parent": "designate"
         },
         {
@@ -75,6 +76,12 @@
             "text": "Inspect Buildings",
             "key": "q",
             "id": "inspect",
+            "parent": "top"
+        },
+        {
+            "text": "Inspect Terrain",
+            "key": "k",
+            "id": "inspectterrain",
             "parent": "top"
         }
     ]

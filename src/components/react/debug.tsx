@@ -1,21 +1,46 @@
 import * as _ from "lodash";
 import { Component, h } from "preact";
+import { connect } from "react-redux";
 import { TILE_H, TILE_URL, TILE_W } from "../constants";
+import { toggleDebugMode } from "../redux/settings/actions";
+import { ReduxState } from "../redux/store";
 
 interface IDebugMenuProps {
-    isActive: boolean;
+    debugMode: boolean;
 }
 
 interface IDebugMenuState {
     mouseLeft: number;
     mouseTop: number;
+    num: number;
     // highlightedTile: Tile;
 }
+
+const mapStateToProps = (state: ReduxState) => ({
+    debugMode: state.settings.debugMode,
+    // currentMenu: state.menu.currentSubmenu,
+    // currentMenuItem: state.menu.currentMenuItem,
+    // isInspecting: state.menu.isInspecting,
+    // inspectedBuildings: state.inspect.inspectedBuildings,
+    // buildingTiles: state.building.buildingTiles,
+    // terrainTiles: state.digger.terrainTiles,
+    // cameraZ: state.camera.cameraZ,
+    // isDesignating: state.digger.isDesignating,
+});
+
+const mapDispatchToProps = (dispatch) => ({
+    toggleDebugMode: () => dispatch(toggleDebugMode()),
+    // selectMenuItem: (id) => dispatch(selectMenu(id)),
+    // removeInspectBuilding: (item) => dispatch(removeInspectBuilding(item)),
+    // setInspectBuildings: (items) => dispatch(setInspectBuildings(items)),
+    // inspectTileAtMapCoord: (coord, add) => dispatch(inspectRequestAtMapCoord(coord, add)),
+});
 
 class DebugMenu extends Component<IDebugMenuProps, IDebugMenuState> {
     state = {
         mouseLeft: 0,
         mouseTop: 0,
+        num: 0,
         highlightedTile: null,
     };
 
@@ -28,7 +53,7 @@ class DebugMenu extends Component<IDebugMenuProps, IDebugMenuState> {
 
     render = (props: IDebugMenuProps, state: IDebugMenuState) => {
         return (
-            <div id="debug" class={props.isActive ? "active" : null}>
+            <div id="debug" class={props.debugMode ? "active" : null}>
                 {this.renderSpriteSheet()}
             </div>
         );
@@ -42,9 +67,11 @@ class DebugMenu extends Component<IDebugMenuProps, IDebugMenuState> {
         ];
         pos[0] = pos[0] - (pos[0] % TILE_W);
         pos[1] = pos[1] - (pos[1] % TILE_H);
+        const iNum = (pos[0] / TILE_W) + pos[1];
         this.setState({
             mouseLeft: pos[0],
             mouseTop: pos[1],
+            num: iNum,
         });
     }
 
@@ -64,14 +91,14 @@ class DebugMenu extends Component<IDebugMenuProps, IDebugMenuState> {
 
     private renderSpriteSheet = () => {
         return (
-            <div id="debug-menu" class={this.props.isActive ? "active" : null}>
+            <div id="debug-menu" class={this.props.debugMode ? "active" : null}>
                 <div id="debug-sprite">
                     <img id="debug-sprite-img" src={TILE_URL} />
-                    <div id="debug-sprite-text">{`${this.state.mouseLeft}, ${this.state.mouseTop}`}</div>
+                    <div id="debug-sprite-text">{`${this.state.mouseLeft}, ${this.state.mouseTop} - ${this.state.num}`}</div>
                 </div>
             </div>
         );
     }
 }
 
-export { DebugMenu };
+export default connect(mapStateToProps, mapDispatchToProps)(DebugMenu);

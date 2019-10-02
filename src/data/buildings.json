@@ -1171,10 +1171,26 @@
             "tiles": [
                 [
                     {
-                        "char": "240",
+                        "char": "197",
                         "bg": "rgb(0, 128, 0)",
                         "fg": "rgb(192, 192, 192)",
                         "walkable": 1
+                    }
+                ]
+            ]
+        },
+        {
+            "id": "wall",
+            "display_name": "Wall",
+            "hotkey": "w",
+            "submenu": "construction",
+            "tiles": [
+                [
+                    {
+                        "char": "199",
+                        "bg": "rgb(0, 0, 0)",
+                        "fg": "rgb(192, 192, 192)",
+                        "walkable": 0
                     }
                 ]
             ]

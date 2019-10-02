@@ -1,6 +1,6 @@
 import produce from "immer";
 import { MENU_ITEM, Point, TILE_H, TILE_W } from "../../constants";
-import { getMapCoord } from "../../util";
+import { getMapCoord, getWallNeighborFlags, updateWallNeighbors } from "../../util";
 import { ACTION_TYPE, FlatGetState } from "../store";
 
 //#region REDUX ACTIONS
@@ -77,6 +77,12 @@ export function inspectGridRange(gridA: Point, gridB: Point, add: boolean = fals
 export function moveInspectedBuildings(diffX: number, diffY: number) {
     return (dispatch, getState) => {
         const state = FlatGetState({}, getState);
+
+        if (!(state.cameraZ in state.terrainTiles) ||
+            !(state.cameraZ in state.buildingTiles)) {
+            return;
+        }
+
         const xGridDiff = Math.floor(diffX / +TILE_W);
         const yGridDiff = Math.floor(diffY / +TILE_H);
 
@@ -97,8 +103,7 @@ export function moveInspectedBuildings(diffX: number, diffY: number) {
         }
         //validate terrain
         for (const pos of allNewPositions) {
-            if (!(state.cameraZ in state.terrainTiles) ||
-                !(pos in state.terrainTiles[state.cameraZ])) {
+            if (!(pos in state.terrainTiles[state.cameraZ])) {
                 return; //no floor
             }
             if (state.terrainTiles[state.cameraZ][pos].type !== MENU_ITEM.mine) {
@@ -106,6 +111,7 @@ export function moveInspectedBuildings(diffX: number, diffY: number) {
             }
         }
         const buildingTiles = produce(state.buildingTiles, (draft) => {
+            const newThings = {};
             for (const key of Object.keys(draft[state.cameraZ])) {
                 if (state.inspectedBuildings.some((m) => m === key)) {
                     const plucked = draft[state.cameraZ][key];
@@ -114,11 +120,14 @@ export function moveInspectedBuildings(diffX: number, diffY: number) {
                     plucked.posY += yGridDiff;
                     const keyParts = key.split(":");
                     const newKey = `${+keyParts[0] + xGridDiff}:${+keyParts[1] + yGridDiff}`;
-                    draft[state.cameraZ][newKey] = plucked;
+                    newThings[newKey] = plucked;
                 }
             }
+            Object.assign(draft[state.cameraZ], newThings);
+            updateWallNeighbors(state, draft);
         });
         const buildingPositions = produce(state.buildingPositions, (draft) => {
+            const newThings = {};
             for (const key of Object.keys(draft[state.cameraZ])) {
                 if (state.inspectedBuildings.some((m) => m === draft[state.cameraZ][key])) {
                     const plucked = draft[state.cameraZ][key];
@@ -127,10 +136,12 @@ export function moveInspectedBuildings(diffX: number, diffY: number) {
                     const newCenter = `${+pluckParts[0] + xGridDiff}:${+pluckParts[1] + yGridDiff}`;
                     const keyParts = key.split(":");
                     const newKey = `${+keyParts[0] + xGridDiff}:${+keyParts[1] + yGridDiff}`;
-                    draft[state.cameraZ][newKey] = newCenter;
+                    newThings[newKey] = newCenter;
                 }
             }
+            Object.assign(draft[state.cameraZ], newThings);
         });
+
         const inspectedBuildings = state.inspectedBuildings.map((e) => {
             const parts = e.split(":");
             return `${+parts[0] + xGridDiff}:${+parts[1] + yGridDiff}`;

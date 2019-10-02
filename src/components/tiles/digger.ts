@@ -21,7 +21,8 @@ export class Digger implements ITileGeneratorComponent {
                     result.push({
                         x: tile.posX,
                         y: tile.posY,
-                        char: ["f0", `w${tile.characterVariant}`],
+                        //char: ["f0", `wx${tile.characterVariant}`],
+                        char: ["f0", "i178"],
                         color: ["rgba(50, 50, 50, .2)", "transparent"],
                     });
                     break;

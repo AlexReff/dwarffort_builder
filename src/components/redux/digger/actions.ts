@@ -1,5 +1,5 @@
 import produce from "immer";
-import { FLOOR_TILES, MENU_ITEM, WALL_TILES } from "../../constants";
+import { FLOOR_TILES, MENU_ITEM } from "../../constants";
 import rng from "../../rot/rng";
 import { getMapCoord, getNeighborsOfRange } from "../../util";
 import { ACTION_TYPE, FlatGetState, FlatReduxState } from "../store";
@@ -62,14 +62,15 @@ export function submitDesignating() {
                                     delete draft[z][key];
                                 }
                                 break;
-                            case MENU_ITEM.wall:
-                                draft[z][key] = {
-                                    posX: x,
-                                    posY: y,
-                                    posZ: z,
-                                    type: MENU_ITEM.wall,
-                                };
-                                break;
+                            // case MENU_ITEM.wall:
+                            //     draft[z][key] = {
+                            //         posX: x,
+                            //         posY: y,
+                            //         posZ: z,
+                            //         type: MENU_ITEM.wall,
+                            //         userSet: true,
+                            //     };
+                            //     break;
                             case MENU_ITEM.mine:
                                 draft[z][key] = {
                                     posX: x,
@@ -77,6 +78,7 @@ export function submitDesignating() {
                                     posZ: z,
                                     type: MENU_ITEM.mine,
                                     characterVariant: rng.getUniformInt(0, FLOOR_TILES.length - 1).toString(),
+                                    userSet: true,
                                 };
                                 break;
                         }
@@ -93,20 +95,22 @@ export function submitDesignating() {
                                 posY: point[1],
                                 posZ: z,
                                 type: MENU_ITEM.wall,
+                                userSet: false,
                             };
                         }
                     }
                 }
-                for (let y = 0; y < state.mapHeight; y++) {
-                    for (let x = 0; x < state.mapWidth; x++) {
-                        const key = `${x}:${y}`;
-                        if (key in draft[z]) {
-                            if (draft[z][key].type === MENU_ITEM.wall) {
-                                draft[z][key].characterVariant = getNeighborFlags(draft, state, x, y, z);
-                            }
-                        }
-                    }
-                }
+                // //populate wall variant on this z-level
+                // for (let y = 0; y < state.mapHeight; y++) {
+                //     for (let x = 0; x < state.mapWidth; x++) {
+                //         const key = `${x}:${y}`;
+                //         if (key in draft[z]) {
+                //             if (draft[z][key].type === MENU_ITEM.wall) {
+                //                 draft[z][key].characterVariant = getNeighborFlags(draft, state, x, y, z);
+                //             }
+                //         }
+                //     }
+                // }
             }
         });
         dispatch(setDigData(tiles));
@@ -124,51 +128,5 @@ export function startDesignatingGrid(gridX: number, gridY: number) {
 //#endregion
 
 //#region Helper functions
-
-function getNeighborFlags(tiles: IDiggerState["terrainTiles"], state: FlatReduxState, x: number, y: number, z: number) {
-    let flags = 0;
-    if (y > 0) {
-        const nKey = `${x}:${y - 1}`;
-        if (nKey in tiles[z]) {
-            if (tiles[z][nKey].type === MENU_ITEM.wall) {
-                flags += 1;
-            }
-        }
-    }
-    if (x < state.mapWidth - 1) {
-        const eKey = `${x + 1}:${y}`;
-        if (eKey in tiles[z]) {
-            if (tiles[z][eKey].type === MENU_ITEM.wall) {
-                flags += 2;
-            }
-        }
-    }
-    if (y < state.mapHeight - 1) {
-        const sKey = `${x}:${y + 1}`;
-        if (sKey in tiles[z]) {
-            if (tiles[z][sKey].type === MENU_ITEM.wall) {
-                flags += 4;
-            }
-        }
-    }
-    if (x > 0) {
-        const wKey = `${x - 1}:${y}`;
-        if (wKey in tiles[z]) {
-            if (tiles[z][wKey].type === MENU_ITEM.wall) {
-                flags += 8;
-            }
-        }
-    }
-
-    let result = flags.toString();
-
-    if (WALL_TILES[flags].length > 1) {
-        //append 'a'/'b' etc to end for variant mapping
-        const rnd = rng.getUniformInt(0, WALL_TILES[flags].length - 1);
-        result += String.fromCharCode(rnd + 97);
-    }
-
-    return result;
-}
 
 //#endregion

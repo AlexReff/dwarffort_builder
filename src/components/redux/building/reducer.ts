@@ -16,6 +16,7 @@ export interface IBuildingTile {
     posY: number;
     posZ: number;
     key: string;
+    characterVariant?: string;
 }
 
 export default (state: IBuildingState = initialState, action) => {

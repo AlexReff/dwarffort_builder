@@ -6,6 +6,7 @@ import { startDesignatingGrid, submitDesignating } from "./redux/digger/actions"
 import { GameComponent } from "./redux/FlatReduxState";
 import { inspectGridPos, setInspectBuildings } from "./redux/inspect/actions";
 import { selectMenu, selectPrevSubmenu } from "./redux/menu/actions";
+import { toggleDebugMode } from "./redux/settings/actions";
 import store from "./redux/store";
 import { eventToPosition } from "./util";
 
@@ -37,16 +38,22 @@ export class GameInput extends GameComponent {
             store.dispatch(inspectGridPos(gridX, gridY));
         } else {
             const [gridX, gridY] = this.handleClick(e);
-            if (this.cursorBuilding) {
-                store.dispatch(placeCursorBuilding());
-            } else if (this.isDesignating) {
-                store.dispatch(submitDesignating());
-            } else {
-                if (this.currentMenuItem != null && this.currentMenuItem in MENU.ITEMS) {
-                    if (MENU.ITEMS[this.currentMenuItem].parent === "designate") {
-                        //if designation item selected
-                        store.dispatch(startDesignatingGrid(gridX, gridY));
-                    }
+            this.handleEnter(gridX, gridY);
+        }
+    }
+
+    handleEnter = (_gridX?, _gridY?) => {
+        const gridX = _gridX || this.cursorX;
+        const gridY = _gridY || this.cursorY;
+        if (this.cursorBuilding) {
+            store.dispatch(placeCursorBuilding());
+        } else if (this.isDesignating) {
+            store.dispatch(submitDesignating());
+        } else {
+            if (this.currentMenuItem != null && this.currentMenuItem in MENU.ITEMS) {
+                if (MENU.ITEMS[this.currentMenuItem].parent === "designate") {
+                    //if designation item selected
+                    store.dispatch(startDesignatingGrid(gridX, gridY));
                 }
             }
         }
@@ -88,13 +95,11 @@ export class GameInput extends GameComponent {
         }
         //end menu navigation
         switch (e.keyCode) {
-            // case KEYS.VK_BACK_QUOTE:
-            // case KEYS.VK_TILDE:
-            //     e.preventDefault();
-            //     // this.setState((prevState) => ({
-            //     //     debug: !prevState.debug,
-            //     // }));
-            //     break;
+            case KEYS.VK_BACK_QUOTE:
+            case KEYS.VK_TILDE:
+                e.preventDefault();
+                store.dispatch(toggleDebugMode());
+                break;
             case KEYS.VK_ESCAPE:
                 e.preventDefault();
                 if (this.isInspecting &&
@@ -104,6 +109,11 @@ export class GameInput extends GameComponent {
                 } else {
                     store.dispatch(selectPrevSubmenu());
                 }
+                break;
+            case KEYS.VK_RETURN:
+            case KEYS.VK_ENTER:
+                e.preventDefault();
+                this.handleEnter();
                 break;
             case KEYS.VK_UP:
             case KEYS.VK_NUMPAD8:

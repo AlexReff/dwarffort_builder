@@ -1,9 +1,4 @@
 
-// export const enum CURSOR_BEHAVIOR {
-//     CLASSIC, //classic df-style with 'x' on a tile
-//     MODERN, //builder style, drag+select, mouse-centric UI behavior
-// }
-
 export const enum DIRECTION {
     N = 0,
     NE = 1,
@@ -18,7 +13,6 @@ export const enum DIRECTION {
 export const enum MENU_ITEM {
     //designations
     mine = "mine",
-    wall = "wall",
     channel = "channel",
     upstair = "upstair",
     downstair = "downstair",
@@ -28,9 +22,12 @@ export const enum MENU_ITEM {
     //misc
     stockpile = "stockpile",
     inspect = "inspect",
-    //buildings/workshops
+    //menus
     building = "building",
     workshops = "workshops",
+    construction = "construction",
+    //buildings/workshops/constructions
+    wall = "wall",
     leatherworks = "leatherworks",
     quern = "quern",
     millstone = "millstone",

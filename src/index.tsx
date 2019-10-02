@@ -5,6 +5,7 @@ import { Provider } from "react-redux";
 //components
 import { HEADER_H, MENU_W, TILE_URL, TILE_W } from "./components/constants";
 import { Game } from "./components/game";
+import DebugMenu from "./components/react/debug";
 import Footer from "./components/react/footer";
 import Header from "./components/react/header";
 import GameHighlighter from "./components/react/highlighter";
@@ -16,11 +17,10 @@ import store from "./components/redux/store";
 require("./css/index.scss");
 
 interface IFortressDesignerState {
-    debug: boolean;
     gridColumnLayout: number;
     gridRowLayout: number;
-    windowResizing: boolean;
-    gameLoading: boolean;
+    // windowResizing: boolean;
+    // gameLoading: boolean;
 }
 
 class FortressDesigner extends Component<{}, IFortressDesignerState> {
@@ -32,9 +32,8 @@ class FortressDesigner extends Component<{}, IFortressDesignerState> {
         super();
 
         this.setState({
-            debug: false,
-            windowResizing: false,
-            gameLoading: true,
+            // windowResizing: false,
+            // gameLoading: true,
             gridColumnLayout: 0,
             gridRowLayout: 0,
         });
@@ -66,9 +65,9 @@ class FortressDesigner extends Component<{}, IFortressDesignerState> {
             this.game.restart();
         }
 
-        this.setState({
-            gameLoading: false,
-        });
+        // this.setState({
+        //     gameLoading: false,
+        // });
     }
 
     destroyGame = () => {
@@ -79,9 +78,9 @@ class FortressDesigner extends Component<{}, IFortressDesignerState> {
         this.game.destroy();
         // this.game = null;
 
-        this.setState({
-            gameLoading: true,
-        });
+        // this.setState({
+        //     gameLoading: true,
+        // });
     }
 
     componentWillUnmount = () => {
@@ -92,16 +91,16 @@ class FortressDesigner extends Component<{}, IFortressDesignerState> {
 
     setWindowResizing = () => {
         this.destroyGame();
-        this.setState({
-            windowResizing: true,
-        });
+        // this.setState({
+        //     windowResizing: true,
+        // });
     }
 
     endWindowResizing = () => {
         this.updateWrapperCss(() => {
             store.dispatch(resizeWindow(this.gridElement));
             this.initGame();
-            this.setState({ windowResizing: false });
+            // this.setState({ windowResizing: false });
         });
     }
 
@@ -149,6 +148,7 @@ class FortressDesigner extends Component<{}, IFortressDesignerState> {
         return (
             <div id="page">
                 <GameHighlighter />
+                <DebugMenu />
                 <div id="wrapper" style={this.getWrapperCss()}>
                     <div id="header">
                         <div class="left"><a class="home-link" href="https://reff.dev/">reff.dev</a></div>

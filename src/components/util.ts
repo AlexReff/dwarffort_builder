@@ -1,6 +1,8 @@
-import { IRenderTile, MENU_ITEM, Point, TILE_H, TILE_W } from "./constants";
+import { IRenderTile, MENU_ITEM, Point, TILE_H, TILE_W, WALL_TILES } from "./constants";
 import { Game } from "./game";
+import { IBuildingState } from "./redux/building/reducer";
 import store, { FlatGetState, FlatReduxState } from "./redux/store";
+import rng from "./rot/rng";
 
 export const renderTile = (_this: Game, tile: IRenderTile) => {
     const parms = getDisplayParms(tile, _this);
@@ -152,3 +154,63 @@ export const isBuildingPlaceable = (state: FlatReduxState, x: number, y: number)
 
     return false;
 };
+
+export function updateWallNeighbors(state: FlatReduxState, buildingTiles: IBuildingState["buildingTiles"]) {
+    for (let y = 0; y < state.mapHeight; y++) {
+        for (let x = 0; x < state.mapWidth; x++) {
+            const key = `${x}:${y}`;
+            if (key in buildingTiles[state.cameraZ]) {
+                if (buildingTiles[state.cameraZ][key].key === MENU_ITEM.wall) {
+                    buildingTiles[state.cameraZ][key].characterVariant = getWallNeighborFlags(buildingTiles, state, x, y);
+                }
+            }
+        }
+    }
+}
+
+export function getWallNeighborFlags(
+    tiles: IBuildingState["buildingTiles"],
+    state: FlatReduxState,
+    x: number,
+    y: number,
+    z: number = state.cameraZ) {
+    let flags = 0;
+    if (y > 0) {
+        const nKey = `${x}:${y - 1}`;
+        if ((nKey in tiles[z] && tiles[z][nKey].key === MENU_ITEM.wall) ||
+            (nKey in state.terrainTiles[z] && state.terrainTiles[z][nKey].type === MENU_ITEM.wall)) {
+            flags += 1;
+        }
+    }
+    if (x < state.mapWidth - 1) {
+        const eKey = `${x + 1}:${y}`;
+        if ((eKey in tiles[z] && tiles[z][eKey].key === MENU_ITEM.wall) ||
+            (eKey in state.terrainTiles[z] && state.terrainTiles[z][eKey].type === MENU_ITEM.wall)) {
+            flags += 2;
+        }
+    }
+    if (y < state.mapHeight - 1) {
+        const sKey = `${x}:${y + 1}`;
+        if ((sKey in tiles[z] && tiles[z][sKey].key === MENU_ITEM.wall) ||
+            (sKey in state.terrainTiles[z] && state.terrainTiles[z][sKey].type === MENU_ITEM.wall)) {
+            flags += 4;
+        }
+    }
+    if (x > 0) {
+        const wKey = `${x - 1}:${y}`;
+        if ((wKey in tiles[z] && tiles[z][wKey].key === MENU_ITEM.wall) ||
+            (wKey in state.terrainTiles[z] && state.terrainTiles[z][wKey].type === MENU_ITEM.wall)) {
+            flags += 8;
+        }
+    }
+
+    let result = flags.toString();
+
+    if (WALL_TILES[flags].length > 1) {
+        //append 'a'/'b' etc to end for variant mapping
+        const rnd = rng.getUniformInt(0, WALL_TILES[flags].length - 1);
+        result += String.fromCharCode(rnd + 97);
+    }
+
+    return result;
+}

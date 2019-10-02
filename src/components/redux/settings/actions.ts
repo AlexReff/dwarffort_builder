@@ -38,6 +38,12 @@ export const toggleAnimation = () => {
     };
 };
 
+export const toggleDebugMode = () => {
+    return {
+        type: ACTION_TYPE.DEBUG_TOGGLE,
+    };
+};
+
 // export const setStrictMode = (val: boolean) => {
 //     return {
 //         type: ACTION_TYPE.SET_STRICT_MODE,

@@ -25,6 +25,7 @@ export interface ITerrainTile {
     posZ: number;
     type: MENU_ITEM;
     characterVariant?: string;
+    userSet: boolean;
 }
 
 export default (state = initialState, action) => {

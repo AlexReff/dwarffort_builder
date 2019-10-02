@@ -1,6 +1,6 @@
 import produce from "immer";
-import { BUILDINGS } from "../../constants";
-import { isBuildingPlaceable } from "../../util";
+import { BUILDINGS, MENU_ITEM } from "../../constants";
+import { getWallNeighborFlags, isBuildingPlaceable, updateWallNeighbors } from "../../util";
 import { ACTION_TYPE, FlatGetState } from "../store";
 import { IBuildingState } from "./reducer";
 
@@ -20,7 +20,7 @@ export function setBuildings(tiles: IBuildingState["buildingTiles"], positions: 
 export function placeCursorBuilding(_x?: number, _y?: number) {
     return (dispatch, getState) => {
         const state = FlatGetState({}, getState);
-        if (!(state.currentMenuItem in BUILDINGS.IDS)) {
+        if (!(state.currentMenuItem in BUILDINGS.ITEMS)) {
             return;
         }
 
@@ -35,7 +35,7 @@ export function placeCursorBuilding(_x?: number, _y?: number) {
 
         let newPositions = {};
         if (state.cameraZ in state.buildingPositions) {
-            newPositions = {...state.buildingPositions[state.cameraZ]};
+            newPositions = { ...state.buildingPositions[state.cameraZ] };
         }
 
         for (let y = startY; y <= endY; y++) {
@@ -57,11 +57,12 @@ export function placeCursorBuilding(_x?: number, _y?: number) {
                 posZ: state.cameraZ,
                 key: state.currentMenuItem,
             };
+            updateWallNeighbors(state, draft);
         });
 
         if (!(state.cameraZ in tiles) || //no z-level in the result, so no buildings can exist
             (state.cameraZ in state.buildingTiles && //no new items
-            Object.keys(state.buildingTiles[state.cameraZ]).length === Object.keys(tiles[state.cameraZ]).length)) {
+                Object.keys(state.buildingTiles[state.cameraZ]).length === Object.keys(tiles[state.cameraZ]).length)) {
             return;
         }
 

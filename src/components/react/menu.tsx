@@ -130,9 +130,9 @@ class Menu extends Component<IMenuProps, IGameMenuState> {
             );
         }
         if (this.props.currentMenuItem != null && this.props.currentMenuItem.length > 0) {
-            if (this.props.currentMenuItem in BUILDINGS.IDS) {
+            if (this.props.currentMenuItem in BUILDINGS.ITEMS) {
                 return (
-                    <div>Placing {BUILDINGS.IDS[this.props.currentMenuItem].display_name}</div>
+                    <div>Placing {BUILDINGS.ITEMS[this.props.currentMenuItem].display_name}</div>
                 );
             }
             return (
@@ -165,7 +165,7 @@ class Menu extends Component<IMenuProps, IGameMenuState> {
                     const bldg = this.props.buildingTiles[this.props.cameraZ][m];
                     return (
                         <a href="#" onClick={(e) => this.handleMenuToolbarClick(m, e)}>
-                            {BUILDINGS.IDS[bldg.key].display_name}
+                            {BUILDINGS.ITEMS[bldg.key].display_name}
                         </a>
                     );
                 })}

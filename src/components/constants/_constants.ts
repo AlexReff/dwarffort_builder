@@ -1,20 +1,17 @@
 const styles = require("../.././css/_variables.scss");
 
-import { buildings } from "../../data/buildings.json";
+import _ from "lodash";
+import { buildings as _buildings } from "../../data/buildings.json";
 import { items } from "../../data/menu_flat.json";
 import { IBuildingData, IMenuItem } from "./_interfaces";
 
 export type Point = [number, number];
 
 export const DEFAULTS = {
-    // STRICT_MODE: true,
     PAINT_OVERWRITE: true,
     MAP_MIN_W: 48 * 2,
     MAP_MIN_H: 48 * 2,
-    CURSOR: {
-        // MODE: CURSOR_BEHAVIOR.MODERN,
-        CHAR: ".",
-    },
+    CURSOR_CHARACTER: ".",
     COLORS: {
         CURSOR_DEFAULT: "rgba(157,132,19,1)",
         CURSOR_PASSABLE: "rgba(0,255,0,1)",
@@ -70,6 +67,25 @@ export const WALL_TILES: Point[][] = [
     [[224, 192]], //1111 4-way    //15
 ];
 
+export const CONSTRUCTED_WALL_TILES: Point[][] = [
+    [[224, 144]],   //no neighbors
+    [[224, 144]],   //N
+    [[224, 144]],   //E
+    [[0, 192]],     //NE
+    [[224, 144]],   //S
+    [[48, 176]],    //NS
+    [[160, 208]],   //SE
+    [[160, 208]],   //NES
+    [[224, 144]],   //W
+    [[144, 208]],   //NW
+    [[64, 192]],    //EW
+    [[16, 192]],    //NEW
+    [[240, 176]],   //SW
+    [[64, 176]],    //NSW
+    [[32, 192]],    //SEW
+    [[224, 144]],   //4-way
+];
+
 export const FLOOR_TILES: Point[] = [
     [192, 32],
     [224, 32],
@@ -121,6 +137,17 @@ export const TILE_MAP: { [key: string]: Point; } = ((): { [key: string]: Point; 
         }
     }
 
+    //wall tiles
+    for (const key of Object.keys(CONSTRUCTED_WALL_TILES)) {
+        if (CONSTRUCTED_WALL_TILES[key].length > 1) {
+            for (let i = 0; i < CONSTRUCTED_WALL_TILES[key].length; i++) {
+                val[`wx${key + String.fromCharCode(i + 97)}`] = CONSTRUCTED_WALL_TILES[key][i];
+            }
+        } else {
+            val[`wx${key}`] = CONSTRUCTED_WALL_TILES[key][0];
+        }
+    }
+
     //floor tiles
     for (let i = 0; i < FLOOR_TILES.length; i++) {
         val[`f${i}`] = FLOOR_TILES[i];
@@ -137,32 +164,8 @@ export const TILE_MAP: { [key: string]: Point; } = ((): { [key: string]: Point; 
     return val;
 })();
 
-export const BUILDINGS: {
-    /** Flat array */
-    LIST: IBuildingData[],
-    /** Keys == 'id' */
-    IDS: { [key: string]: IBuildingData },
-    /** Keys == 'hotkey:path:full' */
-    KEYS: {
-        [key: string]: IBuildingData;
-    },
-    /** Keys == submenu ids */
-    SUBMENUS: {
-        [key: string]: IBuildingData[];
-    },
-} = {
-    LIST: buildings as IBuildingData[],
-    IDS: buildings.reduce((map, key) => {
-        map[key.id] = key;
-        return map;
-    }, {}),
-    KEYS: {},
-    SUBMENUS: {},
-};
-
 // Menu Data
-export const MENU_JSON = items as IMenuItem[];
-//export const MENU_ITEMS = items.items as IMenuItem[];
+const MENU_JSON = items as IMenuItem[];
 
 export const MENU: {
     ITEMS: {
@@ -175,19 +178,10 @@ export const MENU: {
         [key: string]: IMenuItem[];
     },
 } = {
-    ITEMS: {},
+    ITEMS: _.keyBy(MENU_JSON, "id"),
     KEYS: {},
-    SUBMENUS: {},
+    SUBMENUS: _.groupBy(MENU_JSON, "parent"),
 };
-
-// populate MENU.ITEMS and MENU.SUBMENUS
-for (const item of MENU_JSON) {
-    MENU.ITEMS[item.id] = item;
-    if (!(item.parent in MENU.SUBMENUS)) {
-        MENU.SUBMENUS[item.parent] = [];
-    }
-    MENU.SUBMENUS[item.parent].push(item);
-}
 
 // populate MENU.KEYS and parsedHotkey
 for (const key of Object.keys(MENU.ITEMS)) {
@@ -207,8 +201,27 @@ for (const key of Object.keys(MENU.ITEMS)) {
     MENU.KEYS[newKey] = MENU.ITEMS[key];
 }
 
+const buildings = _buildings as IBuildingData[];
+
+export const BUILDINGS: {
+    /** Keys == 'id' */
+    ITEMS: { [key: string]: IBuildingData },
+    /** Keys == 'hotkey:path:full' */
+    KEYS: {
+        [key: string]: IBuildingData;
+    },
+    /** Keys == submenu ids */
+    SUBMENUS: {
+        [key: string]: IBuildingData[];
+    },
+} = {
+    ITEMS: _.keyBy(buildings, "id"),
+    KEYS: {},
+    SUBMENUS: _.groupBy(buildings, "parent"),
+};
+
 // populate buildings parsedHotkey
-for (const target of BUILDINGS.LIST) {
+for (const target of buildings) {
     if (!(target.submenu in MENU.ITEMS)) {
         continue; //invalid 'submenu' value
     }

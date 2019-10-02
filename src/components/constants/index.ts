@@ -8,7 +8,6 @@ export {
     FLOOR_TILES,
     HEADER_H,
     MENU,
-    MENU_JSON,
     MENU_W,
     Point,
     SUBMENU_MAX_H,

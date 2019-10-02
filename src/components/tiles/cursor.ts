@@ -9,7 +9,7 @@ export class Cursor implements ITileGeneratorComponent {
             return [];
         }
         if (state.cursorBuilding) {
-            const tiles = BUILDINGS.IDS[state.currentMenuItem];
+            const tiles = BUILDINGS.ITEMS[state.currentMenuItem];
             if (tiles) {
                 const result = [];
                 const range = state.cursorRadius;
@@ -28,7 +28,7 @@ export class Cursor implements ITileGeneratorComponent {
                         result.push({
                             x,
                             y,
-                            char: DEFAULTS.CURSOR.CHAR,
+                            char: DEFAULTS.CURSOR_CHARACTER,
                             color,
                         });
                     }
@@ -61,7 +61,7 @@ export class Cursor implements ITileGeneratorComponent {
                 result.push({
                     x: state.cursorX,
                     y: state.cursorY,
-                    char: DEFAULTS.CURSOR.CHAR,
+                    char: DEFAULTS.CURSOR_CHARACTER,
                     color: DEFAULTS.COLORS.CURSOR_DEFAULT,
                 });
                 return result;
@@ -72,7 +72,7 @@ export class Cursor implements ITileGeneratorComponent {
         return [{
             x: state.cursorX,
             y: state.cursorY,
-            char: DEFAULTS.CURSOR.CHAR,
+            char: DEFAULTS.CURSOR_CHARACTER,
             color: DEFAULTS.COLORS.CURSOR_DEFAULT,
         }];
     }

@@ -1,4 +1,4 @@
-import { produce as createNextState } from "immer";
+import { IProduce, produce as createNextState } from "immer";
 import { Action, AnyAction, applyMiddleware, createStore, Reducer, ReducersMapObject } from "redux";
 import thunk, { ThunkMiddleware } from "redux-thunk";
 import { setBuildings } from "./building/actions";
@@ -43,9 +43,10 @@ export const enum ACTION_TYPE {
     SET_GRID_BOUNDS,
     REMOVE_INSPECT_BUILDING,
     MOVE_INSPECT_BUILDINGS,
+    DEBUG_TOGGLE,
 }
 
-function combineReducersImmer<S, A extends Action = AnyAction>(produce, reducers: ReducersMapObject<S, A> = {} as ReducersMapObject): Reducer<S, A> {
+function combineReducersImmer<S, A extends Action = AnyAction>(produce: IProduce, reducers: ReducersMapObject<S, A> = {} as ReducersMapObject): Reducer<S, A> {
     const keys = Object.keys(reducers);
     const initialState = keys.reduce((a, k) => {
         a[k] = reducers[k](undefined, {});

@@ -30,7 +30,7 @@ export default (state = initialState, action) => {
             break;
         }
         case ACTION_TYPE.SET_MENU: {
-            if (action.currentMenuItem in BUILDINGS.IDS) {
+            if (action.currentMenuItem in BUILDINGS.ITEMS) {
                 state.cursorBuilding = true;
             } else {
                 state.cursorBuilding = false;

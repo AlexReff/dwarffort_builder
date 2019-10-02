@@ -43,9 +43,10 @@ const mapDispatchToProps = (dispatch) => ({
 });
 
 class Footer extends Component<IFooterProps> {
-    url: any;
+    quickfortUrl: string;
+    lastQuickfortValue: string;
 
-    render = (props, state) => {
+    render = (props: IFooterProps, state) => {
         return (
             <footer id="footer">
                 <div class="inner">
@@ -62,15 +63,20 @@ class Footer extends Component<IFooterProps> {
         if (Object.keys(this.props.terrainTiles).length === 0) {
             return "";
         }
+
         const csv = getQuickfortCsv();
-        const csvFile = new Blob([csv], {type: "text/csv"});
-        //const url = window.URL.createObjectURL(csvFile);
-        if (this.url) {
-            window.URL.revokeObjectURL(this.url);
+        if (csv !== this.lastQuickfortValue) {
+            const csvFile = new Blob([csv], { type: "text/csv" });
+            if (this.quickfortUrl) {
+                window.URL.revokeObjectURL(this.quickfortUrl);
+            }
+            this.quickfortUrl = window.URL.createObjectURL(csvFile);
         }
-        this.url = window.URL.createObjectURL(csvFile);
+
+        this.lastQuickfortValue = csv;
+
         return (
-            <a href={this.url} target="_blank" download="fortd.csv">Download Quickfort CSV</a>
+            <a href={this.quickfortUrl} target="_blank" download="fortd.csv">Download Quickfort CSV</a>
         );
     }
 

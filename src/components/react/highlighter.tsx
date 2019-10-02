@@ -222,7 +222,7 @@ class GameHighlighter extends Component<IGameHighlighterProps, IGameHighlighterS
             //draw a box around each building
             for (const key of Object.keys(this.props.buildingTiles[this.props.cameraZ])) {
                 const tile: IBuildingTile = this.props.buildingTiles[this.props.cameraZ][key];
-                const bldg: IBuildingData = BUILDINGS.IDS[tile.key];
+                const bldg: IBuildingData = BUILDINGS.ITEMS[tile.key];
 
                 const radi = Math.floor(bldg.tiles.length / 2.0);
 

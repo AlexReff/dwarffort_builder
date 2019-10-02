@@ -1,4 +1,4 @@
-import { BUILDINGS, IBuildingTileData, IRenderTile } from "../constants";
+import { BUILDINGS, IBuildingTileData, IRenderTile, MENU_ITEM } from "../constants";
 import { FlatReduxState } from "../redux/store";
 import { ITileGeneratorComponent } from "./_base";
 
@@ -10,7 +10,7 @@ export class Builder implements ITileGeneratorComponent {
         }
         for (const key of Object.keys(state.buildingTiles[state.cameraZ])) {
             const tile = state.buildingTiles[state.cameraZ][key];
-            const bldg = BUILDINGS.IDS[tile.key];
+            const bldg = BUILDINGS.ITEMS[tile.key];
             if (bldg == null) {
                 continue;
             }
@@ -37,10 +37,14 @@ export class Builder implements ITileGeneratorComponent {
                     if (bgStart !== -1 && bgEnd !== -1) {
                         bg = `rgba(${bg.substr(bgStart + 1, bgEnd - bgStart - 1)}, .4)`;
                     }
+                    let char = `i${trgTile.char}`;
+                    if (tile.key === MENU_ITEM.wall) {
+                        char = `w${tile.characterVariant}`;
+                    }
                     result.push({
                         x,
                         y,
-                        char: `i${trgTile.char}`,
+                        char,
                         color,
                         bg,
                     });
