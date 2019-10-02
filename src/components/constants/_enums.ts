@@ -55,6 +55,15 @@ export const enum MENU_ITEM {
     bed = "bed",
     chair = "chair",
     door = "door",
+    armorstand = "armorstand",
+    woodfurnace = "woodfurnace",
+    smelter = "smelter",
+    glassfurnace = "glassfurnace",
+    kiln = "kiln",
+    magmasmelter = "magmasmelter",
+    magmaglassfurnace = "magmaglassfurnace",
+    magmakiln = "magmakiln",
+    cabinet = "cabinet",
 }
 
 export const enum KEYS {

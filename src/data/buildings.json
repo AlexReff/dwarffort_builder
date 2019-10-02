@@ -1132,6 +1132,22 @@
             ]
         },
         {
+            "id": "armorstand",
+            "display_name": "Armor Stand",
+            "hotkey": "a",
+            "submenu": "building",
+            "tiles": [
+                [
+                    {
+                        "char": "14",
+                        "bg": "rgb(0, 0, 0)",
+                        "fg": "rgb(128, 128, 128)",
+                        "walkable": 1
+                    }
+                ]
+            ]
+        },
+        {
             "id": "bed",
             "display_name": "Bed",
             "hotkey": "b",
@@ -1149,7 +1165,7 @@
         },
         {
             "id": "chair",
-            "display_name": "Chair/Throne",
+            "display_name": "Seat/Chair/Throne",
             "hotkey": "c",
             "submenu": "building",
             "tiles": [
@@ -1157,6 +1173,22 @@
                     {
                         "char": "210",
                         "bg": "rgb(0, 0, 0)",
+                        "fg": "rgb(192, 192, 192)",
+                        "walkable": 1
+                    }
+                ]
+            ]
+        },
+        {
+            "id": "coffin",
+            "display_name": "Burial Receptacle/Coffin",
+            "hotkey": "n",
+            "submenu": "building",
+            "tiles": [
+                [
+                    {
+                        "char": "48",
+                        "bg": "rgb(192, 192, 192)",
                         "fg": "rgb(192, 192, 192)",
                         "walkable": 1
                     }
@@ -1172,7 +1204,223 @@
                 [
                     {
                         "char": "197",
-                        "bg": "rgb(0, 128, 0)",
+                        "bg": "rgb(192, 192, 192)",
+                        "fg": "rgb(192, 192, 192)",
+                        "walkable": 1
+                    }
+                ]
+            ]
+        },
+        {
+            "id": "cabinet",
+            "display_name": "Cabinet",
+            "hotkey": "f",
+            "submenu": "building",
+            "tiles": [
+                [
+                    {
+                        "char": "227",
+                        "bg": "rgb(192, 192, 192)",
+                        "fg": "rgb(192, 192, 192)",
+                        "walkable": 1
+                    }
+                ]
+            ]
+        },
+        {
+            "id": "container",
+            "display_name": "Container/Chest",
+            "hotkey": "h",
+            "submenu": "building",
+            "tiles": [
+                [
+                    {
+                        "char": "146",
+                        "bg": "rgb(192, 192, 192)",
+                        "fg": "rgb(192, 192, 192)",
+                        "walkable": 1
+                    }
+                ]
+            ]
+        },
+        {
+            "id": "table",
+            "display_name": "Table",
+            "hotkey": "t",
+            "submenu": "building",
+            "tiles": [
+                [
+                    {
+                        "char": "209",
+                        "bg": "rgb(192, 192, 192)",
+                        "fg": "rgb(192, 192, 192)",
+                        "walkable": 1
+                    }
+                ]
+            ]
+        },
+        {
+            "id": "tradedepot",
+            "display_name": "Trade Depot",
+            "hotkey": "D",
+            "submenu": "building",
+            "tiles": [
+                [
+                    {
+                        "char": "79",
+                        "bg": "rgb(0, 0, 0)",
+                        "fg": "rgb(192, 192, 192)",
+                        "walkable": 1
+                    },
+                    {
+                        "char": "219",
+                        "bg": "rgb(0, 0, 0)",
+                        "fg": "rgb(192, 192, 192)",
+                        "walkable": 1
+                    },
+                    {
+                        "char": "219",
+                        "bg": "rgb(0, 0, 0)",
+                        "fg": "rgb(192, 192, 192)",
+                        "walkable": 1
+                    },
+                    {
+                        "char": "219",
+                        "bg": "rgb(0, 0, 0)",
+                        "fg": "rgb(192, 192, 192)",
+                        "walkable": 1
+                    },
+                    {
+                        "char": "79",
+                        "bg": "rgb(0, 0, 0)",
+                        "fg": "rgb(192, 192, 192)",
+                        "walkable": 1
+                    }
+                ],
+                [
+                    {
+                        "char": "219",
+                        "bg": "rgb(0, 0, 0)",
+                        "fg": "rgb(192, 192, 192)",
+                        "walkable": 1
+                    },
+                    {
+                        "char": "219",
+                        "bg": "rgb(0, 0, 0)",
+                        "fg": "rgb(192, 192, 192)",
+                        "walkable": 1
+                    },
+                    {
+                        "char": "219",
+                        "bg": "rgb(0, 0, 0)",
+                        "fg": "rgb(192, 192, 192)",
+                        "walkable": 1
+                    },
+                    {
+                        "char": "219",
+                        "bg": "rgb(0, 0, 0)",
+                        "fg": "rgb(192, 192, 192)",
+                        "walkable": 1
+                    },
+                    {
+                        "char": "219",
+                        "bg": "rgb(0, 0, 0)",
+                        "fg": "rgb(192, 192, 192)",
+                        "walkable": 1
+                    }
+                ],
+                [
+                    {
+                        "char": "219",
+                        "bg": "rgb(0, 0, 0)",
+                        "fg": "rgb(192, 192, 192)",
+                        "walkable": 1
+                    },
+                    {
+                        "char": "219",
+                        "bg": "rgb(0, 0, 0)",
+                        "fg": "rgb(192, 192, 192)",
+                        "walkable": 1
+                    },
+                    {
+                        "char": "79",
+                        "bg": "rgb(0, 0, 0)",
+                        "fg": "rgb(192, 192, 192)",
+                        "walkable": 1
+                    },
+                    {
+                        "char": "219",
+                        "bg": "rgb(0, 0, 0)",
+                        "fg": "rgb(192, 192, 192)",
+                        "walkable": 1
+                    },
+                    {
+                        "char": "219",
+                        "bg": "rgb(0, 0, 0)",
+                        "fg": "rgb(192, 192, 192)",
+                        "walkable": 1
+                    }
+                ],
+                [
+                    {
+                        "char": "219",
+                        "bg": "rgb(0, 0, 0)",
+                        "fg": "rgb(192, 192, 192)",
+                        "walkable": 1
+                    },
+                    {
+                        "char": "219",
+                        "bg": "rgb(0, 0, 0)",
+                        "fg": "rgb(192, 192, 192)",
+                        "walkable": 1
+                    },
+                    {
+                        "char": "219",
+                        "bg": "rgb(0, 0, 0)",
+                        "fg": "rgb(192, 192, 192)",
+                        "walkable": 1
+                    },
+                    {
+                        "char": "219",
+                        "bg": "rgb(0, 0, 0)",
+                        "fg": "rgb(192, 192, 192)",
+                        "walkable": 1
+                    },
+                    {
+                        "char": "219",
+                        "bg": "rgb(0, 0, 0)",
+                        "fg": "rgb(192, 192, 192)",
+                        "walkable": 1
+                    }
+                ],
+                [
+                    {
+                        "char": "79",
+                        "bg": "rgb(0, 0, 0)",
+                        "fg": "rgb(192, 192, 192)",
+                        "walkable": 1
+                    },
+                    {
+                        "char": "219",
+                        "bg": "rgb(0, 0, 0)",
+                        "fg": "rgb(192, 192, 192)",
+                        "walkable": 1
+                    },
+                    {
+                        "char": "219",
+                        "bg": "rgb(0, 0, 0)",
+                        "fg": "rgb(192, 192, 192)",
+                        "walkable": 1
+                    },
+                    {
+                        "char": "219",
+                        "bg": "rgb(0, 0, 0)",
+                        "fg": "rgb(192, 192, 192)",
+                        "walkable": 1
+                    },
+                    {
+                        "char": "79",
+                        "bg": "rgb(0, 0, 0)",
                         "fg": "rgb(192, 192, 192)",
                         "walkable": 1
                     }
@@ -1191,6 +1439,307 @@
                         "bg": "rgb(0, 0, 0)",
                         "fg": "rgb(192, 192, 192)",
                         "walkable": 0
+                    }
+                ]
+            ]
+        },
+        {
+            "id": "woodfurnace",
+            "display_name": "Wood Furnace",
+            "hotkey": "w",
+            "submenu": "furnaces",
+            "tiles": [
+                [
+                    {},
+                    {
+                        "char": "7",
+                        "bg": "rgb(192, 192, 192)",
+                        "fg": "rgb(255, 0, 0)",
+                        "walkable": 0
+                    },
+                    {
+                        "char": "93",
+                        "bg": "rgb(0, 0, 0)",
+                        "fg": "rgb(128, 128, 128)",
+                        "walkable": 1
+                    }
+                ],
+                [
+                    {
+                        "char": "61",
+                        "bg": "rgb(0, 0, 0)",
+                        "fg": "rgb(128, 128, 0)",
+                        "walkable": 1
+                    },
+                    {},
+                    {}
+                ],
+                [
+                    {},
+                    {},
+                    {
+                        "char": "111",
+                        "bg": "rgb(0, 0, 0)",
+                        "fg": "rgb(128, 128, 128)",
+                        "walkable": 1
+                    }
+                ]
+            ]
+        },
+        {
+            "id": "smelter",
+            "display_name": "Smelter",
+            "hotkey": "s",
+            "submenu": "furnaces",
+            "tiles": [
+                [
+                    {},
+                    {
+                        "char": "7",
+                        "bg": "rgb(192, 192, 192)",
+                        "fg": "rgb(255, 0, 0)",
+                        "walkable": 0
+                    },
+                    {
+                        "char": "93",
+                        "bg": "rgb(0, 0, 0)",
+                        "fg": "rgb(128, 128, 128)",
+                        "walkable": 1
+                    }
+                ],
+                [
+                    {
+                        "char": "61",
+                        "bg": "rgb(0, 0, 0)",
+                        "fg": "rgb(128, 128, 0)",
+                        "walkable": 1
+                    },
+                    {},
+                    {}
+                ],
+                [
+                    {},
+                    {},
+                    {
+                        "char": "111",
+                        "bg": "rgb(0, 0, 0)",
+                        "fg": "rgb(128, 128, 128)",
+                        "walkable": 1
+                    }
+                ]
+            ]
+        },
+        {
+            "id": "glassfurnace",
+            "display_name": "Glass Furnace",
+            "hotkey": "g",
+            "submenu": "furnaces",
+            "tiles": [
+                [
+                    {},
+                    {
+                        "char": "7",
+                        "bg": "rgb(192, 192, 192)",
+                        "fg": "rgb(255, 0, 0)",
+                        "walkable": 0
+                    },
+                    {
+                        "char": "93",
+                        "bg": "rgb(0, 0, 0)",
+                        "fg": "rgb(128, 128, 128)",
+                        "walkable": 1
+                    }
+                ],
+                [
+                    {
+                        "char": "61",
+                        "bg": "rgb(0, 0, 0)",
+                        "fg": "rgb(128, 128, 0)",
+                        "walkable": 1
+                    },
+                    {},
+                    {}
+                ],
+                [
+                    {},
+                    {},
+                    {
+                        "char": "111",
+                        "bg": "rgb(0, 0, 0)",
+                        "fg": "rgb(128, 128, 128)",
+                        "walkable": 1
+                    }
+                ]
+            ]
+        },
+        {
+            "id": "kiln",
+            "display_name": "Kiln",
+            "hotkey": "k",
+            "submenu": "furnaces",
+            "tiles": [
+                [
+                    {},
+                    {
+                        "char": "7",
+                        "bg": "rgb(192, 192, 192)",
+                        "fg": "rgb(255, 0, 0)",
+                        "walkable": 0
+                    },
+                    {
+                        "char": "93",
+                        "bg": "rgb(0, 0, 0)",
+                        "fg": "rgb(128, 128, 128)",
+                        "walkable": 1
+                    }
+                ],
+                [
+                    {
+                        "char": "61",
+                        "bg": "rgb(0, 0, 0)",
+                        "fg": "rgb(128, 128, 0)",
+                        "walkable": 1
+                    },
+                    {},
+                    {}
+                ],
+                [
+                    {},
+                    {},
+                    {
+                        "char": "111",
+                        "bg": "rgb(0, 0, 0)",
+                        "fg": "rgb(128, 128, 128)",
+                        "walkable": 1
+                    }
+                ]
+            ]
+        },
+        {
+            "id": "magmasmelter",
+            "display_name": "Magma Smelter",
+            "hotkey": "l",
+            "submenu": "furnaces",
+            "tiles": [
+                [
+                    {},
+                    {
+                        "char": "7",
+                        "bg": "rgb(192, 192, 192)",
+                        "fg": "rgb(255, 0, 0)",
+                        "walkable": 0
+                    },
+                    {
+                        "char": "93",
+                        "bg": "rgb(0, 0, 0)",
+                        "fg": "rgb(128, 128, 128)",
+                        "walkable": 1
+                    }
+                ],
+                [
+                    {
+                        "char": "61",
+                        "bg": "rgb(0, 0, 0)",
+                        "fg": "rgb(128, 128, 0)",
+                        "walkable": 1
+                    },
+                    {},
+                    {}
+                ],
+                [
+                    {},
+                    {},
+                    {
+                        "char": "111",
+                        "bg": "rgb(0, 0, 0)",
+                        "fg": "rgb(128, 128, 128)",
+                        "walkable": 1
+                    }
+                ]
+            ]
+        },
+        {
+            "id": "magmaglassfurnace",
+            "display_name": "Magma Glass Furnace",
+            "hotkey": "a",
+            "submenu": "furnaces",
+            "tiles": [
+                [
+                    {},
+                    {
+                        "char": "7",
+                        "bg": "rgb(192, 192, 192)",
+                        "fg": "rgb(255, 0, 0)",
+                        "walkable": 0
+                    },
+                    {
+                        "char": "93",
+                        "bg": "rgb(0, 0, 0)",
+                        "fg": "rgb(128, 128, 128)",
+                        "walkable": 1
+                    }
+                ],
+                [
+                    {
+                        "char": "61",
+                        "bg": "rgb(0, 0, 0)",
+                        "fg": "rgb(128, 128, 0)",
+                        "walkable": 1
+                    },
+                    {},
+                    {}
+                ],
+                [
+                    {},
+                    {},
+                    {
+                        "char": "111",
+                        "bg": "rgb(0, 0, 0)",
+                        "fg": "rgb(128, 128, 128)",
+                        "walkable": 1
+                    }
+                ]
+            ]
+        },
+        {
+            "id": "magmakiln",
+            "display_name": "Magma Kiln",
+            "hotkey": "n",
+            "submenu": "furnaces",
+            "tiles": [
+                [
+                    {},
+                    {
+                        "char": "7",
+                        "bg": "rgb(192, 192, 192)",
+                        "fg": "rgb(255, 0, 0)",
+                        "walkable": 0
+                    },
+                    {
+                        "char": "93",
+                        "bg": "rgb(0, 0, 0)",
+                        "fg": "rgb(128, 128, 128)",
+                        "walkable": 1
+                    }
+                ],
+                [
+                    {
+                        "char": "61",
+                        "bg": "rgb(0, 0, 0)",
+                        "fg": "rgb(128, 128, 0)",
+                        "walkable": 1
+                    },
+                    {},
+                    {}
+                ],
+                [
+                    {},
+                    {},
+                    {
+                        "char": "111",
+                        "bg": "rgb(0, 0, 0)",
+                        "fg": "rgb(128, 128, 128)",
+                        "walkable": 1
                     }
                 ]
             ]

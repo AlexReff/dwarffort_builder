@@ -21,16 +21,11 @@ interface IGameHighlighterProps {
     inspectedBuildings: IInspectState["inspectedBuildings"];
     buildingPositions: IBuildingState["buildingPositions"];
     buildingTiles: IBuildingState["buildingTiles"];
-    // buildingList: IBuildingState["buildingList"];
-    // buildingBounds: IBuildingState["buildingBounds"];
+
     //redux dispatch
     inspectGridPos: typeof inspectGridPos;
     moveInspectedBuildings: typeof moveInspectedBuildings;
     inspectGridRange: typeof inspectGridRange;
-    // inspectTileAtPos: typeof inspectRequestAtPos;
-    // inspectTileAtMapCoord: typeof inspectRequestAtMapCoord;
-    // inspectTileRange: typeof inspectRequestRange;
-    // inspectMoveSelectionRequest: typeof inspectMoveSelectionRequest;
 }
 
 interface IGameHighlighterState {
@@ -61,7 +56,6 @@ const mapStateToProps = (state: ReduxState) => ({
 });
 
 const mapDispatchToProps = (dispatch) => ({
-    // inspectTileAtPos: (x, y, add) => dispatch(inspectRequestAtPos(x, y, add)),
     inspectGridPos: (x, y, shiftDown) => dispatch(inspectGridPos(x, y, shiftDown)),
     moveInspectedBuildings: (diffX, diffY) => dispatch(moveInspectedBuildings(diffX, diffY)),
     inspectGridRange: (a, b, add) => dispatch(inspectGridRange(a, b, add)),

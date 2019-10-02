@@ -25,29 +25,37 @@ export class Builder implements ITileGeneratorComponent {
                     if (trgTile == null || trgTile.char == null) {
                         continue; //no building character to place here
                     }
-                    let color = trgTile.fg;
-                    const colStart = color.indexOf("(");
-                    const colEnd = color.indexOf(")");
-                    if (colStart !== -1 && colEnd !== -1) {
-                        color = `rgba(${color.substr(colStart + 1, colEnd - colStart - 1)}, .3)`;
-                    }
-                    let bg = trgTile.bg;
-                    const bgStart = bg.indexOf("(");
-                    const bgEnd = bg.indexOf(")");
-                    if (bgStart !== -1 && bgEnd !== -1) {
-                        bg = `rgba(${bg.substr(bgStart + 1, bgEnd - bgStart - 1)}, .4)`;
-                    }
-                    let char = `i${trgTile.char}`;
                     if (tile.key === MENU_ITEM.wall) {
-                        char = `w${tile.characterVariant}`;
+                        result.push({
+                            x,
+                            y,
+                            //char: ["f0", `wx${tile.characterVariant}`],
+                            char: ["f0", `w${tile.characterVariant}`],
+                            color: ["rgba(50, 50, 50, .2)", "transparent"],
+                            //bg,
+                        });
+                    } else {
+                        let color = trgTile.fg;
+                        const colStart = color.indexOf("(");
+                        const colEnd = color.indexOf(")");
+                        if (colStart !== -1 && colEnd !== -1) {
+                            color = `rgba(${color.substr(colStart + 1, colEnd - colStart - 1)}, .3)`;
+                        }
+                        let bg = trgTile.bg;
+                        const bgStart = bg.indexOf("(");
+                        const bgEnd = bg.indexOf(")");
+                        if (bgStart !== -1 && bgEnd !== -1) {
+                            bg = `rgba(${bg.substr(bgStart + 1, bgEnd - bgStart - 1)}, .4)`;
+                        }
+                        const char = `i${trgTile.char}`;
+                        result.push({
+                            x,
+                            y,
+                            char,
+                            color,
+                            bg,
+                        });
                     }
-                    result.push({
-                        x,
-                        y,
-                        char,
-                        color,
-                        bg,
-                    });
                 }
             }
         }

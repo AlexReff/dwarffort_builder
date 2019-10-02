@@ -217,27 +217,24 @@ export const BUILDINGS: {
 } = {
     ITEMS: _.keyBy(buildings, "id"),
     KEYS: {},
-    SUBMENUS: _.groupBy(buildings, "parent"),
+    SUBMENUS: _.groupBy(buildings, "submenu"),
 };
-
-// populate buildings parsedHotkey
-for (const target of buildings) {
-    if (!(target.submenu in MENU.ITEMS)) {
-        continue; //invalid 'submenu' value
-    }
-    target.parsedHotkey = MENU.ITEMS[target.submenu].parsedKey + ":" + target.hotkey;
-    BUILDINGS.KEYS[target.parsedHotkey] = target;
-    if (!(target.submenu in BUILDINGS.SUBMENUS)) {
-        BUILDINGS.SUBMENUS[target.submenu] = [];
-    }
-    BUILDINGS.SUBMENUS[target.submenu].push(target);
-}
 
 // add submenu keys for submenus with only buildings
 for (const key of Object.keys(BUILDINGS.SUBMENUS)) {
     if (!(key in MENU.SUBMENUS)) {
         MENU.SUBMENUS[key] = null;
     }
+}
+
+// populate buildings parsedHotkey
+for (const target of buildings) {
+    if (!(target.submenu in MENU.ITEMS)) {
+        continue; //invalid 'submenu' value
+    }
+    // target.parsedHotkey = MENU.ITEMS[target.submenu].parsedKey + ":" + target.hotkey;
+    target.parsedHotkey = MENU.ITEMS[target.submenu].parsedKey + ":" + target.hotkey;
+    BUILDINGS.KEYS[target.parsedHotkey] = target;
 }
 
 export const SUBMENU_MAX_H: number = Object.keys(MENU.SUBMENUS).reduce((map, key) => {
