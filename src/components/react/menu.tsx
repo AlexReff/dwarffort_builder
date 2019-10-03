@@ -76,14 +76,67 @@ class Menu extends Component<IMenuProps, IGameMenuState> {
     }
 
     render = (props: IMenuProps) => {
+        const isPlacingBuilding = this.props.currentMenuItem != null &&
+            this.props.currentMenuItem.length > 0 &&
+            this.props.currentMenuItem in BUILDINGS.ITEMS;
+        let placed = -1;
+        let placedZ = -1;
+        if (isPlacingBuilding) {
+            if (this.props.cameraZ in this.props.buildingTiles) {
+                placed = Object.keys(this.props.buildingTiles[this.props.cameraZ]).reduce((map, val) => {
+                    return map + (this.props.buildingTiles[this.props.cameraZ][val].key === this.props.currentMenuItem ? 1 : 0);
+                }, 0);
+                if (Object.keys(this.props.buildingTiles).length > 1) {
+                    //check how many buildings exist across all z-levels
+                    placedZ = Object.keys(this.props.buildingTiles).reduce((map, floor) => {
+                        return Object.keys(this.props.buildingTiles[floor]).reduce((thisFloor, pos) => {
+                            if (this.props.buildingTiles[floor][pos].key === this.props.currentMenuItem) {
+                                return thisFloor + 1;
+                            } else {
+                                return thisFloor;
+                            }
+                        }, 0);
+                    }, 0);
+                }
+            }
+        }
         return (
             <div id="menu">
                 <div class="menu-breadcrumbs">
                     {this.renderBreadcrumbs()}
                 </div>
-                <div class="menu-items" style={this.getMenuItemsCss()}>
-                    {this.getMenu()}
-                </div>
+                {isPlacingBuilding ?
+                    <div class="menu-place">
+                        <div>Placing {BUILDINGS.ITEMS[this.props.currentMenuItem].display_name}</div>
+                        {placed > -1 ?
+                            <div>Placed (current Z): {placed}</div>
+                            : null}
+                        {placedZ > -1 ?
+                            <div>Placed (all floors): {placedZ}</div>
+                            : null}
+                    </div>
+                    :
+                    <div class="menu-items" /*style={this.getMenuItemsCss()}*/>
+                        {Object.keys(MENU.SUBMENUS).map((key) => (
+                            <div class={"submenu" + (this.props.currentMenu === key ? " active" : "")}>
+                                {key in BUILDINGS.SUBMENUS ?
+                                    BUILDINGS.SUBMENUS[key].map((bldg) => (
+                                        <a onClick={(e) => this.menuItemClickHandler(e)}
+                                            title={bldg.display_name}
+                                            class={"menu-item" + (this.props.currentMenuItem != null && this.props.currentMenuItem === bldg.id ? " active" : "")}
+                                            data-id={bldg.id}>{bldg.hotkey}: {bldg.display_name}</a>
+                                    )) : null}
+                                {MENU.SUBMENUS[key] != null && MENU.SUBMENUS[key].length > 0 ?
+                                    MENU.SUBMENUS[key].map((item) => (
+                                        <a onClick={(e) => this.menuItemClickHandler(e)}
+                                            title={item.text}
+                                            class={"menu-item" + (this.props.currentMenuItem != null && this.props.currentMenuItem === item.id ? " active" : "")}
+                                            data-id={item.id}>{item.key}: {item.text}</a>
+                                    )) : null}
+                            </div>
+                        ))}
+                    </div>
+                }
                 {this.renderMenuToolbar()}
                 <div class="menu-bottom">
                     <div class="menu-status">
@@ -100,12 +153,6 @@ class Menu extends Component<IMenuProps, IGameMenuState> {
         if (this.props.currentMenu !== "top") {
             const activeItem = MENU.ITEMS[this.props.currentMenu];
             breadcrumbs.push(<a href="#" data-id={activeItem.id} onClick={(e) => this.breadcrumbHandler(e)}>{activeItem.text}</a>);
-
-            // let parent = activeItem.parent;
-            // while (parent != null) {
-            //     breadcrumbs.push(<a href="#" data-id={parent.key} onClick={(e) => this.breadcrumbHandler(e)}>{parent.text}</a>);
-            //     parent = parent.parent;
-            // }
         }
 
         breadcrumbs.push(<a href="#" data-id="top" title="Main Menu" onClick={(e) => this.breadcrumbHandler(e)}>☺</a>);
@@ -179,54 +226,15 @@ class Menu extends Component<IMenuProps, IGameMenuState> {
         this.props.selectMenuItem(e);
     }
 
-    getMenuItemsCss = () => {
-        return {
-            minHeight: (SUBMENU_MAX_H * 21),
-        };
-    }
+    // getMenuItemsCss = () => {
+    //     return {
+    //         minHeight: (SUBMENU_MAX_H * 21),
+    //     };
+    // }
 
     menuItemClickHandler = (e: Event) => {
         e.preventDefault();
         this.handleMenuEvent((e.currentTarget as HTMLElement).dataset.id);
-    }
-
-    getMenu = () => {
-        const allMenus = [];
-
-        for (const key of Object.keys(MENU.SUBMENUS)) {
-            const items = MENU.SUBMENUS[key];
-            const resultStack = [];
-            if (key in BUILDINGS.SUBMENUS) {
-                //populate related buildings
-                for (const bldg of BUILDINGS.SUBMENUS[key]) {
-                    resultStack.push((
-                        <a onClick={(e) => this.menuItemClickHandler(e)}
-                            title={bldg.display_name}
-                            class={"menu-item" + (this.props.currentMenuItem != null && this.props.currentMenuItem === bldg.id ? " active" : "")}
-                            data-id={bldg.id}>{bldg.hotkey}: {bldg.display_name}</a>
-                    ));
-                }
-            }
-
-            if (items != null) {
-                for (const item of items) {
-                    resultStack.push((
-                        <a onClick={(e) => this.menuItemClickHandler(e)}
-                            title={item.text}
-                            class={"menu-item" + (this.props.currentMenuItem != null && this.props.currentMenuItem === item.id ? " active" : "")}
-                            data-id={item.id}>{item.key}: {item.text}</a>
-                    ));
-                }
-            }
-
-            allMenus.push((
-                <div class={"submenu" + (this.props.currentMenu === key ? " active" : "")}>
-                    {resultStack}
-                </div>
-            ));
-        }
-
-        return allMenus;
     }
 }
 
