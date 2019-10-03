@@ -3,13 +3,15 @@ const presets = [
         "@babel/preset-env",
         {
             targets: [">0.25%", "not ie 11"],
-            useBuiltIns: "usage"
+            useBuiltIns: "usage",
+            corejs: "2",
         },
     ],
 ];
 
 const plugins = [
-    "@babel/plugin-proposal-class-properties"
+    "@babel/plugin-proposal-class-properties",
+    "lodash"
 ];
 
 const ignore = [

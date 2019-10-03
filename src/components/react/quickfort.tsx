@@ -1,4 +1,3 @@
-import * as _ from "lodash";
 import { Component, h } from "preact";
 import { connect } from "react-redux";
 import { ICameraState } from "../redux/camera/reducer";

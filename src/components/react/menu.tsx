@@ -1,4 +1,3 @@
-import * as _ from "lodash";
 import { Component, h } from "preact";
 import { connect } from "react-redux";
 import { BUILDINGS, KEYS, MENU, SUBMENU_MAX_H } from "../constants";

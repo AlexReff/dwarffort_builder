@@ -19,7 +19,6 @@ export {
 } from "./_constants";
 
 export {
-    // CURSOR_BEHAVIOR,
     DIRECTION,
     KEYS,
     MENU_ITEM,

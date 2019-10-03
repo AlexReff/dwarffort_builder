@@ -2,6 +2,8 @@ const path = require("path");
 const HtmlWebpackPlugin = require("html-webpack-plugin");
 const MiniCssExtractPlugin = require("mini-css-extract-plugin");
 const CopyPlugin = require("copy-webpack-plugin");
+const LodashModuleReplacementPlugin = require('lodash-webpack-plugin');
+const TerserPlugin = require('terser-webpack-plugin');
 
 module.exports = (env, argv) => {
     const isDev = argv.mode !== "production";
@@ -52,6 +54,20 @@ module.exports = (env, argv) => {
             ]
         },
         optimization: {
+            minimizer: [
+                new TerserPlugin({
+                    extractComments: false,
+                    terserOptions: {
+                        compress: {
+                            toplevel: true,
+                            unsafe: true,
+                        },
+                        output: {
+                            comments: false
+                        }
+                    }
+                })
+            ],
             splitChunks: {
                 cacheGroups: {
                     styles: {
@@ -71,6 +87,9 @@ module.exports = (env, argv) => {
             hints: false
         },
         plugins: [
+            new LodashModuleReplacementPlugin({
+                collections: true,
+            }),
             new HtmlWebpackPlugin({
                 template: "./src/index.html"
             }),

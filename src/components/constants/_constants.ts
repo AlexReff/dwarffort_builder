@@ -1,6 +1,7 @@
 const styles = require("../.././css/_variables.scss");
 
-import _ from "lodash";
+import groupBy from "lodash/groupBy";
+import keyBy from "lodash/keyBy";
 import { buildings as _buildings } from "../../data/buildings.json";
 import { items } from "../../data/menu_flat.json";
 import { IBuildingData, IMenuItem } from "./_interfaces";
@@ -178,9 +179,9 @@ export const MENU: {
         [key: string]: IMenuItem[];
     },
 } = {
-    ITEMS: _.keyBy(MENU_JSON, "id"),
+    ITEMS: keyBy(MENU_JSON, (e) => e.id),
     KEYS: {},
-    SUBMENUS: _.groupBy(MENU_JSON, "parent"),
+    SUBMENUS: groupBy(MENU_JSON, (e) => e.parent),
 };
 
 // populate MENU.KEYS and parsedHotkey
@@ -215,9 +216,9 @@ export const BUILDINGS: {
         [key: string]: IBuildingData[];
     },
 } = {
-    ITEMS: _.keyBy(buildings, "id"),
+    ITEMS: keyBy(buildings, (e) => e.id),
     KEYS: {},
-    SUBMENUS: _.groupBy(buildings, "submenu"),
+    SUBMENUS: groupBy(buildings, (e) => e.submenu),
 };
 
 // add submenu keys for submenus with only buildings
@@ -232,7 +233,6 @@ for (const target of buildings) {
     if (!(target.submenu in MENU.ITEMS)) {
         continue; //invalid 'submenu' value
     }
-    // target.parsedHotkey = MENU.ITEMS[target.submenu].parsedKey + ":" + target.hotkey;
     target.parsedHotkey = MENU.ITEMS[target.submenu].parsedKey + ":" + target.hotkey;
     BUILDINGS.KEYS[target.parsedHotkey] = target;
 }

@@ -1,5 +1,5 @@
 //libraries
-import _ from "lodash";
+import debounce from "lodash/debounce";
 import { Component, h, render } from "preact";
 import { Provider } from "react-redux";
 //components
@@ -105,10 +105,10 @@ class FortressDesigner extends Component<{}, IFortressDesignerState> {
     }
 
     // tslint:disable-next-line: member-ordering
-    windowResizeBouncer = _.debounce(this.setWindowResizing, 300, { leading: true, trailing: false });
+    windowResizeBouncer = debounce(this.setWindowResizing, 300, { leading: true, trailing: false });
 
     // tslint:disable-next-line: member-ordering
-    windowResizeEndBouncer = _.debounce(this.endWindowResizing, 400, { leading: false, trailing: true });
+    windowResizeEndBouncer = debounce(this.endWindowResizing, 400, { leading: false, trailing: true });
 
     handleWindowResize = () => {
         this.windowResizeBouncer();
