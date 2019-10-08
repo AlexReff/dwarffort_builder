@@ -20,6 +20,7 @@ export {
 
 export {
     DIRECTION,
+    INPUT_STATE,
     KEYS,
     MENU_ITEM,
 } from "./_enums";
@@ -30,4 +31,5 @@ export {
     IMenuItem,
     IRenderTile,
     ITileCollection,
+    ITerrainTile,
 } from "./_interfaces";

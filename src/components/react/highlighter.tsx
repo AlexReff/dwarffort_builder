@@ -1,11 +1,11 @@
 import { Component, h } from "preact";
 import { connect } from "react-redux";
-import { BUILDINGS, IBuildingData, KEYS, Point, TILE_H, TILE_W } from "../constants";
+import { BUILDINGS, IBuildingData, INPUT_STATE, KEYS, Point, TILE_H, TILE_W } from "../constants";
 import { IBuildingState, IBuildingTile } from "../redux/building/reducer";
 import { ICameraState } from "../redux/camera/reducer";
-import { inspectGridPos, inspectGridRange, moveInspectedBuildings } from "../redux/inspect/actions";
+import { IInputState } from "../redux/input/reducer";
+import { inspectAllOfTypeAtGridPos, inspectGridPos, inspectGridRange, moveInspectedBuildings } from "../redux/inspect/actions";
 import { IInspectState } from "../redux/inspect/reducer";
-import { IMenuState } from "../redux/menu/reducer";
 import { ReduxState } from "../redux/store";
 import { eventToPosition } from "../util";
 
@@ -17,7 +17,7 @@ interface IGameHighlighterProps {
     mapHeight: ICameraState["mapHeight"];
     mapWidth: ICameraState["mapWidth"];
     gridBounds: ICameraState["gridBounds"];
-    isInspecting: IMenuState["isInspecting"];
+    inputState: IInputState["inputState"];
     inspectedBuildings: IInspectState["inspectedBuildings"];
     buildingPositions: IBuildingState["buildingPositions"];
     buildingTiles: IBuildingState["buildingTiles"];
@@ -26,6 +26,7 @@ interface IGameHighlighterProps {
     inspectGridPos: typeof inspectGridPos;
     moveInspectedBuildings: typeof moveInspectedBuildings;
     inspectGridRange: typeof inspectGridRange;
+    inspectAllOfTypeAtGridPos: typeof inspectAllOfTypeAtGridPos;
 }
 
 interface IGameHighlighterState {
@@ -34,7 +35,6 @@ interface IGameHighlighterState {
     mouseDown: boolean;
     mouseDownCoord: Point;
     showHighlighter: boolean;
-    shiftDown: boolean;
     toolbarMoveDragging: boolean;
     dragStartX: number;
     dragStartY: number;
@@ -49,16 +49,17 @@ const mapStateToProps = (state: ReduxState) => ({
     mapWidth: state.camera.mapWidth,
     mapHeight: state.camera.mapHeight,
     gridBounds: state.camera.gridBounds,
-    isInspecting: state.menu.isInspecting,
+    inputState: state.input.inputState,
     inspectedBuildings: state.inspect.inspectedBuildings,
     buildingPositions: state.building.buildingPositions,
     buildingTiles: state.building.buildingTiles,
 });
 
 const mapDispatchToProps = (dispatch) => ({
-    inspectGridPos: (x, y, shiftDown) => dispatch(inspectGridPos(x, y, shiftDown)),
+    inspectGridPos: (x, y) => dispatch(inspectGridPos(x, y)),
     moveInspectedBuildings: (diffX, diffY) => dispatch(moveInspectedBuildings(diffX, diffY)),
-    inspectGridRange: (a, b, add) => dispatch(inspectGridRange(a, b, add)),
+    inspectGridRange: (a, b) => dispatch(inspectGridRange(a, b)),
+    inspectAllOfTypeAtGridPos: (x, y) => dispatch(inspectAllOfTypeAtGridPos(x, y)),
 });
 
 class GameHighlighter extends Component<IGameHighlighterProps, IGameHighlighterState> {
@@ -75,7 +76,6 @@ class GameHighlighter extends Component<IGameHighlighterProps, IGameHighlighterS
             highlightingStart: null,
             showHighlighter: false,
             mouseDown: false,
-            shiftDown: false,
             toolbarMoveDragging: false,
         });
     }
@@ -85,8 +85,6 @@ class GameHighlighter extends Component<IGameHighlighterProps, IGameHighlighterS
         this.canvasElement.addEventListener("mousedown", this.handleMouseDown);
         window.addEventListener("mousemove", this.handleMouseMove);
         window.addEventListener("mouseup", this.handleMouseUp);
-        window.addEventListener("keydown", this.handleKeyDown);
-        window.addEventListener("keyup", this.handleKeyUp);
     }
 
     //#region handlers
@@ -103,10 +101,10 @@ class GameHighlighter extends Component<IGameHighlighterProps, IGameHighlighterS
     }
 
     handleMouseUp = (e: MouseEvent | TouchEvent) => {
-        if (this.props.isInspecting) {
+        if (this.props.inputState === INPUT_STATE.INSPECTING) {
             if (this.state.showHighlighter) {
                 e.preventDefault();
-                this.props.inspectGridRange(this.state.highlightingStart, this.state.currentPosition, this.state.shiftDown);
+                this.props.inspectGridRange(this.state.highlightingStart, this.state.currentPosition);
             }
         }
         this.setState({
@@ -126,22 +124,6 @@ class GameHighlighter extends Component<IGameHighlighterProps, IGameHighlighterS
             mouseX: targ.clientX,
             mouseY: targ.clientY,
         }));
-    }
-
-    handleKeyDown = (e: KeyboardEvent) => {
-        if (e.keyCode === KEYS.VK_SHIFT) {
-            this.setState({
-                shiftDown: true,
-            });
-        }
-    }
-
-    handleKeyUp = (e: KeyboardEvent) => {
-        if (e.keyCode === KEYS.VK_SHIFT) {
-            this.setState({
-                shiftDown: false,
-            });
-        }
     }
 
     handleMoveMouseDown = (e: MouseEvent) => {
@@ -172,13 +154,19 @@ class GameHighlighter extends Component<IGameHighlighterProps, IGameHighlighterS
     handleBuildingClick = (e: MouseEvent | TouchEvent) => {
         e.preventDefault();
         const [gridX, gridY] = eventToPosition(e, this.props.gridBounds);
-        this.props.inspectGridPos(gridX, gridY, this.state.shiftDown);
+        this.props.inspectGridPos(gridX, gridY);
+    }
+
+    handleBuildingDoubleClick = (e: MouseEvent | TouchEvent) => {
+        e.preventDefault();
+        const [gridX, gridY] = eventToPosition(e, this.props.gridBounds);
+        this.props.inspectAllOfTypeAtGridPos(gridX, gridY);
     }
 
     //#endregion handlers
 
     getHighlighterStyle = () => {
-        if (!this.props.isInspecting ||
+        if (this.props.inputState !== INPUT_STATE.INSPECTING ||
             !this.state.showHighlighter ||
             this.state.highlightingStart == null ||
             this.state.highlightingStart.length !== 2 ||
@@ -253,7 +241,7 @@ class GameHighlighter extends Component<IGameHighlighterProps, IGameHighlighterS
                 const thisClass = "building_inspect" + (thisInspected ? " inspecting" : "");
 
                 result.push((
-                    <a class={thisClass} title={bldg.display_name} onClick={this.handleBuildingClick} style={style}></a>
+                    <a class={thisClass} title={bldg.display_name} onClick={this.handleBuildingClick} onDblClick={this.handleBuildingDoubleClick} style={style}></a>
                 ));
             }
         }
@@ -319,7 +307,7 @@ class GameHighlighter extends Component<IGameHighlighterProps, IGameHighlighterS
         ));
 
         let wrapperClass = "inspect_wrapper";
-        if (this.props.isInspecting) {
+        if (this.props.inputState === INPUT_STATE.INSPECTING) {
             wrapperClass += " inspecting";
         }
         if (this.state.mouseDown) {

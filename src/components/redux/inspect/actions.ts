@@ -1,14 +1,15 @@
 import produce from "immer";
 import { MENU_ITEM, Point, TILE_H, TILE_W } from "../../constants";
-import { getMapCoord, getWallNeighborFlags, updateWallNeighbors } from "../../util";
-import { ACTION_TYPE, FlatGetState } from "../store";
+import { getMapCoord, updateWallNeighbors } from "../../util";
+import { IBuildingTile } from "../building/reducer";
+import { ACTION_TYPE, ReduxState } from "../store";
 
 //#region REDUX ACTIONS
 
-export function setInspectBuildings(items: string[]) {
+export function setInspectBuildings(inspectedBuildings: string[]) {
     return {
         type: ACTION_TYPE.SET_INSPECT_BUILDINGS,
-        items,
+        inspectedBuildings,
     };
 }
 
@@ -16,6 +17,13 @@ export function addInspectBuilding(item: string) {
     return {
         type: ACTION_TYPE.ADD_INSPECT_BUILDING,
         item,
+    };
+}
+
+export function addInspectBuildings(items: string[]) {
+    return {
+        type: ACTION_TYPE.ADD_INSPECT_BUILDINGS,
+        items,
     };
 }
 
@@ -38,12 +46,12 @@ export function _moveInspectedBuildings(buildingTiles, buildingPositions, inspec
 //#endregion
 //#region THUNK ACTIONS
 
-export function inspectGridRange(gridA: Point, gridB: Point, add: boolean = false) {
-    return (dispatch, getState) => {
-        const state = FlatGetState({}, getState);
-        if (state.buildingPositions == null ||
-            !(state.cameraZ in state.buildingPositions) ||
-            Object.keys(state.buildingPositions[state.cameraZ]).length === 0) {
+export function inspectGridRange(gridA: Point, gridB: Point) {
+    return (dispatch, getState: () => ReduxState) => {
+        const state = getState();
+        if (state.building.buildingPositions == null ||
+            !(state.camera.cameraZ in state.building.buildingPositions) ||
+            Object.keys(state.building.buildingPositions[state.camera.cameraZ]).length === 0) {
             return;
         }
 
@@ -60,26 +68,32 @@ export function inspectGridRange(gridA: Point, gridB: Point, add: boolean = fals
         for (let x = minX; x <= maxX; x++) {
             for (let y = minY; y <= maxY; y++) {
                 const key = `${x}:${y}`;
-                if (key in state.buildingPositions[state.cameraZ]) {
-                    bldgKeys.add(state.buildingPositions[state.cameraZ][key]);
+                if (key in state.building.buildingPositions[state.camera.cameraZ]) {
+                    bldgKeys.add(state.building.buildingPositions[state.camera.cameraZ][key]);
                 }
             }
         }
 
         const bldgVals = Array.from(bldgKeys.values());
 
-        const inspectedBuildings = add ? state.inspectedBuildings.concat(bldgVals.filter((m) => !state.inspectedBuildings.some((n) => n === m))) : bldgVals;
+        const inspectedBuildings = state.input.shiftDown ? state.inspect.inspectedBuildings.concat(bldgVals.filter((m) => !state.inspect.inspectedBuildings.some((n) => n === m))) : bldgVals;
 
         dispatch(setInspectBuildings(inspectedBuildings));
     };
 }
 
 export function moveInspectedBuildings(diffX: number, diffY: number) {
-    return (dispatch, getState) => {
-        const state = FlatGetState({}, getState);
+    return (dispatch, getState: () => ReduxState) => {
+        const state = getState();
 
-        if (!(state.cameraZ in state.terrainTiles) ||
-            !(state.cameraZ in state.buildingTiles)) {
+        const cameraZ = state.camera.cameraZ;
+        const terrainTiles = state.digger.terrainTiles;
+        const buildingTiles = state.building.buildingTiles;
+        const inspectedBuildings = state.inspect.inspectedBuildings;
+        const buildingPositions = state.building.buildingPositions;
+
+        if (!(cameraZ in terrainTiles) ||
+            !(cameraZ in buildingTiles)) {
             return;
         }
 
@@ -88,14 +102,14 @@ export function moveInspectedBuildings(diffX: number, diffY: number) {
 
         const allNewPositions = [];
         //validate no building is in the way
-        for (const bldgKey of state.inspectedBuildings) {
-            const bldgPositions = Object.keys(state.buildingPositions[state.cameraZ]).filter((m) => state.buildingPositions[state.cameraZ][m] === bldgKey);
+        for (const bldgKey of inspectedBuildings) {
+            const bldgPositions = Object.keys(buildingPositions[cameraZ]).filter((m) => buildingPositions[cameraZ][m] === bldgKey);
             for (const pos of bldgPositions) {
                 const parts = pos.split(":");
                 const newPos = `${+parts[0] + xGridDiff}:${+parts[1] + yGridDiff}`;
                 allNewPositions.push(newPos);
-                if (newPos in state.buildingPositions[state.cameraZ]) {
-                    if (!state.inspectedBuildings.some((e) => e === state.buildingPositions[state.cameraZ][newPos])) {
+                if (newPos in buildingPositions[cameraZ]) {
+                    if (!inspectedBuildings.some((e) => e === buildingPositions[cameraZ][newPos])) {
                         return; //non-inspected building found at new position
                     }
                 }
@@ -103,19 +117,19 @@ export function moveInspectedBuildings(diffX: number, diffY: number) {
         }
         //validate terrain
         for (const pos of allNewPositions) {
-            if (!(pos in state.terrainTiles[state.cameraZ])) {
+            if (!(pos in terrainTiles[cameraZ])) {
                 return; //no floor
             }
-            if (state.terrainTiles[state.cameraZ][pos].type !== MENU_ITEM.mine) {
+            if (terrainTiles[cameraZ][pos].type !== MENU_ITEM.mine) {
                 return; //non-floor detected
             }
         }
-        const buildingTiles = produce(state.buildingTiles, (draft) => {
+        const newBuildingTiles = produce(buildingTiles, (draft) => {
             const newThings = {};
-            for (const key of Object.keys(draft[state.cameraZ])) {
-                if (state.inspectedBuildings.some((m) => m === key)) {
-                    const plucked = draft[state.cameraZ][key];
-                    delete draft[state.cameraZ][key];
+            for (const key of Object.keys(draft[cameraZ])) {
+                if (inspectedBuildings.some((m) => m === key)) {
+                    const plucked = draft[cameraZ][key];
+                    delete draft[cameraZ][key];
                     plucked.posX += xGridDiff;
                     plucked.posY += yGridDiff;
                     const keyParts = key.split(":");
@@ -123,15 +137,15 @@ export function moveInspectedBuildings(diffX: number, diffY: number) {
                     newThings[newKey] = plucked;
                 }
             }
-            Object.assign(draft[state.cameraZ], newThings);
+            Object.assign(draft[cameraZ], newThings);
             updateWallNeighbors(state, draft);
         });
-        const buildingPositions = produce(state.buildingPositions, (draft) => {
+        const newBuildingPositions = produce(buildingPositions, (draft) => {
             const newThings = {};
-            for (const key of Object.keys(draft[state.cameraZ])) {
-                if (state.inspectedBuildings.some((m) => m === draft[state.cameraZ][key])) {
-                    const plucked = draft[state.cameraZ][key];
-                    delete draft[state.cameraZ][key];
+            for (const key of Object.keys(draft[cameraZ])) {
+                if (inspectedBuildings.some((m) => m === draft[cameraZ][key])) {
+                    const plucked = draft[cameraZ][key];
+                    delete draft[cameraZ][key];
                     const pluckParts = plucked.split(":");
                     const newCenter = `${+pluckParts[0] + xGridDiff}:${+pluckParts[1] + yGridDiff}`;
                     const keyParts = key.split(":");
@@ -139,22 +153,22 @@ export function moveInspectedBuildings(diffX: number, diffY: number) {
                     newThings[newKey] = newCenter;
                 }
             }
-            Object.assign(draft[state.cameraZ], newThings);
+            Object.assign(draft[cameraZ], newThings);
         });
 
-        const inspectedBuildings = state.inspectedBuildings.map((e) => {
+        const newInspectedBuildings = inspectedBuildings.map((e) => {
             const parts = e.split(":");
             return `${+parts[0] + xGridDiff}:${+parts[1] + yGridDiff}`;
         });
 
-        dispatch(_moveInspectedBuildings(buildingTiles, buildingPositions, inspectedBuildings));
+        dispatch(_moveInspectedBuildings(newBuildingTiles, newBuildingPositions, newInspectedBuildings));
     };
 }
 
 export function toggleInspectBuilding(item: string) {
-    return (dispatch, getState) => {
-        const state = FlatGetState({}, getState);
-        if (state.inspectedBuildings.some((e) => e === item)) {
+    return (dispatch, getState: () => ReduxState) => {
+        const state = getState();
+        if (state.inspect.inspectedBuildings.some((e) => e === item)) {
             dispatch(removeInspectBuilding(item));
         } else {
             dispatch(addInspectBuilding(item));
@@ -162,16 +176,76 @@ export function toggleInspectBuilding(item: string) {
     };
 }
 
-export function inspectGridPos(gridX: number, gridY: number, add?: boolean) {
-    return (dispatch, getState) => {
-        const state = FlatGetState({}, getState);
+export function inspectGridPos(gridX: number, gridY: number) {
+    return (dispatch, getState: () => ReduxState) => {
+        const state = getState();
         const [mapX, mapY] = getMapCoord(gridX, gridY, state);
-        const key = `${mapX}:${mapY}`;
-        if (state.cameraZ in state.buildingPositions) {
-            if (key in state.buildingPositions[state.cameraZ]) {
-                const idKey = state.buildingPositions[state.cameraZ][key];
-                if (idKey in state.buildingTiles[state.cameraZ]) {
-                    if (add) {
+        dispatch(inspectMapPos(mapX, mapY));
+    };
+}
+
+export function inspectAllOfType(type: string) {
+    return (dispatch, getState: () => ReduxState) => {
+        const state = getState();
+        const cameraZ = state.camera.cameraZ;
+        const buildingPositions = state.building.buildingPositions;
+        const buildingTiles = state.building.buildingTiles;
+        if (cameraZ in buildingPositions) {
+            const matchedKeys = [];
+            for (const key of Object.keys(buildingTiles[state.camera.cameraZ])) {
+                const trg = buildingTiles[state.camera.cameraZ][key];
+                if (trg.key === type) {
+                    matchedKeys.push(key);
+                }
+            }
+            if (matchedKeys.length > 0) {
+                dispatch(setInspectBuildings(matchedKeys));
+            }
+        }
+    };
+}
+
+export function inspectAllOfTypeAtGridPos(gridX: number, gridY: number) {
+    return (dispatch, getState: () => ReduxState) => {
+        const state = getState();
+        const cameraZ = state.camera.cameraZ;
+        const buildingPositions = state.building.buildingPositions;
+        const buildingTiles = state.building.buildingTiles;
+        if (cameraZ in buildingPositions) {
+            const [mapX, mapY] = getMapCoord(gridX, gridY, state);
+            const key = `${mapX}:${mapY}`;
+            if (key in buildingPositions[cameraZ]) {
+                const center = buildingPositions[cameraZ][key];
+                const bldg = buildingTiles[cameraZ][center];
+                dispatch(inspectAllOfType(bldg.key));
+                // const inspected = [];
+                // for (const bldgKey of Object.keys(buildingTiles[cameraZ])) {
+                //     const target = buildingTiles[cameraZ][bldgKey];
+                //     if (target.key === bldg.key) {
+                //         inspected.push(`${target.posX}:${target.posY}`);
+                //     }
+                // }
+                // if (inspected.length > 0) {
+                //     if (state.input.shiftDown) {
+                //         dispatch(addInspectBuildings(inspected));
+                //     } else {
+                //         dispatch(setInspectBuildings(inspected));
+                //     }
+                // }
+            }
+        }
+    };
+}
+
+export function inspectMapPos(mapX: number, mapY: number) {
+    return (dispatch, getState: () => ReduxState) => {
+        const state = getState();
+        if (state.camera.cameraZ in state.building.buildingPositions) {
+            const key = `${mapX}:${mapY}`;
+            if (key in state.building.buildingPositions[state.camera.cameraZ]) {
+                const idKey = state.building.buildingPositions[state.camera.cameraZ][key];
+                if (idKey in state.building.buildingTiles[state.camera.cameraZ]) {
+                    if (state.input.shiftDown) {
                         dispatch(toggleInspectBuilding(idKey));
                     } else {
                         dispatch(setInspectBuildings([idKey]));

@@ -1,20 +1,8 @@
-import { DEFAULTS, DIRECTION, IRenderTile } from "../../constants";
+import { DIRECTION } from "../../constants";
 import { setCameraPos } from "../camera/actions";
-import { ACTION_TYPE, FlatGetState, FlatReduxState } from "../store";
+import { ACTION_TYPE, ReduxState } from "../store";
 
 //#region REDUX ACTIONS
-
-// export function hideCursor() {
-//     return {
-//         type: ACTION_TYPE.CURSOR_HIDE,
-//     };
-// }
-
-// export function showCursor() {
-//     return {
-//         type: ACTION_TYPE.CURSOR_SHOW,
-//     };
-// }
 
 /** DO NOT CALL DIRECTLY -- USE 'moveCursorToPos' INSTEAD */
 export function setCursorPos(cursorX: number, cursorY: number) {
@@ -25,157 +13,133 @@ export function setCursorPos(cursorX: number, cursorY: number) {
     };
 }
 
-// export function setCursorTiles(tiles: IRenderTile[]) {
-//     return {
-//         type: ACTION_TYPE.SET_CURSOR_TILES,
-//         tiles,
-//     };
-// }
-
 //#endregion
 //#region THUNK ACTIONS
 
 export function moveCursorDirection(dir: DIRECTION, shiftPressed: boolean = false) {
-    return (dispatch, getState) => {
-        const state = FlatGetState({}, getState);
+    return (dispatch, getState: () => ReduxState) => {
+        const state = getState();
+        let cursorX = state.cursor.cursorX;
+        let cursorY = state.cursor.cursorY;
+        const cursorRadius = state.cursor.cursorRadius;
+        const mapWidth = state.camera.mapWidth;
+        const mapHeight = state.camera.mapHeight;
         const distance = shiftPressed ? 10 : 1;
 
         switch (dir) {
             case DIRECTION.N:
-                if (state.cursorY - state.cursorRadius > 0) {
-                    state.cursorY = Math.max(state.cursorRadius, state.cursorY - distance);
+                if (cursorY - cursorRadius > 0) {
+                    cursorY = Math.max(cursorRadius, cursorY - distance);
                 }
                 break;
             case DIRECTION.NE:
-                if (state.cursorY - state.cursorRadius > 0 ||
-                    state.cursorX + state.cursorRadius < state.mapWidth - 1) {
-                    state.cursorX = Math.min(state.mapWidth - 1 - state.cursorRadius, state.cursorX + distance);
-                    state.cursorY = Math.max(state.cursorRadius, state.cursorY - distance);
+                if (cursorY - cursorRadius > 0 ||
+                    cursorX + cursorRadius < mapWidth - 1) {
+                    cursorX = Math.min(mapWidth - 1 - cursorRadius, cursorX + distance);
+                    cursorY = Math.max(cursorRadius, cursorY - distance);
                 }
                 break;
             case DIRECTION.E:
-                if (state.cursorX + state.cursorRadius < state.mapWidth - 1) {
-                    state.cursorX = Math.min(state.mapWidth - 1 - state.cursorRadius + 0, state.cursorX + distance);
+                if (cursorX + cursorRadius < mapWidth - 1) {
+                    cursorX = Math.min(mapWidth - 1 - cursorRadius + 0, cursorX + distance);
                 }
                 break;
             case DIRECTION.SE:
-                if (state.cursorX + state.cursorRadius < state.mapWidth - 1 ||
-                    state.cursorY + state.cursorRadius < state.mapHeight - 1) {
-                    state.cursorX = Math.min(state.mapWidth - 1 - state.cursorRadius, state.cursorX + distance);
-                    state.cursorY = Math.min(state.mapHeight - 1 - state.cursorRadius, state.cursorY + distance);
+                if (cursorX + cursorRadius < mapWidth - 1 ||
+                    cursorY + cursorRadius < mapHeight - 1) {
+                    cursorX = Math.min(mapWidth - 1 - cursorRadius, cursorX + distance);
+                    cursorY = Math.min(mapHeight - 1 - cursorRadius, cursorY + distance);
                 }
                 break;
             case DIRECTION.S:
-                if (state.cursorY + state.cursorRadius < state.mapHeight - 1) {
-                    state.cursorY = Math.min(state.mapHeight - 1 - state.cursorRadius, state.cursorY + distance);
+                if (cursorY + cursorRadius < mapHeight - 1) {
+                    cursorY = Math.min(mapHeight - 1 - cursorRadius, cursorY + distance);
                 }
                 break;
             case DIRECTION.SW:
-                if (state.cursorX - state.cursorRadius > 0 ||
-                    state.cursorY + state.cursorRadius < state.mapHeight - 1) {
-                    state.cursorX = Math.max(state.cursorRadius, state.cursorX - 1);
-                    state.cursorY = Math.min(state.mapHeight - 1 - state.cursorRadius, state.cursorY + distance);
+                if (cursorX - cursorRadius > 0 ||
+                    cursorY + cursorRadius < mapHeight - 1) {
+                    cursorX = Math.max(cursorRadius, cursorX - 1);
+                    cursorY = Math.min(mapHeight - 1 - cursorRadius, cursorY + distance);
                 }
                 break;
             case DIRECTION.W:
-                if (state.cursorX - state.cursorRadius > 0) {
-                    state.cursorX = Math.max(state.cursorRadius, state.cursorX - distance);
+                if (cursorX - cursorRadius > 0) {
+                    cursorX = Math.max(cursorRadius, cursorX - distance);
                 }
                 break;
             case DIRECTION.NW:
-                if (state.cursorX - state.cursorRadius > 0 ||
-                    state.cursorY - state.cursorRadius > 0) {
-                    state.cursorX = Math.max(state.cursorRadius, state.cursorX - distance);
-                    state.cursorY = Math.max(state.cursorRadius, state.cursorY - distance);
+                if (cursorX - cursorRadius > 0 ||
+                    cursorY - cursorRadius > 0) {
+                    cursorX = Math.max(cursorRadius, cursorX - distance);
+                    cursorY = Math.max(cursorRadius, cursorY - distance);
                 }
                 break;
             default:
                 return;
         }
 
-        dispatch(moveCursorToPos(state.cursorX, state.cursorY));
+        dispatch(moveCursorToPos(cursorX, cursorY));
     };
 }
 
 export function moveCursorToGridPos(x: number, y: number) {
-    return (dispatch, getState) => {
-        const state = FlatGetState({}, getState);
-        // dispatch(setCursorTiles(tiles));
-        dispatch(moveCursorToPos(x + state.cameraX, y + state.cameraY));
+    return (dispatch, getState: () => ReduxState) => {
+        const state = getState();
+        dispatch(moveCursorToPos(x + state.camera.cameraX, y + state.camera.cameraY));
     };
 }
 
 export function moveCursorToPos(x: number, y: number) {
-    return (dispatch, getState) => {
-        const state = FlatGetState({}, getState);
+    return (dispatch, getState: () => ReduxState) => {
+        const state = getState();
+        const mapWidth = state.camera.mapWidth;
+        const mapHeight = state.camera.mapHeight;
 
         if (x < 0 || y < 0 ||
-            x > state.mapWidth ||
-            y > state.mapHeight) {
+            x > mapWidth ||
+            y > mapHeight) {
             return;
         }
 
-        //ensure camera is moved to include cursor
-        const newState = {
-            ...state,
-            cursorX: x,
-            cursorY: y,
-        } as FlatReduxState;
-        if (y - state.cursorRadius < state.cameraY) {
+        const gridWidth = state.camera.gridWidth;
+        const gridHeight = state.camera.gridHeight;
+        const cursorRadius = state.cursor.cursorRadius;
+        const cameraX = state.camera.cameraX;
+        const cameraY = state.camera.cameraY;
+        let newX = cameraX;
+        let newY = cameraY;
+
+        //move camera to include cursor, if needed
+        if (y - cursorRadius < cameraY) {
             //MOVE NORTH
-            const dist = Math.ceil((state.cameraY - y + state.cursorRadius) / 10) * 10;
-            const toMove = Math.max(0, state.cameraY - dist);
-            newState.cameraY = toMove;
-        } else if (y + state.cursorRadius >= state.cameraY + state.gridHeight) {
+            const dist = Math.ceil((cameraY - y + cursorRadius) / 10) * 10;
+            const toMove = Math.max(0, cameraY - dist);
+            newY = toMove;
+        } else if (y + cursorRadius >= cameraY + gridHeight) {
             //MOVE SOUTH
-            const dist = Math.ceil((y + state.cursorRadius - state.cameraY - (state.gridHeight - 1)) / 10) * 10;
-            const toMove = Math.min(state.mapHeight - state.gridHeight, state.cameraY + dist);
-            newState.cameraY = toMove;
+            const dist = Math.ceil((y + cursorRadius - cameraY - (gridHeight - 1)) / 10) * 10;
+            const toMove = Math.min(mapHeight - gridHeight, cameraY + dist);
+            newY = toMove;
         }
-        if (x - state.cursorRadius < state.cameraX) {
+        if (x - cursorRadius < cameraX) {
             //MOVE WEST
-            const dist = Math.ceil((state.cameraX - x + state.cursorRadius) / 10) * 10;
-            const toMove = Math.max(0, state.cameraX - dist);
-            newState.cameraX = toMove;
-        } else if (x + state.cursorRadius >= state.cameraX + state.gridWidth) {
+            const dist = Math.ceil((cameraX - x + cursorRadius) / 10) * 10;
+            const toMove = Math.max(0, cameraX - dist);
+            newX = toMove;
+        } else if (x + cursorRadius >= cameraX + gridWidth) {
             //MOVE EAST
-            const dist = Math.ceil((x + state.cursorRadius - state.cameraX - (state.gridWidth - 1)) / 10) * 10;
-            const toMove = Math.min(state.mapWidth - state.gridWidth, state.cameraX + dist);
-            newState.cameraX = toMove;
+            const dist = Math.ceil((x + cursorRadius - cameraX - (gridWidth - 1)) / 10) * 10;
+            const toMove = Math.min(mapWidth - gridWidth, cameraX + dist);
+            newX = toMove;
         }
 
-        if (state.cameraX !== newState.cameraX || state.cameraY !== newState.cameraY) {
-            dispatch(setCameraPos(newState.cameraX, newState.cameraY));
+        if (cameraX !== newX || cameraY !== newY) {
+            dispatch(setCameraPos(newX, newY));
         }
 
         dispatch(setCursorPos(x, y));
     };
 }
-
-// export function setcursorRadius(diam: number) {
-//     return {
-//         type: ACTION_TYPE.CURSOR_SETDIAMETER,
-//         cursorRadius: diam,
-//     };
-// }
-
-// export function setCursorCharacter(char: string) {
-//     return {
-//         type: ACTION_TYPE.CURSOR_SETCHAR,
-//         char,
-//     };
-// }
-
-// export function setCursorBuilding(building: boolean) {
-//     if (building) {
-//         return {
-//             type: ACTION_TYPE.CURSOR_BUILDING_START,
-//         };
-//     } else {
-//         return {
-//             type: ACTION_TYPE.CURSOR_BUILDING_END,
-//         };
-//     }
-// }
 
 //#endregion

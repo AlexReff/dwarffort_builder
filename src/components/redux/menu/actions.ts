@@ -1,10 +1,17 @@
-import { BUILDINGS, MENU } from "../../constants";
+import { BUILDINGS, MENU, MENU_ITEM } from "../../constants";
 import { ACTION_TYPE, FlatGetState } from "../store";
 import { IMenuState } from "./reducer";
 
 //#region REDUX ACTIONS
 
-export function _setMenus(currentSubmenu, currentMenuItem, cursorRadius) {
+export function _setMenus(currentSubmenu, currentMenuItem) {
+    let cursorRadius = 0;
+    if (currentMenuItem in BUILDINGS.ITEMS) {
+        const tiles = BUILDINGS.ITEMS[currentMenuItem];
+        if (tiles && tiles.tiles) {
+            cursorRadius = Math.floor(tiles.tiles.length / 2.0);
+        }
+    }
     return {
         type: ACTION_TYPE.SET_MENU,
         currentSubmenu,
@@ -16,35 +23,23 @@ export function _setMenus(currentSubmenu, currentMenuItem, cursorRadius) {
 //#endregion
 //#region THUNK ACTIONS
 
-export function selectMenus(currentSubmenu, currentMenuItem) {
-    return (dispatch, getState) => {
-        // const state = FlatGetState({}, getState);
-        let cursorRange = 0;
-        if (currentMenuItem in BUILDINGS.ITEMS) {
-            const tiles = BUILDINGS.ITEMS[currentMenuItem];
-            if (tiles) {
-                cursorRange = Math.floor(tiles.tiles.length / 2.0);
-            }
-        }
-        dispatch(_setMenus(currentSubmenu, currentMenuItem, cursorRange));
-    };
-}
-
 export function selectMenu(val: IMenuState["currentSubmenu"]) {
     return (dispatch, getState) => {
         const state = FlatGetState({}, getState);
+        let currentMenuItem = state.currentMenuItem;
+        let currentSubmenu = state.currentSubmenu;
         if (val == null) { //deselect highlighted menu item
-            state.currentMenuItem = null;
-        } else if (val === "top") { //go to top menu
-            state.currentSubmenu = "top";
-            state.currentMenuItem = null;
+            currentMenuItem = null;
+        } else if (val === MENU_ITEM.top) { //go to top menu
+            currentSubmenu = MENU_ITEM.top;
+            currentMenuItem = null;
         } else if (val in MENU.SUBMENUS) { //change submenu
-            state.currentSubmenu = val;
-            state.currentMenuItem = null;
+            currentSubmenu = val;
+            currentMenuItem = null;
         } else { //highlight menu item
-            state.currentMenuItem = val;
+            currentMenuItem = val;
         }
-        dispatch(selectMenus(state.currentSubmenu, state.currentMenuItem));
+        dispatch(_setMenus(currentSubmenu, currentMenuItem));
     };
 }
 
@@ -53,7 +48,7 @@ export function selectPrevSubmenu() {
         const state = FlatGetState({}, getState);
         if (state.currentMenuItem != null) {
             state.currentMenuItem = null;
-        } else if (state.currentSubmenu !== "top") {
+        } else if (state.currentSubmenu !== MENU_ITEM.top) {
             const key = MENU.ITEMS[state.currentSubmenu].parsedKey;
             const idx = key.lastIndexOf(":");
             if (idx > -1) {
@@ -62,10 +57,10 @@ export function selectPrevSubmenu() {
                     state.currentSubmenu = MENU.KEYS[newMenuKey].id;
                 }
             } else {
-                state.currentSubmenu = "top";
+                state.currentSubmenu = MENU_ITEM.top;
             }
         }
-        dispatch(selectMenus(state.currentSubmenu, state.currentMenuItem));
+        dispatch(_setMenus(state.currentSubmenu, state.currentMenuItem));
     };
 }
 

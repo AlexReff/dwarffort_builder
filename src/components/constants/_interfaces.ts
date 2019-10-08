@@ -8,6 +8,15 @@ export interface IRenderTile {
     bg?: string | string[];
 }
 
+export interface ITerrainTile {
+    posX: number;
+    posY: number;
+    posZ: number;
+    type: MENU_ITEM;
+    characterVariant?: string;
+    userSet: boolean;
+}
+
 export interface IBuildingTileData {
     char: string;
     bg: string;
@@ -21,18 +30,18 @@ export interface ITileCollection<T> {
 }
 
 export interface IBuildingData {
-    "id": MENU_ITEM;
-    "display_name": string;
-    "hotkey": string;
-    "submenu": string;
-    "tiles": IBuildingTileData[][];
-    "parsedHotkey"?: string;
+    id: IMenuItem["id"];
+    display_name: string;
+    hotkey: string;
+    submenu: string;
+    tiles: IBuildingTileData[][];
+    parsedHotkey?: string;
 }
 
 export interface IMenuItem {
-    "id": "top" | MENU_ITEM;
-    "text": string;
-    "key": string;
-    "parent": string;
-    "parsedKey"?: string;
+    id: MENU_ITEM;
+    text: string;
+    key: string;
+    parent: string;
+    parsedKey?: string;
 }

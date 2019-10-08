@@ -5,12 +5,15 @@ import { IDiggerState } from "./digger/reducer";
 import { IInspectState } from "./inspect/reducer";
 import { IMenuState } from "./menu/reducer";
 import { ISettingsState } from "./settings/reducer";
-import store, { FlatReduxState, GetFlattenedState } from "./store";
+import store, { FlatReduxState, FlatGetState } from "./store";
+import { IInputState } from "./input/reducer";
 
 export class ReduxVariables implements FlatReduxState {
     //building
     buildingTiles: IBuildingState["buildingTiles"];
     buildingPositions: IBuildingState["buildingPositions"];
+    buildPlaceWidth: IBuildingState["buildPlaceWidth"];
+    buildPlaceHeight: IBuildingState["buildPlaceHeight"];
     //camera
     gridHeight: ICameraState["gridHeight"];
     decoratorTiles: ICameraState["decoratorTiles"];
@@ -22,7 +25,6 @@ export class ReduxVariables implements FlatReduxState {
     cameraZ: ICameraState["cameraZ"];
     gridBounds: ICameraState["gridBounds"];
     //cursor
-    cursorBuilding: ICursorState["cursorBuilding"];
     cursorX: ICursorState["cursorX"];
     cursorY: ICursorState["cursorY"];
     cursorRadius: ICursorState["cursorRadius"];
@@ -30,14 +32,15 @@ export class ReduxVariables implements FlatReduxState {
     designateStartX: IDiggerState["designateStartX"];
     designateStartY: IDiggerState["designateStartY"];
     designateStartZ: IDiggerState["designateStartZ"];
-    isDesignating: IDiggerState["isDesignating"];
     terrainTiles: IDiggerState["terrainTiles"];
+    //input
+    inputState: IInputState["inputState"];
+    shiftDown: IInputState["shiftDown"];
     //inspect
     inspectedBuildings: IInspectState["inspectedBuildings"];
     //menu
     currentSubmenu: IMenuState["currentSubmenu"];
     currentMenuItem: IMenuState["currentMenuItem"];
-    isInspecting: IMenuState["isInspecting"];
     //settings
     animationFlag: ISettingsState["animationFlag"];
     debugMode: ISettingsState["debugMode"];
@@ -62,7 +65,7 @@ export abstract class GameComponent extends ReduxVariables {
 
     getStoreData = (cb?: (...args: any) => any) => {
         this.storeHasData = true;
-        GetFlattenedState(this, store);
+        FlatGetState(this, store.getState);
 
         if (cb) {
             cb();

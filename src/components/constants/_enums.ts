@@ -1,13 +1,8 @@
-
-export const enum DIRECTION {
-    N = 0,
-    NE = 1,
-    E = 2,
-    SE = 3,
-    S = 4,
-    SW = 5,
-    W = 6,
-    NW = 7,
+export const enum INPUT_STATE {
+    NEUTRAL,
+    PLACING_BUILDING,
+    DESIGNATING,
+    INSPECTING,
 }
 
 export const enum MENU_ITEM {
@@ -23,9 +18,11 @@ export const enum MENU_ITEM {
     stockpile = "stockpile",
     inspect = "inspect",
     //menus
+    top = "top",
     building = "building",
     workshops = "workshops",
     construction = "construction",
+    designate = "designate",
     //buildings/workshops/constructions
     wall = "wall",
     leatherworks = "leatherworks",
@@ -64,6 +61,17 @@ export const enum MENU_ITEM {
     magmaglassfurnace = "magmaglassfurnace",
     magmakiln = "magmakiln",
     cabinet = "cabinet",
+}
+
+export const enum DIRECTION {
+    N = 0,
+    NE = 1,
+    E = 2,
+    SE = 3,
+    S = 4,
+    SW = 5,
+    W = 6,
+    NW = 7,
 }
 
 export const enum KEYS {

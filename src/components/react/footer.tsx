@@ -3,6 +3,7 @@ import { connect } from "react-redux";
 import { IBuildingState } from "../redux/building/reducer";
 import { ICameraState } from "../redux/camera/reducer";
 import { IDiggerState } from "../redux/digger/reducer";
+import { IInputState } from "../redux/input/reducer";
 import { IInspectState } from "../redux/inspect/reducer";
 import { IMenuState } from "../redux/menu/reducer";
 import { ReduxState } from "../redux/store";
@@ -11,35 +12,27 @@ import { getQuickfortCsv } from "../serialize";
 interface IFooterProps {
     currentMenu: IMenuState["currentSubmenu"];
     currentMenuItem: IMenuState["currentMenuItem"];
-    isInspecting: IMenuState["isInspecting"];
+    inputState: IInputState["inputState"];
     buildingTiles: IBuildingState["buildingTiles"];
     terrainTiles: IDiggerState["terrainTiles"];
-    isDesignating: IDiggerState["isDesignating"];
     inspectedBuildings: IInspectState["inspectedBuildings"];
     cameraZ: ICameraState["cameraZ"];
 
     // selectMenuItem: (id: string) => void;
-    // removeInspectBuilding: (item: string) => void;
-    // setInspectBuildings: (item: string[]) => void;
-    // inspectTileAtMapCoord: (coord: Point, add: boolean) => void;
 }
 
 const mapStateToProps = (state: ReduxState) => ({
     currentMenu: state.menu.currentSubmenu,
     currentMenuItem: state.menu.currentMenuItem,
-    isInspecting: state.menu.isInspecting,
+    inputState: state.input.inputState,
     inspectedBuildings: state.inspect.inspectedBuildings,
     buildingTiles: state.building.buildingTiles,
     terrainTiles: state.digger.terrainTiles,
     cameraZ: state.camera.cameraZ,
-    isDesignating: state.digger.isDesignating,
 });
 
 const mapDispatchToProps = (dispatch) => ({
     // selectMenuItem: (id) => dispatch(selectMenu(id)),
-    // removeInspectBuilding: (item) => dispatch(removeInspectBuilding(item)),
-    // setInspectBuildings: (items) => dispatch(setInspectBuildings(items)),
-    // inspectTileAtMapCoord: (coord, add) => dispatch(inspectRequestAtMapCoord(coord, add)),
 });
 
 class Footer extends Component<IFooterProps> {

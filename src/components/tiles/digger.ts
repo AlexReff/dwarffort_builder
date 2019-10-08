@@ -1,5 +1,4 @@
-import { IRenderTile, MENU_ITEM } from "../constants";
-import { ITerrainTile } from "../redux/digger/reducer";
+import { IRenderTile, ITerrainTile, MENU_ITEM } from "../constants";
 import { FlatReduxState } from "../redux/store";
 import { ITileGeneratorComponent } from "./_base";
 

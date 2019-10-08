@@ -1,7 +1,7 @@
 import { IRenderTile, MENU_ITEM, Point, TILE_H, TILE_W, WALL_TILES } from "./constants";
 import { Game } from "./game";
 import { IBuildingState } from "./redux/building/reducer";
-import store, { FlatGetState, FlatReduxState } from "./redux/store";
+import store, { FlatGetState, FlatReduxState, ReduxState } from "./redux/store";
 import rng from "./rot/rng";
 
 export const renderTile = (_this: Game, tile: IRenderTile) => {
@@ -72,17 +72,32 @@ export const getGridCoord = (x: number, y: number, _state?: FlatReduxState): [nu
 };
 
 /** Converts GRID coord to MAP coord */
-export const getMapCoord = (x: number, y: number, _state?: FlatReduxState): [number, number] => {
-    const state = _state || FlatGetState({}, store.getState);
-    if (x < 0 ||
-        y < 0 ||
-        x + state.cameraX > state.mapWidth ||
-        y + state.cameraY > state.mapHeight) {
+export const getMapCoord = (gridX: number, gridY: number, _state?: ReduxState | FlatReduxState): [number, number] => {
+    //const state = _state || FlatGetState({}, store.getState);
+    let cameraX, cameraY, mapWidth, mapHeight;
+    if (typeof _state === "undefined" || _state == null) {
+        _state = store.getState();
+    }
+    if (isFlatReduxState(_state)) {
+        cameraX = _state.cameraX;
+        cameraY = _state.cameraY;
+        mapHeight = _state.mapHeight;
+        mapWidth = _state.mapWidth;
+    } else {
+        cameraX = _state.camera.cameraX;
+        cameraY = _state.camera.cameraY;
+        mapHeight = _state.camera.mapHeight;
+        mapWidth = _state.camera.mapWidth;
+    }
+    if (gridX < 0 ||
+        gridY < 0 ||
+        gridX + cameraX > mapWidth ||
+        gridY + cameraY > mapHeight) {
         return [-1, -1];
     }
     return [
-        x + state.cameraX,
-        y + state.cameraY,
+        gridX + cameraX,
+        gridY + cameraY,
     ];
 };
 
@@ -91,13 +106,13 @@ export const getNeighborsOfRange = (
     startY: number,
     endX: number,
     endY: number,
-    state: FlatReduxState,
+    state: ReduxState,
 ): Point[] => {
     const dict = {};
     if (startY > 0) {
         //add 'top'
         const xStart = Math.max(startX - 1, 0);
-        const xStop = Math.min(endX + 1, state.mapWidth - 1);
+        const xStop = Math.min(endX + 1, state.camera.mapWidth - 1);
         for (let x = xStart; x <= xStop; x++) {
             dict[`${x}:${startY - 1}`] = [x, startY - 1];
         }
@@ -105,23 +120,23 @@ export const getNeighborsOfRange = (
     if (startX > 0) {
         //add 'left'
         const yStart = Math.max(startY - 1, 0);
-        const yStop = Math.min(endY + 1, state.mapHeight - 1);
+        const yStop = Math.min(endY + 1, state.camera.mapHeight - 1);
         for (let y = yStart; y <= yStop; y++) {
             dict[`${startX - 1}:${y}`] = [startX - 1, y];
         }
     }
-    if (endY + 1 < state.mapHeight) {
+    if (endY + 1 < state.camera.mapHeight) {
         //add 'bot'
         const xStart = Math.max(startX - 1, 0);
-        const xStop = Math.min(endX + 1, state.mapWidth - 1);
+        const xStop = Math.min(endX + 1, state.camera.mapWidth - 1);
         for (let x = xStart; x <= xStop; x++) {
             dict[`${x}:${endY + 1}`] = [x, endY + 1];
         }
     }
-    if (endX + 1 < state.mapWidth) {
+    if (endX + 1 < state.camera.mapWidth) {
         //add 'right'
         const yStart = Math.max(startY - 1, 0);
-        const yStop = Math.min(endY + 1, state.mapHeight - 1);
+        const yStop = Math.min(endY + 1, state.camera.mapHeight - 1);
         for (let y = yStart; y <= yStop; y++) {
             dict[`${endX + 1}:${y}`] = [endX + 1, y];
         }
@@ -133,21 +148,38 @@ export const getNeighborsOfRange = (
     return result;
 };
 
+export const isFlatReduxState = (varToCheck: any): varToCheck is FlatReduxState => {
+    if (typeof varToCheck.camera === "undefined") {
+        return true;
+    }
+    return false;
+};
+
 /** @returns true if a building can be placed on the specified tile  */
-export const isBuildingPlaceable = (state: FlatReduxState, x: number, y: number): boolean => {
-    if (!(state.cameraZ in state.terrainTiles)) {
+export const isBuildingPlaceable = (state: FlatReduxState | ReduxState, x: number, y: number): boolean => {
+    let cameraZ, terrainTiles, buildingPositions;
+    if (isFlatReduxState(state)) {
+        cameraZ = state.cameraZ;
+        terrainTiles = state.terrainTiles;
+        buildingPositions = state.buildingPositions;
+    } else {
+        cameraZ = state.camera.cameraZ;
+        terrainTiles = state.digger.terrainTiles;
+        buildingPositions = state.building.buildingPositions;
+    }
+    if (!(cameraZ in terrainTiles)) {
         return false; //no terrain on this z-level
     }
     const key = `${x}:${y}`;
-    if (!(key in state.terrainTiles[state.cameraZ])) {
+    if (!(key in terrainTiles[cameraZ])) {
         return false; //no terrain for this position
     }
-    if (state.cameraZ in state.buildingPositions) {
-        if (key in state.buildingPositions[state.cameraZ]) {
+    if (cameraZ in buildingPositions) {
+        if (key in buildingPositions[cameraZ]) {
             return false; //building found at location
         }
     }
-    const tile = state.terrainTiles[state.cameraZ][key];
+    const tile = terrainTiles[cameraZ][key];
     if (tile != null && tile.type === MENU_ITEM.mine) {
         return true;
     }
@@ -155,13 +187,13 @@ export const isBuildingPlaceable = (state: FlatReduxState, x: number, y: number)
     return false;
 };
 
-export function updateWallNeighbors(state: FlatReduxState, buildingTiles: IBuildingState["buildingTiles"]) {
-    for (let y = 0; y < state.mapHeight; y++) {
-        for (let x = 0; x < state.mapWidth; x++) {
+export function updateWallNeighbors(state: ReduxState, buildingTiles: IBuildingState["buildingTiles"]) {
+    for (let y = 0; y < state.camera.mapHeight; y++) {
+        for (let x = 0; x < state.camera.mapWidth; x++) {
             const key = `${x}:${y}`;
-            if (key in buildingTiles[state.cameraZ]) {
-                if (buildingTiles[state.cameraZ][key].key === MENU_ITEM.wall) {
-                    buildingTiles[state.cameraZ][key].characterVariant = getWallNeighborFlags(buildingTiles, state, x, y);
+            if (key in buildingTiles[state.camera.cameraZ]) {
+                if (buildingTiles[state.camera.cameraZ][key].key === MENU_ITEM.wall) {
+                    buildingTiles[state.camera.cameraZ][key].characterVariant = getWallNeighborFlags(buildingTiles, state, x, y);
                 }
             }
         }
@@ -170,36 +202,36 @@ export function updateWallNeighbors(state: FlatReduxState, buildingTiles: IBuild
 
 export function getWallNeighborFlags(
     tiles: IBuildingState["buildingTiles"],
-    state: FlatReduxState,
+    state: ReduxState,
     x: number,
     y: number,
-    z: number = state.cameraZ) {
+    z: number = state.camera.cameraZ) {
     let flags = 0;
     if (y > 0) {
         const nKey = `${x}:${y - 1}`;
         if ((nKey in tiles[z] && tiles[z][nKey].key === MENU_ITEM.wall) ||
-            (nKey in state.terrainTiles[z] && state.terrainTiles[z][nKey].type === MENU_ITEM.wall)) {
+            (nKey in state.digger.terrainTiles[z] && state.digger.terrainTiles[z][nKey].type === MENU_ITEM.wall)) {
             flags += 1;
         }
     }
-    if (x < state.mapWidth - 1) {
+    if (x < state.camera.mapWidth - 1) {
         const eKey = `${x + 1}:${y}`;
         if ((eKey in tiles[z] && tiles[z][eKey].key === MENU_ITEM.wall) ||
-            (eKey in state.terrainTiles[z] && state.terrainTiles[z][eKey].type === MENU_ITEM.wall)) {
+            (eKey in state.digger.terrainTiles[z] && state.digger.terrainTiles[z][eKey].type === MENU_ITEM.wall)) {
             flags += 2;
         }
     }
-    if (y < state.mapHeight - 1) {
+    if (y < state.camera.mapHeight - 1) {
         const sKey = `${x}:${y + 1}`;
         if ((sKey in tiles[z] && tiles[z][sKey].key === MENU_ITEM.wall) ||
-            (sKey in state.terrainTiles[z] && state.terrainTiles[z][sKey].type === MENU_ITEM.wall)) {
+            (sKey in state.digger.terrainTiles[z] && state.digger.terrainTiles[z][sKey].type === MENU_ITEM.wall)) {
             flags += 4;
         }
     }
     if (x > 0) {
         const wKey = `${x - 1}:${y}`;
         if ((wKey in tiles[z] && tiles[z][wKey].key === MENU_ITEM.wall) ||
-            (wKey in state.terrainTiles[z] && state.terrainTiles[z][wKey].type === MENU_ITEM.wall)) {
+            (wKey in state.digger.terrainTiles[z] && state.digger.terrainTiles[z][wKey].type === MENU_ITEM.wall)) {
             flags += 8;
         }
     }
@@ -213,4 +245,20 @@ export function getWallNeighborFlags(
     }
 
     return result;
+}
+
+export function debounce(func, wait, immediate) {
+    let timeout;
+    return () => {
+        const context = this, args = arguments;
+        const callNow = immediate && !timeout;
+        clearTimeout(timeout);
+        timeout = setTimeout(() => {
+            timeout = null;
+            if (!immediate) {
+                func.apply(context, args);
+            }
+        }, wait);
+        if (callNow) { func.apply(context, args); }
+    };
 }

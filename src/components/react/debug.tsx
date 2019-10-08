@@ -19,12 +19,10 @@ const mapStateToProps = (state: ReduxState) => ({
     debugMode: state.settings.debugMode,
     // currentMenu: state.menu.currentSubmenu,
     // currentMenuItem: state.menu.currentMenuItem,
-    // isInspecting: state.menu.isInspecting,
     // inspectedBuildings: state.inspect.inspectedBuildings,
     // buildingTiles: state.building.buildingTiles,
     // terrainTiles: state.digger.terrainTiles,
     // cameraZ: state.camera.cameraZ,
-    // isDesignating: state.digger.isDesignating,
 });
 
 const mapDispatchToProps = (dispatch) => ({

@@ -1,4 +1,4 @@
-@import './variables';
+@import "./variables";
 
 #menu {
     @include font-consolas;
@@ -12,7 +12,11 @@
 .menu-breadcrumbs {
     margin-bottom: 10px;
 
-    a, a:active, a:hover, a:visited, a:focus {
+    a,
+    a:active,
+    a:hover,
+    a:visited,
+    a:focus {
         color: inherit;
         text-decoration: none;
     }
@@ -42,7 +46,7 @@
         }
 
         &:last-child {
-            color: #FFF;
+            color: #fff;
 
             &:after {
                 display: none;
@@ -55,7 +59,8 @@
     @include font-roboto;
     font-size: 12px;
     font-weight: bold;
-    
+    padding-bottom: 40px;
+
     .submenu {
         display: none;
 
@@ -74,17 +79,79 @@
 
 .menu-toolbar {
     padding: 4px 0;
-    border: 1px solid #AAA;
+    border: 1px solid #aaa;
     border-radius: 2px;
 
-    a {
-        color: #FFF;
-        padding: 4px 8px;
-        text-decoration: none;
-        display: block;
+    &:before {
+        content: "Inspecting";
+        position: absolute;
+        transform: translateY(-100%);
+        padding-bottom: 5px;
+    }
 
-        &:hover {
-            text-decoration: underline;
+    .entry_options {
+        display: flex;
+        flex-direction: column;
+        margin-left: 14px;
+
+        ul {
+            margin: 0;
+            padding-left: 10px;
+        }
+    }
+
+    .entry {
+        font-size: 13px;
+
+        .entry_name {
+            color: #fff;
+            padding: 4px 8px;
+            text-decoration: none;
+            display: inline-block;
+            margin-left: 12px;
+
+            &:hover {
+                text-decoration: underline;
+            }
+        }
+
+        .entry_title {
+            .entry_name {
+                position: relative;
+
+                &.has_multi {
+                    &:before {
+                        content: "+";
+                        position: absolute;
+                        left: -5px;
+                        top: 50%;
+                        transform: translateY(-50%);
+                        line-height: 0;
+                    }
+                }
+            }
+        }
+
+        .entry_singles {
+            max-height: 0;
+            transition: max-height .5s ease;
+            overflow-x: hidden;
+            overflow-y: hidden;
+        }
+
+        &.expanded {
+            .entry_singles {
+                max-height: 300px;
+                // transition: overflow-y 0s ease 0s, max-height 0.5s ease 0s;
+            }
+
+            .entry_title {
+                .entry_name {
+                    &:before {
+                        content: "-";
+                    }
+                }
+            }
         }
     }
 }
@@ -95,7 +162,7 @@
 
 .menu-bottom {
     margin-top: auto;
-    
+
     .copy {
         @include font-nunito;
         margin-top: 30px;

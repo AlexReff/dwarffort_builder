@@ -1,5 +1,4 @@
 //libraries
-import debounce from "lodash/debounce";
 import { Component, h, render } from "preact";
 import { Provider } from "react-redux";
 //components
@@ -13,6 +12,7 @@ import Menu from "./components/react/menu";
 import { resizeWindow } from "./components/redux/camera/actions";
 import { Initialize } from "./components/redux/settings/actions";
 import store from "./components/redux/store";
+import { debounce } from "./components/util";
 
 require("./css/index.scss");
 

@@ -1,9 +1,8 @@
 const styles = require("../.././css/_variables.scss");
 
-import groupBy from "lodash/groupBy";
-import keyBy from "lodash/keyBy";
 import { buildings as _buildings } from "../../data/buildings.json";
 import { items } from "../../data/menu_flat.json";
+import { MENU_ITEM } from "./_enums.js";
 import { IBuildingData, IMenuItem } from "./_interfaces";
 
 export type Point = [number, number];
@@ -179,9 +178,19 @@ export const MENU: {
         [key: string]: IMenuItem[];
     },
 } = {
-    ITEMS: keyBy(MENU_JSON, (e) => e.id),
+    ITEMS: MENU_JSON.reduce((obj, val) => {
+        obj[val.id] = val;
+        return obj;
+    }, {}),
     KEYS: {},
-    SUBMENUS: groupBy(MENU_JSON, (e) => e.parent),
+    SUBMENUS: MENU_JSON.reduce((obj, val) => {
+        if (val.parent in obj) {
+            obj[val.parent].push(val);
+        } else {
+            obj[val.parent] = [val];
+        }
+        return obj;
+    }, {}),
 };
 
 // populate MENU.KEYS and parsedHotkey
@@ -189,7 +198,7 @@ for (const key of Object.keys(MENU.ITEMS)) {
     //calculate the 'full' key
     const newKeyParts = [];
     let parent = MENU.ITEMS[key].parent;
-    while (parent != null && parent.length > 0 && parent !== "top") {
+    while (parent != null && parent.length > 0 && parent !== MENU_ITEM.top) {
         newKeyParts.push(MENU.ITEMS[parent].key);
         parent = MENU.ITEMS[parent].parent;
     }
@@ -216,9 +225,19 @@ export const BUILDINGS: {
         [key: string]: IBuildingData[];
     },
 } = {
-    ITEMS: keyBy(buildings, (e) => e.id),
+    ITEMS: buildings.reduce((obj, val) => {
+        obj[val.id] = val;
+        return obj;
+    }, {}),
     KEYS: {},
-    SUBMENUS: groupBy(buildings, (e) => e.submenu),
+    SUBMENUS: buildings.reduce((obj, val) => {
+        if (val.submenu in obj) {
+            obj[val.submenu].push(val);
+        } else {
+            obj[val.submenu] = [val];
+        }
+        return obj;
+    }, {}),
 };
 
 // add submenu keys for submenus with only buildings
