@@ -1,4 +1,13 @@
-import { MENU_ITEM } from "./_enums";
+import { IMenuItem, MENU_ID } from ".";
+
+export interface IMenuItem {
+    key: string;
+    text: string;
+    parent: MENU_ID;
+    id?: MENU_ID;
+    parsedKey?: string;
+    tiles?: IBuildingTileData[][];
+}
 
 export interface IRenderTile {
     x: number;
@@ -12,36 +21,14 @@ export interface ITerrainTile {
     posX: number;
     posY: number;
     posZ: number;
-    type: MENU_ITEM;
+    type: IMenuItem["id"];
     characterVariant?: string;
     userSet: boolean;
 }
 
 export interface IBuildingTileData {
-    char: string;
-    bg: string;
-    fg: string;
-    walkable: number;
-}
-
-/** First key is cameraZ, second is `${x}:${y}` */
-export interface ITileCollection<T> {
-    [key: string]: { [key: string]: T };
-}
-
-export interface IBuildingData {
-    id: IMenuItem["id"];
-    display_name: string;
-    hotkey: string;
-    submenu: string;
-    tiles: IBuildingTileData[][];
-    parsedHotkey?: string;
-}
-
-export interface IMenuItem {
-    id: MENU_ITEM;
-    text: string;
-    key: string;
-    parent: string;
-    parsedKey?: string;
+    char?: string;
+    bg?: string;
+    fg?: string;
+    walkable?: number;
 }

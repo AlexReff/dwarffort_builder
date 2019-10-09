@@ -24,7 +24,7 @@ export class Cursor implements ITileGeneratorComponent {
                             const trgTile = tiles.tiles[iy % buildingSize][ix % buildingSize];
                             const color = !isBuildingPlaceable(state, x, y) ?
                                 DEFAULTS.COLORS.CURSOR_INVALID :
-                                trgTile.walkable === 0 ?
+                                trgTile != null && trgTile.walkable === 0 ?
                                     DEFAULTS.COLORS.CURSOR_IMPASSABLE :
                                     DEFAULTS.COLORS.CURSOR_PASSABLE;
                             result.push({

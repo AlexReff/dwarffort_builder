@@ -1,10 +1,10 @@
 import { produce } from "immer";
-import { ITileCollection } from "../../constants";
+import { MENU_ID } from "../../constants/";
 import { ACTION_TYPE } from "../store";
 
 export interface IBuildingState {
-    buildingTiles: ITileCollection<IBuildingTile>;
-    buildingPositions: ITileCollection<string>;
+    buildingTiles: Record<string, Record<string, IBuildingTile>>;
+    buildingPositions: Record<string, Record<string, string>>;
     buildPlaceWidth: number;
     buildPlaceHeight: number;
 }
@@ -20,7 +20,7 @@ export interface IBuildingTile {
     posX: number;
     posY: number;
     posZ: number;
-    key: string;
+    key: MENU_ID;
     characterVariant?: string;
 }
 

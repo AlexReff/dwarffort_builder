@@ -1,4 +1,4 @@
-import { BUILDINGS, DIRECTION, INPUT_STATE, KEYS, MENU, MENU_ITEM, Point } from "./constants";
+import { BUILDINGS, DIRECTION, INPUT_STATE, KEYS, MENU, MENU_ID, Point } from "./constants";
 import { decreasePlaceBuildHeight, decreasePlaceBuildWidth, increasePlaceBuildHeight, increasePlaceBuildWidth, placeCursorBuilding } from "./redux/building/actions";
 import { setCameraZ, setGridBounds } from "./redux/camera/actions";
 import { moveCursorDirection, moveCursorToGridPos } from "./redux/cursor/actions";
@@ -42,7 +42,7 @@ export class GameInput extends GameComponent {
             }
             case INPUT_STATE.NEUTRAL: {
                 const [gridX, gridY] = this.handleClick(e);
-                if (this.currentSubmenu === MENU_ITEM.designate) {
+                if (this.currentSubmenu === MENU_ID.designate) {
                     store.dispatch(startDesignatingGrid(gridX, gridY));
                 }
                 break;
@@ -137,7 +137,7 @@ export class GameInput extends GameComponent {
         if (this.inputState !== INPUT_STATE.PLACING_BUILDING) {
             //menu navigation
             let key = "";
-            if (this.currentSubmenu !== MENU_ITEM.top) {
+            if (this.currentSubmenu !== MENU_ID.top) {
                 key = MENU.ITEMS[this.currentSubmenu].parsedKey + ":";
             }
             key += e.key;
@@ -159,7 +159,7 @@ export class GameInput extends GameComponent {
                         store.dispatch(selectPrevSubmenu());
                         break;
                     case KEYS.VK_RETURN:
-                        if (this.currentMenuItem != null && this.currentSubmenu === MENU_ITEM.designate) {
+                        if (this.currentMenuItem != null && this.currentSubmenu === MENU_ID.designate) {
                             store.dispatch(startDesignatingGrid(this.cursorX, this.cursorY));
                         }
                         break;

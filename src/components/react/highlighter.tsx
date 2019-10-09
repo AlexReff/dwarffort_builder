@@ -1,6 +1,6 @@
 import { Component, h } from "preact";
 import { connect } from "react-redux";
-import { BUILDINGS, IBuildingData, INPUT_STATE, KEYS, Point, TILE_H, TILE_W } from "../constants";
+import { BUILDINGS, IMenuItem, INPUT_STATE, Point, TILE_H, TILE_W } from "../constants";
 import { IBuildingState, IBuildingTile } from "../redux/building/reducer";
 import { ICameraState } from "../redux/camera/reducer";
 import { IInputState } from "../redux/input/reducer";
@@ -204,7 +204,7 @@ class GameHighlighter extends Component<IGameHighlighterProps, IGameHighlighterS
             //draw a box around each building
             for (const key of Object.keys(this.props.buildingTiles[this.props.cameraZ])) {
                 const tile: IBuildingTile = this.props.buildingTiles[this.props.cameraZ][key];
-                const bldg: IBuildingData = BUILDINGS.ITEMS[tile.key];
+                const bldg: IMenuItem = BUILDINGS.ITEMS[tile.key];
 
                 const radi = Math.floor(bldg.tiles.length / 2.0);
 
@@ -241,7 +241,7 @@ class GameHighlighter extends Component<IGameHighlighterProps, IGameHighlighterS
                 const thisClass = "building_inspect" + (thisInspected ? " inspecting" : "");
 
                 result.push((
-                    <a class={thisClass} title={bldg.display_name} onClick={this.handleBuildingClick} onDblClick={this.handleBuildingDoubleClick} style={style}></a>
+                    <a class={thisClass} title={bldg.text} onClick={this.handleBuildingClick} onDblClick={this.handleBuildingDoubleClick} style={style}></a>
                 ));
             }
         }

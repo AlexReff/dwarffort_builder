@@ -1,4 +1,4 @@
-import { BUILDINGS, IBuildingTileData, IRenderTile, MENU_ITEM } from "../constants";
+import { BUILDINGS, IBuildingTileData, IRenderTile, MENU_ID } from "../constants";
 import { FlatReduxState } from "../redux/store";
 import { ITileGeneratorComponent } from "./_base";
 
@@ -25,7 +25,7 @@ export class Builder implements ITileGeneratorComponent {
                     if (trgTile == null || trgTile.char == null) {
                         continue; //no building character to place here
                     }
-                    if (tile.key === MENU_ITEM.wall) {
+                    if (tile.key === MENU_ID.wall) {
                         result.push({
                             x,
                             y,

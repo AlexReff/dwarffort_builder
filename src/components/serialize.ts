@@ -1,4 +1,4 @@
-import { BUILDINGS, MENU, MENU_ITEM } from "./constants";
+import { BUILDINGS, MENU, MENU_ID } from "./constants";
 import store, { FlatGetState, FlatReduxState } from "./redux/store";
 
 let lastStateImprint = "";
@@ -57,14 +57,14 @@ export function getQuickfortCsv(state: FlatReduxState = FlatGetState({}, store.g
                     if (floorBuild != null && key in floorBuild) {
                         const thisTile = floorBuild[key];
                         const thisBldg = BUILDINGS.ITEMS[thisTile.key];
-                        let menu = MENU.ITEMS[thisBldg.submenu];
+                        let menu = MENU.ITEMS[thisBldg.parent];
                         const keyParts = [];
-                        while (menu.id !== MENU_ITEM.building) {
+                        while (menu.id !== MENU_ID.building) {
                             keyParts.push(menu.key);
                             menu = MENU.ITEMS[menu.parent];
                         }
                         keyParts.reverse();
-                        keyParts.push(thisBldg.hotkey);
+                        keyParts.push(thisBldg.key);
                         const thisKey = keyParts.join("");
                         thisBuildRow.push(thisKey);
                     } else {

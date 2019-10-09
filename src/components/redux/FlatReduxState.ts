@@ -38,6 +38,7 @@ export class ReduxVariables implements FlatReduxState {
     shiftDown: IInputState["shiftDown"];
     //inspect
     inspectedBuildings: IInspectState["inspectedBuildings"];
+    hoverInspectBuildings: IInspectState["hoverInspectBuildings"];
     //menu
     currentSubmenu: IMenuState["currentSubmenu"];
     currentMenuItem: IMenuState["currentMenuItem"];

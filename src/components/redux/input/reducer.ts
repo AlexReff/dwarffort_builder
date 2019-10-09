@@ -1,5 +1,5 @@
 import { AnyAction } from "redux";
-import { BUILDINGS, INPUT_STATE, MENU, MENU_ITEM } from "../../constants";
+import { BUILDINGS, INPUT_STATE, MENU, MENU_ID } from "../../constants";
 import { ACTION_TYPE } from "../store";
 
 export interface IInputState {
@@ -16,14 +16,14 @@ export default (state = initialState, action: AnyAction) => {
     switch (action.type) {
         case ACTION_TYPE.SET_MENU: {
             if (action.currentMenuItem != null &&
-                action.currentMenuItem !== MENU_ITEM.top) {
-                if (action.currentMenuItem === MENU_ITEM.inspect) {
+                action.currentMenuItem !== MENU_ID.top) {
+                if (action.currentMenuItem === MENU_ID.inspect) {
                     state.inputState = INPUT_STATE.INSPECTING;
                     break;
                 } else if (action.currentMenuItem in BUILDINGS.ITEMS) {
                     state.inputState = INPUT_STATE.PLACING_BUILDING;
                     break;
-                } else if (MENU.ITEMS[action.currentMenuItem].parent === MENU_ITEM.designate) {
+                } else if (MENU.ITEMS[action.currentMenuItem].parent === MENU_ID.designate) {
                     //if the menu item is changed while designating,
                     // and the new menu item is still designating,
                     // don't change designating state

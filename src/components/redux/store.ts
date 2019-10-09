@@ -75,17 +75,9 @@ const COMBINED_REDUCERS = combineReducersImmer(createNextState, ALL_REDUCERS);
 
 export type ReduxState = ReturnType<typeof COMBINED_REDUCERS>;
 
-type CombinedParamTypes<T extends {
-    [key: string]: (state: any, action: any) => any;
-}> = T extends {
-    [key: string]: (state: infer R, action: any) => any;
-} ? R : never;
+type CombinedParamTypes<T extends Record<string, (state: any, action: any) => any>> = T extends Record<string, (state: infer R, action: any) => any> ? R : never;
 
-type CombinedReturnTypes<T extends {
-    [key: string]: (...args: any) => any;
-}> = T extends {
-    [key: string]: (...args) => infer R;
-} ? R : never;
+type CombinedReturnTypes<T extends Record<string, (state: any, action: any) => any>> = T extends Record<string, (state: any, action: any) => infer R> ? R : never;
 
 export type FlatReduxState = CombinedParamTypes<typeof ALL_REDUCERS>;
 

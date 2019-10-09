@@ -3,10 +3,12 @@ import { ACTION_TYPE } from "../store";
 
 export interface IInspectState {
     inspectedBuildings: string[];
+    hoverInspectBuildings: string[];
 }
 
 const initialState: IInspectState = {
     inspectedBuildings: [],
+    hoverInspectBuildings: [],
 };
 
 export default (state = initialState, action: AnyAction) => {

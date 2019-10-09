@@ -1,5 +1,5 @@
 import { AnyAction } from "redux";
-import { IMenuItem, MENU_ITEM } from "../../constants";
+import { IMenuItem, MENU_ID } from "../../constants";
 import { ACTION_TYPE } from "../store";
 
 export interface IMenuState {
@@ -8,7 +8,7 @@ export interface IMenuState {
 }
 
 const initialState: IMenuState = {
-    currentSubmenu: MENU_ITEM.top,
+    currentSubmenu: MENU_ID.top,
     currentMenuItem: null,
 };
 
@@ -27,8 +27,8 @@ export default (state = initialState, action: AnyAction) => {
         case ACTION_TYPE.ADD_INSPECT_BUILDING:
         case ACTION_TYPE.SET_INSPECT_BUILDINGS: {
             //occurs when a building is clicked
-            state.currentMenuItem = MENU_ITEM.inspect;
-            state.currentSubmenu = MENU_ITEM.top;
+            state.currentMenuItem = MENU_ID.inspect;
+            state.currentSubmenu = MENU_ID.top;
             break;
         }
     }

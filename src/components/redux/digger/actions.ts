@@ -1,5 +1,5 @@
 import produce from "immer";
-import { FLOOR_TILES, INPUT_STATE, MENU_ITEM } from "../../constants";
+import { FLOOR_TILES, INPUT_STATE, MENU_ID } from "../../constants";
 import rng from "../../rot/rng";
 import { getMapCoord, getNeighborsOfRange } from "../../util";
 import { ACTION_TYPE, ReduxState } from "../store";
@@ -58,17 +58,17 @@ export function submitDesignating() {
                             }
                         }
                         switch (state.menu.currentMenuItem) {
-                            case MENU_ITEM.remove:
+                            case MENU_ID.remove:
                                 if (key in draft[z]) {
                                     delete draft[z][key];
                                 }
                                 break;
-                            case MENU_ITEM.mine:
+                            case MENU_ID.mine:
                                 draft[z][key] = {
                                     posX: x,
                                     posY: y,
                                     posZ: z,
-                                    type: MENU_ITEM.mine,
+                                    type: MENU_ID.mine,
                                     characterVariant: rng.getUniformInt(0, FLOOR_TILES.length - 1).toString(),
                                     userSet: true,
                                 };
@@ -76,7 +76,7 @@ export function submitDesignating() {
                         }
                     }
                 }
-                if (state.menu.currentMenuItem === MENU_ITEM.mine) {
+                if (state.menu.currentMenuItem === MENU_ID.mine) {
                     //create walls around designated area (if empty)
                     const points = getNeighborsOfRange(startX, startY, endX, endY, state);
                     for (const point of points) {
@@ -86,7 +86,7 @@ export function submitDesignating() {
                                 posX: point[0],
                                 posY: point[1],
                                 posZ: z,
-                                type: MENU_ITEM.wall,
+                                type: MENU_ID.wall,
                                 userSet: false,
                             };
                         }

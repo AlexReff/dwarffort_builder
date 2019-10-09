@@ -1,4 +1,4 @@
-import { IRenderTile, MENU_ITEM, Point, TILE_H, TILE_W, WALL_TILES } from "./constants";
+import { IRenderTile, MENU_ID, Point, TILE_H, TILE_W, WALL_TILES } from "./constants";
 import { Game } from "./game";
 import { IBuildingState } from "./redux/building/reducer";
 import store, { FlatGetState, FlatReduxState, ReduxState } from "./redux/store";
@@ -180,7 +180,7 @@ export const isBuildingPlaceable = (state: FlatReduxState | ReduxState, x: numbe
         }
     }
     const tile = terrainTiles[cameraZ][key];
-    if (tile != null && tile.type === MENU_ITEM.mine) {
+    if (tile != null && tile.type === MENU_ID.mine) {
         return true;
     }
 
@@ -192,7 +192,7 @@ export function updateWallNeighbors(state: ReduxState, buildingTiles: IBuildingS
         for (let x = 0; x < state.camera.mapWidth; x++) {
             const key = `${x}:${y}`;
             if (key in buildingTiles[state.camera.cameraZ]) {
-                if (buildingTiles[state.camera.cameraZ][key].key === MENU_ITEM.wall) {
+                if (buildingTiles[state.camera.cameraZ][key].key === MENU_ID.wall) {
                     buildingTiles[state.camera.cameraZ][key].characterVariant = getWallNeighborFlags(buildingTiles, state, x, y);
                 }
             }
@@ -209,29 +209,29 @@ export function getWallNeighborFlags(
     let flags = 0;
     if (y > 0) {
         const nKey = `${x}:${y - 1}`;
-        if ((nKey in tiles[z] && tiles[z][nKey].key === MENU_ITEM.wall) ||
-            (nKey in state.digger.terrainTiles[z] && state.digger.terrainTiles[z][nKey].type === MENU_ITEM.wall)) {
+        if ((nKey in tiles[z] && tiles[z][nKey].key === MENU_ID.wall) ||
+            (nKey in state.digger.terrainTiles[z] && state.digger.terrainTiles[z][nKey].type === MENU_ID.wall)) {
             flags += 1;
         }
     }
     if (x < state.camera.mapWidth - 1) {
         const eKey = `${x + 1}:${y}`;
-        if ((eKey in tiles[z] && tiles[z][eKey].key === MENU_ITEM.wall) ||
-            (eKey in state.digger.terrainTiles[z] && state.digger.terrainTiles[z][eKey].type === MENU_ITEM.wall)) {
+        if ((eKey in tiles[z] && tiles[z][eKey].key === MENU_ID.wall) ||
+            (eKey in state.digger.terrainTiles[z] && state.digger.terrainTiles[z][eKey].type === MENU_ID.wall)) {
             flags += 2;
         }
     }
     if (y < state.camera.mapHeight - 1) {
         const sKey = `${x}:${y + 1}`;
-        if ((sKey in tiles[z] && tiles[z][sKey].key === MENU_ITEM.wall) ||
-            (sKey in state.digger.terrainTiles[z] && state.digger.terrainTiles[z][sKey].type === MENU_ITEM.wall)) {
+        if ((sKey in tiles[z] && tiles[z][sKey].key === MENU_ID.wall) ||
+            (sKey in state.digger.terrainTiles[z] && state.digger.terrainTiles[z][sKey].type === MENU_ID.wall)) {
             flags += 4;
         }
     }
     if (x > 0) {
         const wKey = `${x - 1}:${y}`;
-        if ((wKey in tiles[z] && tiles[z][wKey].key === MENU_ITEM.wall) ||
-            (wKey in state.digger.terrainTiles[z] && state.digger.terrainTiles[z][wKey].type === MENU_ITEM.wall)) {
+        if ((wKey in tiles[z] && tiles[z][wKey].key === MENU_ID.wall) ||
+            (wKey in state.digger.terrainTiles[z] && state.digger.terrainTiles[z][wKey].type === MENU_ID.wall)) {
             flags += 8;
         }
     }

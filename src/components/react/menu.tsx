@@ -1,6 +1,6 @@
 import { Component, h } from "preact";
 import { connect } from "react-redux";
-import { BUILDINGS, INPUT_STATE, MENU, MENU_ITEM, SUBMENU_MAX_H } from "../constants";
+import { BUILDINGS, INPUT_STATE, MENU, MENU_ID } from "../constants";
 import { deleteBuildings } from "../redux/building/actions";
 import { IBuildingState } from "../redux/building/reducer";
 import { ICameraState } from "../redux/camera/reducer";
@@ -46,15 +46,15 @@ const mapDispatchToProps = (dispatch) => ({
 });
 
 interface IGameMenuState {
-    // shiftDown: boolean;
+    expandedToolbarItems: string[];
 }
 
 class Menu extends Component<IMenuProps, IGameMenuState> {
     constructor() {
         super();
-        // this.setState({
-        //     // shiftDown: false,
-        // });
+        this.setState({
+            expandedToolbarItems: [],
+        });
     }
 
     render = (props: IMenuProps) => {
@@ -99,7 +99,7 @@ class Menu extends Component<IMenuProps, IGameMenuState> {
                 }
                 return (
                     <div class="menu-place">
-                        <div>Placing {BUILDINGS.ITEMS[this.props.currentMenuItem].display_name}</div>
+                        <div>Placing {BUILDINGS.ITEMS[this.props.currentMenuItem].text}</div>
                         {placed > -1 ?
                             <div>Placed (current Z): {placed}</div>
                             : null}
@@ -116,18 +116,21 @@ class Menu extends Component<IMenuProps, IGameMenuState> {
                             <div class={"submenu" + (this.props.currentMenu === key ? " active" : "")}>
                                 {key in BUILDINGS.SUBMENUS ?
                                     BUILDINGS.SUBMENUS[key].map((bldg) => (
-                                        <a onClick={(e) => this.menuItemClickHandler(e)}
-                                            title={bldg.display_name}
+                                        <a onClick={(e) => this.menuItemClickHandler(e, bldg.id)}
                                             class={"menu-item" + (this.props.currentMenuItem != null && this.props.currentMenuItem === bldg.id ? " active" : "")}
-                                            data-id={bldg.id}>{bldg.hotkey}: {bldg.display_name}</a>
+                                            title={bldg.text}>{bldg.key}: {bldg.text}</a>
                                     )) : null}
                                 {MENU.SUBMENUS[key] != null && MENU.SUBMENUS[key].length > 0 ?
-                                    MENU.SUBMENUS[key].map((item) => (
-                                        <a onClick={(e) => this.menuItemClickHandler(e)}
-                                            title={item.text}
-                                            class={"menu-item" + (this.props.currentMenuItem != null && this.props.currentMenuItem === item.id ? " active" : "")}
-                                            data-id={item.id}>{item.key}: {item.text}</a>
-                                    )) : null}
+                                    MENU.SUBMENUS[key].map((item) => {
+                                        if (item.text == null || item.text.length === 0) {
+                                            return;
+                                        }
+                                        return (
+                                            <a onClick={(e) => this.menuItemClickHandler(e, item.id)}
+                                                class={"menu-item" + (this.props.currentMenuItem != null && this.props.currentMenuItem === item.id ? " active" : "")}
+                                                title={item.text}>{item.key}: {item.text}</a>
+                                        );
+                                    }) : null}
                             </div>
                         ))}
                     </div>
@@ -137,20 +140,19 @@ class Menu extends Component<IMenuProps, IGameMenuState> {
 
     renderBreadcrumbs = () => {
         const breadcrumbs = [];
-        if (this.props.currentMenu !== MENU_ITEM.top) {
+        if (this.props.currentMenu !== MENU_ID.top) {
             const activeItem = MENU.ITEMS[this.props.currentMenu];
-            breadcrumbs.push(<a href="#" data-id={activeItem.id} onClick={(e) => this.breadcrumbHandler(e)}>{activeItem.text}</a>);
+            breadcrumbs.push(<a href="#" onClick={(e) => this.breadcrumbHandler(e, activeItem.id)}>{activeItem.text}</a>);
         }
 
-        breadcrumbs.push(<a href="#" data-id={MENU_ITEM.top.toString()} title="Main Menu" onClick={(e) => this.breadcrumbHandler(e)}>☺</a>);
+        breadcrumbs.push(<a href="#" title="Main Menu" onClick={(e) => this.breadcrumbHandler(e, "top")}>☺</a>);
         return breadcrumbs.reverse();
     }
 
-    breadcrumbHandler = (e: Event) => {
+    breadcrumbHandler = (e: Event, id: string) => {
         e.preventDefault();
         (e.currentTarget as HTMLElement).blur();
-        const key = (e.currentTarget as HTMLElement).dataset.id;
-        this.handleMenuEvent(key);
+        this.handleMenuEvent(id);
     }
 
     renderMenuStatus = () => {
@@ -167,7 +169,7 @@ class Menu extends Component<IMenuProps, IGameMenuState> {
             }
             case INPUT_STATE.PLACING_BUILDING: {
                 return (
-                    <div>Placing {BUILDINGS.ITEMS[this.props.currentMenuItem].display_name}</div>
+                    <div>Placing {BUILDINGS.ITEMS[this.props.currentMenuItem].text}</div>
                 );
             }
         }
@@ -184,13 +186,22 @@ class Menu extends Component<IMenuProps, IGameMenuState> {
         }
     }
 
-    handleExpandClick = (e: MouseEvent | TouchEvent) => {
+    handleExpandClick = (e: MouseEvent | TouchEvent, key: string) => {
         e.preventDefault();
-        let parent = (e.currentTarget as HTMLElement).parentElement;
-        while (parent != null && !parent.classList.contains("entry")) {
-            parent = parent.parentElement;
+        // let parent = (e.currentTarget as HTMLElement).parentElement;
+        // while (parent != null && !parent.classList.contains("entry")) {
+        //     parent = parent.parentElement;
+        // }
+        // parent.classList.toggle("expanded");
+        if (this.state.expandedToolbarItems.some((m) => m === key)) {
+            this.setState({
+                expandedToolbarItems: this.state.expandedToolbarItems.filter((m) => m !== key),
+            });
+        } else {
+            this.setState({
+                expandedToolbarItems: this.state.expandedToolbarItems.concat([key]),
+            });
         }
-        parent.classList.toggle("expanded");
         //TODO: Update this to have an array of items that
         //      is then checked inside render, instead of
         //      binding it to an event
@@ -209,13 +220,18 @@ class Menu extends Component<IMenuProps, IGameMenuState> {
         this.props.inspectAllOfType(targetKey);
     }
 
+    handleUnselectClick = (e: MouseEvent | TouchEvent, targetKey: string) => {
+        e.preventDefault();
+        this.props.removeInspectBuilding(targetKey);
+    }
+
     renderMenuToolbar = () => {
         // shows if a building is selected
         if (this.props.inspectedBuildings == null ||
             this.props.inspectedBuildings.length === 0) {
             return null;
         }
-        const listItems: { [key: string]: string[] } = this.props.inspectedBuildings.reduce((obj, val) => {
+        const listItems: Record<string, string[]> = this.props.inspectedBuildings.reduce((obj, val) => {
             const bldgTile = this.props.buildingTiles[this.props.cameraZ][val];
             if (bldgTile.key in obj) {
                 obj[bldgTile.key].push(val);
@@ -228,11 +244,12 @@ class Menu extends Component<IMenuProps, IGameMenuState> {
             <div class="menu-toolbar">
                 {Object.keys(listItems).map((m) => {
                     return (
-                        <div class="entry">
+                        <div class={"entry" + (this.state.expandedToolbarItems.some((n) => m === m) ? " expanded" : "")}>
                             <div class="entry_title">
                                 <a class={"entry_name" + (listItems[m].length > 1 ? " has_multi" : "")} href="#"
-                                    onClick={(e) => listItems[m].length > 1 ? this.handleExpandClick(e) : this.handleMenuToolbarClick(listItems[m][0], e)}>
-                                    {BUILDINGS.ITEMS[m].display_name} <span>(x{listItems[m].length})</span>
+                                    onClick={(e) => listItems[m].length > 1 ? this.handleExpandClick(e, m) :
+                                        this.handleMenuToolbarClick(listItems[m][0], e)}>
+                                    {BUILDINGS.ITEMS[m].text} <span>(x{listItems[m].length})</span>
                                 </a>
                             </div>
                             <div class="entry_options">
@@ -249,11 +266,11 @@ class Menu extends Component<IMenuProps, IGameMenuState> {
                                             <div class="entry_child">
                                                 <a class="entry_name" href="#"
                                                     onClick={(e) => this.handleMenuToolbarClick(key, e)}>
-                                                    {BUILDINGS.ITEMS[m].display_name}
+                                                    {BUILDINGS.ITEMS[m].text}
                                                 </a>
                                                 <div class="entry_options">
                                                     <ul>
-                                                        <li><a href="#" /*onClick={(e) => this.handleSelectAllClick(e, m)}*/>Unselect</a></li>
+                                                        <li><a href="#" onClick={(e) => this.handleUnselectClick(e, key)}>Unselect</a></li>
                                                         <li><a href="#" onClick={(e) => this.handleDeleteClick(e, [key])}>Delete</a></li>
                                                     </ul>
                                                 </div>
@@ -276,9 +293,9 @@ class Menu extends Component<IMenuProps, IGameMenuState> {
         this.props.selectMenuItem(e);
     }
 
-    menuItemClickHandler = (e: Event) => {
+    menuItemClickHandler = (e: Event, id: string) => {
         e.preventDefault();
-        this.handleMenuEvent((e.currentTarget as HTMLElement).dataset.id);
+        this.handleMenuEvent(id);
     }
 }
 

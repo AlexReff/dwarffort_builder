@@ -1,11 +1,11 @@
-import { ITerrainTile, ITileCollection } from "../../constants";
+import { ITerrainTile } from "../../constants";
 import { ACTION_TYPE } from "../store";
 
 export interface IDiggerState {
     designateStartX: number;
     designateStartY: number;
     designateStartZ: number;
-    terrainTiles: ITileCollection<ITerrainTile>;
+    terrainTiles: Record<string, Record<string, ITerrainTile>>;
 }
 
 const initialState: IDiggerState = {

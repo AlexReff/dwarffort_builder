@@ -1,7 +1,7 @@
 import produce from "immer";
-import { MENU_ITEM, Point, TILE_H, TILE_W } from "../../constants";
+import { MENU_ID } from "src/components/constants/menu/_data";
+import { Point, TILE_H, TILE_W } from "../../constants";
 import { getMapCoord, updateWallNeighbors } from "../../util";
-import { IBuildingTile } from "../building/reducer";
 import { ACTION_TYPE, ReduxState } from "../store";
 
 //#region REDUX ACTIONS
@@ -120,7 +120,7 @@ export function moveInspectedBuildings(diffX: number, diffY: number) {
             if (!(pos in terrainTiles[cameraZ])) {
                 return; //no floor
             }
-            if (terrainTiles[cameraZ][pos].type !== MENU_ITEM.mine) {
+            if (terrainTiles[cameraZ][pos].type !== MENU_ID.mine) {
                 return; //non-floor detected
             }
         }
@@ -184,7 +184,7 @@ export function inspectGridPos(gridX: number, gridY: number) {
     };
 }
 
-export function inspectAllOfType(type: string) {
+export function inspectAllOfType(type: MENU_ID) {
     return (dispatch, getState: () => ReduxState) => {
         const state = getState();
         const cameraZ = state.camera.cameraZ;

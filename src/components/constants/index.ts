@@ -1,16 +1,13 @@
 
 export {
-    BUILDINGS,
     DEBUG,
     DEC_TILES,
     DEC_TILES_COLORS,
     DEFAULTS,
     FLOOR_TILES,
     HEADER_H,
-    MENU,
     MENU_W,
     Point,
-    SUBMENU_MAX_H,
     TILE_H,
     TILE_MAP,
     TILE_URL,
@@ -22,14 +19,19 @@ export {
     DIRECTION,
     INPUT_STATE,
     KEYS,
-    MENU_ITEM,
 } from "./_enums";
 
 export {
+    BUILDINGS,
+    MENU,
+    MENU_ID,
+    SUBMENU_MAX_H,
+} from "./menu/";
+
+export {
     IBuildingTileData,
-    IBuildingData,
+    // IBuildingData,
     IMenuItem,
     IRenderTile,
-    ITileCollection,
     ITerrainTile,
 } from "./_interfaces";
