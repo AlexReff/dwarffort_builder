@@ -1,8 +1,6 @@
 import { TILE_H, TILE_MAP, TILE_W } from "./constants";
 import { GameInput } from "./input";
-import { GameComponent } from "./redux/FlatReduxState";
-import { toggleAnimation } from "./redux/settings/actions";
-import store from "./redux/store";
+import { GameComponent, store, toggleAnimation } from "./redux/";
 import Display from "./rot/display";
 import { ITileGeneratorComponent } from "./tiles/_base";
 import { Builder } from "./tiles/builder";
@@ -97,18 +95,18 @@ export class Game extends GameComponent {
         const maxX = startX + this.gridWidth;
         const maxY = startY + this.gridHeight;
 
-        const renderedPositions = {};
+        const renderedPositions = new Set<string>();
         for (const cmpnt of this.renderObjs) {
             const tiles = cmpnt.getTiles(this);
             for (const tile of tiles) {
                 const key = `${tile.x}:${tile.y}`;
-                if (key in renderedPositions) {
+                if (renderedPositions.has(key)) {
                     continue;
                 }
                 if (tile.x >= startX && tile.x < maxX &&
                     tile.y >= startY && tile.y < maxY) {
                     renderTile(this, tile);
-                    renderedPositions[key] = "";
+                    renderedPositions.add(key);
                 }
             }
         }

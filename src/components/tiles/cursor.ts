@@ -1,5 +1,5 @@
 import { BUILDINGS, DEFAULTS, INPUT_STATE, IRenderTile } from "../constants";
-import { FlatReduxState } from "../redux/store";
+import { FlatReduxState } from "../redux/";
 import { isBuildingPlaceable } from "../util";
 import { ITileGeneratorComponent } from "./_base";
 

@@ -1,14 +1,26 @@
 import { BUILDINGS, DIRECTION, INPUT_STATE, KEYS, MENU, MENU_ID, Point } from "./constants";
-import { decreasePlaceBuildHeight, decreasePlaceBuildWidth, increasePlaceBuildHeight, increasePlaceBuildWidth, placeCursorBuilding } from "./redux/building/actions";
-import { setCameraZ, setGridBounds } from "./redux/camera/actions";
-import { moveCursorDirection, moveCursorToGridPos } from "./redux/cursor/actions";
-import { startDesignatingGrid, submitDesignating } from "./redux/digger/actions";
-import { GameComponent } from "./redux/FlatReduxState";
-import { setShiftDown } from "./redux/input/actions";
-import { inspectGridPos, inspectMapPos, setInspectBuildings } from "./redux/inspect/actions";
-import { selectMenu, selectPrevSubmenu } from "./redux/menu/actions";
-import { toggleDebugMode } from "./redux/settings/actions";
-import store from "./redux/store";
+import {
+    decreasePlaceBuildHeight,
+    decreasePlaceBuildWidth,
+    GameComponent,
+    increasePlaceBuildHeight,
+    increasePlaceBuildWidth,
+    inspectGridPos,
+    inspectMapPos,
+    moveCursorDirection,
+    moveCursorToGridPos,
+    placeCursorBuilding,
+    selectMenu,
+    selectPrevSubmenu,
+    setCameraZ,
+    setDesignateStart,
+    setInspectBuildings,
+    setShiftDown,
+    startDesignatingGrid,
+    store,
+    submitDesignating,
+    toggleDebugMode,
+} from "./redux/";
 import { eventToPosition, getMapCoord } from "./util";
 
 export class GameInput extends GameComponent {
@@ -25,7 +37,6 @@ export class GameInput extends GameComponent {
 
         window.addEventListener("keydown", this.handleKeyPress);
         window.addEventListener("keyup", this.handleKeyUp);
-        window.addEventListener("resize", this.handleResize);
         window.addEventListener("blur", this.handleBlur);
 
         this.grid.addEventListener("contextmenu", this.handleContextMenu);
@@ -41,19 +52,21 @@ export class GameInput extends GameComponent {
                 break;
             }
             case INPUT_STATE.NEUTRAL: {
-                const [gridX, gridY] = this.handleClick(e);
-                if (this.currentSubmenu === MENU_ID.designate) {
+                const [gridX, gridY] = this.handleClick(e, true);
+                if (this.currentSubmenu === MENU_ID.designate &&
+                    this.currentMenuItem != null &&
+                    this.currentMenuItem.length > 0) {
                     store.dispatch(startDesignatingGrid(gridX, gridY));
                 }
                 break;
             }
             case INPUT_STATE.DESIGNATING: {
-                this.handleClick(e);
+                this.handleClick(e, true);
                 store.dispatch(submitDesignating());
                 break;
             }
             case INPUT_STATE.PLACING_BUILDING: {
-                const [gridX, gridY] = this.handleClick(e);
+                const [gridX, gridY] = this.handleClick(e, true);
                 const [mapX, mapY] = getMapCoord(gridX, gridY);
                 store.dispatch(placeCursorBuilding(mapX, mapY));
                 break;
@@ -62,7 +75,10 @@ export class GameInput extends GameComponent {
     }
 
     /** @returns the GRID position of the click */
-    handleClick = (e: MouseEvent | TouchEvent): Point => {
+    handleClick = (e: MouseEvent | TouchEvent, override: boolean = false): Point => {
+        if (!override && "button" in e && e.button !== 0) {
+            return;
+        }
         e.preventDefault();
         const [gridX, gridY] = eventToPosition(e, this.gridBounds);
         if (gridX >= 0 && gridY >= 0) {
@@ -160,7 +176,7 @@ export class GameInput extends GameComponent {
                         break;
                     case KEYS.VK_RETURN:
                         if (this.currentMenuItem != null && this.currentSubmenu === MENU_ID.designate) {
-                            store.dispatch(startDesignatingGrid(this.cursorX, this.cursorY));
+                            store.dispatch(setDesignateStart(this.cursorX, this.cursorY, this.cameraZ));
                         }
                         break;
                 }
@@ -241,9 +257,5 @@ export class GameInput extends GameComponent {
 
     handleBlur = (e: Event) => {
         store.dispatch(setShiftDown(false));
-    }
-
-    handleResize = (e: Event) => {
-        store.dispatch(setGridBounds(this.grid.getBoundingClientRect()));
     }
 }

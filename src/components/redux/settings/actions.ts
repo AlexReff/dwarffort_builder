@@ -44,14 +44,4 @@ export const toggleDebugMode = () => {
     };
 };
 
-// export const setStrictMode = (val: boolean) => {
-//     return {
-//         type: ACTION_TYPE.SET_STRICT_MODE,
-//         val,
-//     };
-// };
-
-//#endregion
-//#region THUNK ACTIONS
-
 //#endregion

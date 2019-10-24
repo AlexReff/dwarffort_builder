@@ -1,18 +1,10 @@
-
 export {
-    DEBUG,
-    DEC_TILES,
-    DEC_TILES_COLORS,
     DEFAULTS,
-    FLOOR_TILES,
     HEADER_H,
     MENU_W,
-    Point,
     TILE_H,
-    TILE_MAP,
     TILE_URL,
     TILE_W,
-    WALL_TILES,
 } from "./_constants";
 
 export {
@@ -26,12 +18,26 @@ export {
     MENU,
     MENU_ID,
     SUBMENU_MAX_H,
+    ALL_MENU_DATA,
+    BUILDING_DATA,
+    BUILDING_KEYS,
+    MENU_DATA,
+    MENU_KEYS,
 } from "./menu/";
 
 export {
+    IBuildingTile,
     IBuildingTileData,
-    // IBuildingData,
     IMenuItem,
     IRenderTile,
     ITerrainTile,
+    Point,
 } from "./_interfaces";
+
+export {
+    DEC_TILES,
+    DEC_TILES_COLORS,
+    FLOOR_TILES,
+    TILE_MAP,
+    WALL_TILES,
+} from "./_tiles";

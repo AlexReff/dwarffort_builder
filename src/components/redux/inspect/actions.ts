@@ -1,8 +1,7 @@
 import produce from "immer";
-import { MENU_ID } from "src/components/constants/menu/_data";
-import { Point, TILE_H, TILE_W } from "../../constants";
+import { ACTION_TYPE, IBuildingState, IInspectState, store } from "../";
+import { MENU_ID, Point, TILE_H, TILE_W } from "../../constants";
 import { getMapCoord, updateWallNeighbors } from "../../util";
-import { ACTION_TYPE, ReduxState } from "../store";
 
 //#region REDUX ACTIONS
 
@@ -34,7 +33,24 @@ export function removeInspectBuilding(item: string) {
     };
 }
 
-export function _moveInspectedBuildings(buildingTiles, buildingPositions, inspectedBuildings) {
+export function highlightBuildings(items: string[]) {
+    return {
+        type: ACTION_TYPE.HIGHLIGHT_BUILDINGS,
+        items,
+    };
+}
+
+export function clearHighlightBuildings() {
+    return {
+        type: ACTION_TYPE.HIGHLIGHT_BUILDINGS_CLEAR,
+    };
+}
+
+export function _moveInspectedBuildings(
+    buildingTiles: IBuildingState["buildingTiles"],
+    buildingPositions: IBuildingState["buildingPositions"],
+    inspectedBuildings: IInspectState["inspectedBuildings"],
+) {
     return {
         type: ACTION_TYPE.MOVE_INSPECT_BUILDINGS,
         buildingTiles,
@@ -47,7 +63,7 @@ export function _moveInspectedBuildings(buildingTiles, buildingPositions, inspec
 //#region THUNK ACTIONS
 
 export function inspectGridRange(gridA: Point, gridB: Point) {
-    return (dispatch, getState: () => ReduxState) => {
+    return (dispatch: typeof store.dispatch, getState: typeof store.getState) => {
         const state = getState();
         if (state.building.buildingPositions == null ||
             !(state.camera.cameraZ in state.building.buildingPositions) ||
@@ -83,7 +99,7 @@ export function inspectGridRange(gridA: Point, gridB: Point) {
 }
 
 export function moveInspectedBuildings(diffX: number, diffY: number) {
-    return (dispatch, getState: () => ReduxState) => {
+    return (dispatch: typeof store.dispatch, getState: typeof store.getState) => {
         const state = getState();
 
         const cameraZ = state.camera.cameraZ;
@@ -166,7 +182,7 @@ export function moveInspectedBuildings(diffX: number, diffY: number) {
 }
 
 export function toggleInspectBuilding(item: string) {
-    return (dispatch, getState: () => ReduxState) => {
+    return (dispatch: typeof store.dispatch, getState: typeof store.getState) => {
         const state = getState();
         if (state.inspect.inspectedBuildings.some((e) => e === item)) {
             dispatch(removeInspectBuilding(item));
@@ -177,7 +193,7 @@ export function toggleInspectBuilding(item: string) {
 }
 
 export function inspectGridPos(gridX: number, gridY: number) {
-    return (dispatch, getState: () => ReduxState) => {
+    return (dispatch: typeof store.dispatch, getState: typeof store.getState) => {
         const state = getState();
         const [mapX, mapY] = getMapCoord(gridX, gridY, state);
         dispatch(inspectMapPos(mapX, mapY));
@@ -185,7 +201,7 @@ export function inspectGridPos(gridX: number, gridY: number) {
 }
 
 export function inspectAllOfType(type: MENU_ID) {
-    return (dispatch, getState: () => ReduxState) => {
+    return (dispatch: typeof store.dispatch, getState: typeof store.getState) => {
         const state = getState();
         const cameraZ = state.camera.cameraZ;
         const buildingPositions = state.building.buildingPositions;
@@ -206,7 +222,7 @@ export function inspectAllOfType(type: MENU_ID) {
 }
 
 export function inspectAllOfTypeAtGridPos(gridX: number, gridY: number) {
-    return (dispatch, getState: () => ReduxState) => {
+    return (dispatch: typeof store.dispatch, getState: typeof store.getState) => {
         const state = getState();
         const cameraZ = state.camera.cameraZ;
         const buildingPositions = state.building.buildingPositions;
@@ -238,7 +254,7 @@ export function inspectAllOfTypeAtGridPos(gridX: number, gridY: number) {
 }
 
 export function inspectMapPos(mapX: number, mapY: number) {
-    return (dispatch, getState: () => ReduxState) => {
+    return (dispatch: typeof store.dispatch, getState: typeof store.getState) => {
         const state = getState();
         if (state.camera.cameraZ in state.building.buildingPositions) {
             const key = `${mapX}:${mapY}`;

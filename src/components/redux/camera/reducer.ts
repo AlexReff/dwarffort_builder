@@ -1,3 +1,4 @@
+import { AnyAction } from "redux";
 import { IRenderTile } from "../../constants";
 import { ACTION_TYPE } from "../store";
 
@@ -25,7 +26,7 @@ const initialState: ICameraState = {
     gridBounds: null,
 };
 
-export default (state: ICameraState = initialState, action) => {
+export default (state: ICameraState = initialState, action: AnyAction) => {
     switch (action.type) {
         case ACTION_TYPE.INITIALIZE: {
             state.gridHeight = action.gridHeight;
@@ -51,10 +52,6 @@ export default (state: ICameraState = initialState, action) => {
         }
         case ACTION_TYPE.SET_ZLEVEL: {
             state.cameraZ = action.z;
-            break;
-        }
-        case ACTION_TYPE.SET_GRID_BOUNDS: {
-            state.gridBounds = action.bounds;
             break;
         }
     }

@@ -1,52 +1,16 @@
 import { Component, h } from "preact";
-import { connect } from "react-redux";
-import { IBuildingState } from "../redux/building/reducer";
-import { ICameraState } from "../redux/camera/reducer";
-import { IDiggerState } from "../redux/digger/reducer";
-import { IInputState } from "../redux/input/reducer";
-import { IInspectState } from "../redux/inspect/reducer";
-import { IMenuState } from "../redux/menu/reducer";
-import { ReduxState } from "../redux/store";
-import { getQuickfortCsv } from "../serialize";
+import { IFooterProps } from ".";
+import { getQuickfortCsv } from "../../serialize";
 
-interface IFooterProps {
-    currentMenu: IMenuState["currentSubmenu"];
-    currentMenuItem: IMenuState["currentMenuItem"];
-    inputState: IInputState["inputState"];
-    buildingTiles: IBuildingState["buildingTiles"];
-    terrainTiles: IDiggerState["terrainTiles"];
-    inspectedBuildings: IInspectState["inspectedBuildings"];
-    cameraZ: ICameraState["cameraZ"];
-
-    // selectMenuItem: (id: string) => void;
-}
-
-const mapStateToProps = (state: ReduxState) => ({
-    currentMenu: state.menu.currentSubmenu,
-    currentMenuItem: state.menu.currentMenuItem,
-    inputState: state.input.inputState,
-    inspectedBuildings: state.inspect.inspectedBuildings,
-    buildingTiles: state.building.buildingTiles,
-    terrainTiles: state.digger.terrainTiles,
-    cameraZ: state.camera.cameraZ,
-});
-
-const mapDispatchToProps = (dispatch) => ({
-    // selectMenuItem: (id) => dispatch(selectMenu(id)),
-});
-
-class Footer extends Component<IFooterProps> {
+export class Footer extends Component<IFooterProps> {
     quickfortUrl: string;
     lastQuickfortValue: string;
 
-    render = (props: IFooterProps, state) => {
+    render = (props: IFooterProps, state: any) => {
         return (
             <footer id="footer">
                 <div class="inner">
                     {this.getQuickfortLink()}
-                    {/* { this.getPermaLink() } */}
-                    {/* <div class="data-cursor">Cursor: {this.renderFooterCursor()}</div>
-                    <div class="data-mouse">Mouse: {this.renderFooterMouse()}</div> */}
                 </div>
             </footer>
         );
@@ -64,9 +28,8 @@ class Footer extends Component<IFooterProps> {
                 window.URL.revokeObjectURL(this.quickfortUrl);
             }
             this.quickfortUrl = window.URL.createObjectURL(csvFile);
+            this.lastQuickfortValue = csv;
         }
-
-        this.lastQuickfortValue = csv;
 
         return (
             <a href={this.quickfortUrl} target="_blank" download="fortd.csv">Download Quickfort CSV</a>
@@ -110,5 +73,3 @@ class Footer extends Component<IFooterProps> {
     }
     */
 }
-
-export default connect(mapStateToProps, mapDispatchToProps)(Footer);

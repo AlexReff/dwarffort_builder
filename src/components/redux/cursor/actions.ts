@@ -1,6 +1,6 @@
 import { DIRECTION } from "../../constants";
 import { setCameraPos } from "../camera/actions";
-import { ACTION_TYPE, ReduxState } from "../store";
+import { ACTION_TYPE, ReduxState, store } from "../store";
 
 //#region REDUX ACTIONS
 
@@ -17,7 +17,7 @@ export function setCursorPos(cursorX: number, cursorY: number) {
 //#region THUNK ACTIONS
 
 export function moveCursorDirection(dir: DIRECTION, shiftPressed: boolean = false) {
-    return (dispatch, getState: () => ReduxState) => {
+    return (dispatch: typeof store.dispatch, getState: typeof store.getState) => {
         const state = getState();
         let cursorX = state.cursor.cursorX;
         let cursorY = state.cursor.cursorY;
@@ -84,14 +84,14 @@ export function moveCursorDirection(dir: DIRECTION, shiftPressed: boolean = fals
 }
 
 export function moveCursorToGridPos(x: number, y: number) {
-    return (dispatch, getState: () => ReduxState) => {
+    return (dispatch: typeof store.dispatch, getState: typeof store.getState) => {
         const state = getState();
         dispatch(moveCursorToPos(x + state.camera.cameraX, y + state.camera.cameraY));
     };
 }
 
 export function moveCursorToPos(x: number, y: number) {
-    return (dispatch, getState: () => ReduxState) => {
+    return (dispatch: typeof store.dispatch, getState: typeof store.getState) => {
         const state = getState();
         const mapWidth = state.camera.mapWidth;
         const mapHeight = state.camera.mapHeight;

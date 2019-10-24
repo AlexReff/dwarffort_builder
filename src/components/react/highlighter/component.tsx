@@ -1,68 +1,9 @@
 import { Component, h } from "preact";
-import { connect } from "react-redux";
-import { BUILDINGS, IMenuItem, INPUT_STATE, Point, TILE_H, TILE_W } from "../constants";
-import { IBuildingState, IBuildingTile } from "../redux/building/reducer";
-import { ICameraState } from "../redux/camera/reducer";
-import { IInputState } from "../redux/input/reducer";
-import { inspectAllOfTypeAtGridPos, inspectGridPos, inspectGridRange, moveInspectedBuildings } from "../redux/inspect/actions";
-import { IInspectState } from "../redux/inspect/reducer";
-import { ReduxState } from "../redux/store";
-import { eventToPosition } from "../util";
+import { IHighlighterProps, IHighlighterState } from ".";
+import { BUILDINGS, IBuildingTile, IMenuItem, INPUT_STATE, Point, TILE_H, TILE_W } from "../../constants";
+import { eventToPosition } from "../../util";
 
-interface IGameHighlighterProps {
-    //redux props
-    cameraX: ICameraState["cameraX"];
-    cameraY: ICameraState["cameraY"];
-    cameraZ: ICameraState["cameraZ"];
-    mapHeight: ICameraState["mapHeight"];
-    mapWidth: ICameraState["mapWidth"];
-    gridBounds: ICameraState["gridBounds"];
-    inputState: IInputState["inputState"];
-    inspectedBuildings: IInspectState["inspectedBuildings"];
-    buildingPositions: IBuildingState["buildingPositions"];
-    buildingTiles: IBuildingState["buildingTiles"];
-
-    //redux dispatch
-    inspectGridPos: typeof inspectGridPos;
-    moveInspectedBuildings: typeof moveInspectedBuildings;
-    inspectGridRange: typeof inspectGridRange;
-    inspectAllOfTypeAtGridPos: typeof inspectAllOfTypeAtGridPos;
-}
-
-interface IGameHighlighterState {
-    highlightingStart: Point; //grid Position
-    currentPosition: Point; //grid Position
-    mouseDown: boolean;
-    mouseDownCoord: Point;
-    showHighlighter: boolean;
-    toolbarMoveDragging: boolean;
-    dragStartX: number;
-    dragStartY: number;
-    mouseX: number;
-    mouseY: number;
-}
-
-const mapStateToProps = (state: ReduxState) => ({
-    cameraX: state.camera.cameraX,
-    cameraY: state.camera.cameraY,
-    cameraZ: state.camera.cameraZ,
-    mapWidth: state.camera.mapWidth,
-    mapHeight: state.camera.mapHeight,
-    gridBounds: state.camera.gridBounds,
-    inputState: state.input.inputState,
-    inspectedBuildings: state.inspect.inspectedBuildings,
-    buildingPositions: state.building.buildingPositions,
-    buildingTiles: state.building.buildingTiles,
-});
-
-const mapDispatchToProps = (dispatch) => ({
-    inspectGridPos: (x, y) => dispatch(inspectGridPos(x, y)),
-    moveInspectedBuildings: (diffX, diffY) => dispatch(moveInspectedBuildings(diffX, diffY)),
-    inspectGridRange: (a, b) => dispatch(inspectGridRange(a, b)),
-    inspectAllOfTypeAtGridPos: (x, y) => dispatch(inspectAllOfTypeAtGridPos(x, y)),
-});
-
-class GameHighlighter extends Component<IGameHighlighterProps, IGameHighlighterState> {
+export class Highlighter extends Component<IHighlighterProps, IHighlighterState> {
     allInspectStartLeft: number;
     allInspectStartTop: number;
     allInspectLeft: number;
@@ -118,7 +59,7 @@ class GameHighlighter extends Component<IGameHighlighterProps, IGameHighlighterS
         const [gridX, gridY] = eventToPosition(e, this.props.gridBounds);
         const targ = "touches" in e ? e.touches[0] : e;
         const currentPosition: Point = [gridX, gridY];
-        this.setState((prevState: IGameHighlighterState) => ({
+        this.setState((prevState: IHighlighterState) => ({
             showHighlighter: prevState.showHighlighter ? true : prevState.mouseDown && (prevState.highlightingStart[0] !== gridX || prevState.highlightingStart[1] !== gridY),
             currentPosition,
             mouseX: targ.clientX,
@@ -161,6 +102,16 @@ class GameHighlighter extends Component<IGameHighlighterProps, IGameHighlighterS
         e.preventDefault();
         const [gridX, gridY] = eventToPosition(e, this.props.gridBounds);
         this.props.inspectAllOfTypeAtGridPos(gridX, gridY);
+    }
+
+    handleInspectHoverEnter = (e: MouseEvent | TouchEvent, targets: string[]) => {
+        e.preventDefault();
+        this.props.highlightBuildings(targets);
+    }
+
+    handleInspectHoverLeave = (e: MouseEvent | TouchEvent) => {
+        e.preventDefault();
+        this.props.clearHighlightBuildings();
     }
 
     //#endregion handlers
@@ -238,7 +189,9 @@ class GameHighlighter extends Component<IGameHighlighterProps, IGameHighlighterS
                     maxX = Math.max(maxX, left + width);
                     maxY = Math.max(maxY, top + height);
                 }
-                const thisClass = "building_inspect" + (thisInspected ? " inspecting" : "");
+                const thisClass = "building_inspect"
+                    + (thisInspected ? " inspecting" : "")
+                    + (this.props.highlightedBuildings.some((m) => m === posKey) ? " highlighted" : "");
 
                 result.push((
                     <a class={thisClass} title={bldg.text} onClick={this.handleBuildingClick} onDblClick={this.handleBuildingDoubleClick} style={style}></a>
@@ -263,13 +216,13 @@ class GameHighlighter extends Component<IGameHighlighterProps, IGameHighlighterS
             };
 
             this.allInspectStartLeft = minX,
-            this.allInspectStartTop = minY,
-            this.allInspectLeft = allStyleLeft,
-            this.allInspectTop = allStyleTop,
+                this.allInspectStartTop = minY,
+                this.allInspectLeft = allStyleLeft,
+                this.allInspectTop = allStyleTop,
 
-            result.push((
-                <div class="all_inspect" style={allStyle}></div>
-            ));
+                result.push((
+                    <div class="all_inspect" style={allStyle}></div>
+                ));
         }
 
         let toolbarStyle = {};
@@ -321,7 +274,7 @@ class GameHighlighter extends Component<IGameHighlighterProps, IGameHighlighterS
         );
     }
 
-    render = (props: IGameHighlighterProps, state: IGameHighlighterState) => {
+    render = (props: IHighlighterProps, state: IHighlighterState) => {
         let stack = [];
         stack.push((
             <div id="highlighter" class={state.showHighlighter ? "active" : null} style={this.getHighlighterStyle()}></div>
@@ -332,5 +285,3 @@ class GameHighlighter extends Component<IGameHighlighterProps, IGameHighlighterS
         return stack;
     }
 }
-
-export default connect(mapStateToProps, mapDispatchToProps)(GameHighlighter);

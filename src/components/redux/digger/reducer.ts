@@ -1,3 +1,4 @@
+import { AnyAction } from "redux";
 import { ITerrainTile } from "../../constants";
 import { ACTION_TYPE } from "../store";
 
@@ -5,7 +6,7 @@ export interface IDiggerState {
     designateStartX: number;
     designateStartY: number;
     designateStartZ: number;
-    terrainTiles: Record<string, Record<string, ITerrainTile>>;
+    terrainTiles: { [key: string]: { [key: string]: ITerrainTile } };
 }
 
 const initialState: IDiggerState = {
@@ -15,7 +16,7 @@ const initialState: IDiggerState = {
     terrainTiles: {},
 };
 
-export default (state = initialState, action) => {
+export default (state = initialState, action: AnyAction) => {
     switch (action.type) {
         case ACTION_TYPE.DESIGNATE_START: {
             state.designateStartX = action.x;

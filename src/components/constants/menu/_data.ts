@@ -13,7 +13,7 @@ export const enum MENU_ID {
     upstair = "upstair",
     downstair = "downstair",
     udstair = "udstair",
-    upramp = "upramp",
+    upramp = "ramp",
     remove = "remove",
     stockpile = "stockpile",
     inspect = "inspect",
@@ -1863,5 +1863,5 @@ export const ALL_MENU_DATA: Record<MENU_ID, IMenuItem> = {
 };
 
 Object.keys(ALL_MENU_DATA).forEach((val) => {
-    ALL_MENU_DATA[val].id = val;
+    ALL_MENU_DATA[val as MENU_ID].id = val as MENU_ID;
 });

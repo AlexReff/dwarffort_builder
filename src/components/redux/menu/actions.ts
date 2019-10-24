@@ -1,10 +1,10 @@
 import { BUILDINGS, MENU, MENU_ID } from "../../constants";
-import { ACTION_TYPE, FlatGetState } from "../store";
+import { ACTION_TYPE, FlatGetState, store } from "../store";
 import { IMenuState } from "./reducer";
 
 //#region REDUX ACTIONS
 
-export function _setMenus(currentSubmenu, currentMenuItem) {
+export function _setMenus(currentSubmenu: MENU_ID, currentMenuItem: MENU_ID) {
     let cursorRadius = 0;
     if (currentMenuItem in BUILDINGS.ITEMS) {
         const tiles = BUILDINGS.ITEMS[currentMenuItem];
@@ -24,7 +24,7 @@ export function _setMenus(currentSubmenu, currentMenuItem) {
 //#region THUNK ACTIONS
 
 export function selectMenu(val: IMenuState["currentSubmenu"]) {
-    return (dispatch, getState) => {
+    return (dispatch: typeof store.dispatch, getState: typeof store.getState) => {
         const state = FlatGetState({}, getState);
         let currentMenuItem = state.currentMenuItem;
         let currentSubmenu = state.currentSubmenu;
@@ -44,7 +44,7 @@ export function selectMenu(val: IMenuState["currentSubmenu"]) {
 }
 
 export function selectPrevSubmenu() {
-    return (dispatch, getState) => {
+    return (dispatch: typeof store.dispatch, getState: typeof store.getState) => {
         const state = FlatGetState({}, getState);
         if (state.currentMenuItem != null) {
             state.currentMenuItem = null;

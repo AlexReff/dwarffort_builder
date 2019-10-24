@@ -1,21 +1,7 @@
 import { Component, h } from "preact";
-import { connect } from "react-redux";
-import { ICameraState } from "../redux/camera/reducer";
-import { ReduxState } from "../redux/store";
+import { IHeaderProps, IHeaderState } from ".";
 
-interface IHeaderProps {
-    cameraZ: ICameraState["cameraZ"];
-}
-
-const mapStateToProps = (state: ReduxState) => ({
-    cameraZ: state.camera.cameraZ,
-});
-
-interface IHeaderState {
-    zLevelChanged: boolean;
-}
-
-class Header extends Component<IHeaderProps, IHeaderState> {
+export class Header extends Component<IHeaderProps, IHeaderState> {
     constructor(props: IHeaderProps) {
         super();
     }
@@ -37,5 +23,3 @@ class Header extends Component<IHeaderProps, IHeaderState> {
         );
     }
 }
-
-export default connect(mapStateToProps/*, mapDispatchToProps*/)(Header);

@@ -1,9 +1,8 @@
 import produce from "immer";
+import { ACTION_TYPE, IDiggerState, store } from "../";
 import { FLOOR_TILES, INPUT_STATE, MENU_ID } from "../../constants";
 import rng from "../../rot/rng";
-import { getMapCoord, getNeighborsOfRange } from "../../util";
-import { ACTION_TYPE, ReduxState } from "../store";
-import { IDiggerState } from "./reducer";
+import { getMapCoord } from "../../util";
 
 //#region REDUX ACTIONS
 
@@ -27,12 +26,18 @@ export function setDigData(tiles: IDiggerState["terrainTiles"]) {
 //#region THUNK ACTIONS
 
 export function submitDesignating() {
-    return (dispatch, getState: () => ReduxState) => {
+    return (dispatch: typeof store.dispatch, getState: typeof store.getState) => {
         const state = getState();
         if (state.input.inputState !== INPUT_STATE.DESIGNATING) {
             return;
         }
+
         const cameraZ = state.camera.cameraZ;
+        const startX = Math.min(state.digger.designateStartX, state.cursor.cursorX);
+        const endX = Math.max(state.digger.designateStartX, state.cursor.cursorX);
+        const startY = Math.min(state.digger.designateStartY, state.cursor.cursorY);
+        const endY = Math.max(state.digger.designateStartY, state.cursor.cursorY);
+
         const tiles = produce(state.digger.terrainTiles, (draft) => {
             let startZ = cameraZ;
             let endZ = cameraZ;
@@ -41,10 +46,6 @@ export function submitDesignating() {
                 startZ = Math.min(+cameraZ, +state.digger.designateStartZ);
                 endZ = Math.max(+cameraZ, +state.digger.designateStartZ);
             }
-            const startX = Math.min(state.digger.designateStartX, state.cursor.cursorX);
-            const endX = Math.max(state.digger.designateStartX, state.cursor.cursorX);
-            const startY = Math.min(state.digger.designateStartY, state.cursor.cursorY);
-            const endY = Math.max(state.digger.designateStartY, state.cursor.cursorY);
             for (let z = startZ; z <= endZ; z++) {
                 if (!(z in draft)) {
                     draft[z] = {};
@@ -73,25 +74,38 @@ export function submitDesignating() {
                                     userSet: true,
                                 };
                                 break;
+                            case MENU_ID.upstair:
+                            case MENU_ID.downstair:
+                            case MENU_ID.udstair:
+                            case MENU_ID.channel:
+                            case MENU_ID.upramp:
+                                draft[z][key] = {
+                                    posX: x,
+                                    posY: y,
+                                    posZ: z,
+                                    type: state.menu.currentMenuItem,
+                                    userSet: true,
+                                };
+                                break;
                         }
                     }
                 }
-                if (state.menu.currentMenuItem === MENU_ID.mine) {
-                    //create walls around designated area (if empty)
-                    const points = getNeighborsOfRange(startX, startY, endX, endY, state);
-                    for (const point of points) {
-                        const key = `${point[0]}:${point[1]}`;
-                        if (!(key in draft[z])) {
-                            draft[z][key] = {
-                                posX: point[0],
-                                posY: point[1],
-                                posZ: z,
-                                type: MENU_ID.wall,
-                                userSet: false,
-                            };
-                        }
-                    }
-                }
+                // if (state.menu.currentMenuItem === MENU_ID.mine) {
+                //     //create walls around designated area (if empty)
+                //     const points = getNeighborsOfRange(startX, startY, endX, endY, state);
+                //     for (const point of points) {
+                //         const key = `${point[0]}:${point[1]}`;
+                //         if (!(key in draft[z])) {
+                //             draft[z][key] = {
+                //                 posX: point[0],
+                //                 posY: point[1],
+                //                 posZ: z,
+                //                 type: MENU_ID.wall,
+                //                 userSet: false,
+                //             };
+                //         }
+                //     }
+                // }
             }
         });
         dispatch(setDigData(tiles));
@@ -99,7 +113,7 @@ export function submitDesignating() {
 }
 
 export function startDesignatingGrid(gridX: number, gridY: number) {
-    return (dispatch, getState: () => ReduxState) => {
+    return (dispatch: typeof store.dispatch, getState: typeof store.getState) => {
         const state = getState();
         const [x, y] = getMapCoord(gridX, gridY, state);
         dispatch(setDesignateStart(x, y, state.camera.cameraZ));

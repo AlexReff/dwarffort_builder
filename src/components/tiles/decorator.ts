@@ -1,6 +1,6 @@
 import OpenSimplexNoise from "open-simplex-noise";
 import { DEC_TILES, DEC_TILES_COLORS, IRenderTile } from "../constants";
-import { FlatReduxState } from "../redux/store";
+import { FlatReduxState } from "../redux/";
 import rng from "../rot/rng";
 import { ITileGeneratorComponent } from "./_base";
 
@@ -22,7 +22,7 @@ class Decorator implements ITileGeneratorComponent {
         return Object.values(this.decoratorTiles[state.cameraZ]);
     }
 
-    initFloor = (state: FlatReduxState) => {
+    private initFloor = (state: FlatReduxState) => {
         if (state.cameraZ in this.decoratorTiles) {
             //already populated, check to see if mapSize has expanded
             if (state.mapHeight <= this.decoratorMaxSizes[state.cameraZ].y &&
@@ -50,7 +50,7 @@ class Decorator implements ITileGeneratorComponent {
         this.decoratorMaxSizes[state.cameraZ] = { x: state.mapWidth, y: state.mapHeight };
     }
 
-    getRandomDecoratorTile = (x: number, y: number): IRenderTile => {
+    private getRandomDecoratorTile = (x: number, y: number): IRenderTile => {
         const char = `z${rng.getUniformInt(0, DEC_TILES.length - 1)}`;
         const color = DEC_TILES_COLORS[rng.getUniformInt(0, DEC_TILES_COLORS.length - 1)];
         return {

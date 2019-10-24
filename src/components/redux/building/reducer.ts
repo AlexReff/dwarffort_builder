@@ -1,10 +1,11 @@
 import { produce } from "immer";
-import { MENU_ID } from "../../constants/";
-import { ACTION_TYPE } from "../store";
+import { AnyAction } from "redux";
+import { ACTION_TYPE } from "../";
+import { IBuildingTile } from "../../constants/";
 
 export interface IBuildingState {
-    buildingTiles: Record<string, Record<string, IBuildingTile>>;
-    buildingPositions: Record<string, Record<string, string>>;
+    buildingTiles: { [key: string]: { [key: string]: IBuildingTile } };
+    buildingPositions: { [key: string]: { [key: string]: string } };
     buildPlaceWidth: number;
     buildPlaceHeight: number;
 }
@@ -16,15 +17,7 @@ const initialState: IBuildingState = {
     buildPlaceHeight: 1,
 };
 
-export interface IBuildingTile {
-    posX: number;
-    posY: number;
-    posZ: number;
-    key: MENU_ID;
-    characterVariant?: string;
-}
-
-export default (state: IBuildingState = initialState, action) => {
+export default (state: IBuildingState = initialState, action: AnyAction) => {
     switch (action.type) {
         case ACTION_TYPE.SET_BUILDINGS:
         case ACTION_TYPE.MOVE_INSPECT_BUILDINGS: {
@@ -65,7 +58,7 @@ export default (state: IBuildingState = initialState, action) => {
                 });
                 state.buildingPositions = produce(state.buildingPositions, (draft) => {
                     for (const key of Object.keys(draft[action.cameraZ])) {
-                        if (action.targets.some((m) => m === draft[action.cameraZ][key])) {
+                        if (action.targets.some((m: string) => m === draft[action.cameraZ][key])) {
                             delete draft[action.cameraZ][key];
                         }
                     }

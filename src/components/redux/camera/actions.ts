@@ -1,5 +1,6 @@
 import { TILE_H, TILE_W } from "../../constants";
-import { ACTION_TYPE, ReduxState } from "../store";
+import { setCursorPos } from "../cursor/actions";
+import { ACTION_TYPE, ReduxState, store } from "../store";
 
 //#region REDUX ACTIONS
 
@@ -28,18 +29,11 @@ export function setMapSize(mapWidth: number, mapHeight: number, gridWidth: numbe
     };
 }
 
-export function setGridBounds(bounds: ReturnType<HTMLElement["getBoundingClientRect"]>) {
-    return {
-        type: ACTION_TYPE.SET_GRID_BOUNDS,
-        bounds,
-    };
-}
-
 //#endregion
 //#region THUNK ACTIONS
 
 export function resizeWindow(container: HTMLElement) {
-    return (dispatch, getState) => {
+    return (dispatch: typeof store.dispatch, getState: typeof store.getState) => {
         const state: ReduxState = getState();
 
         const gridWidth = Math.floor(container.offsetWidth / TILE_W);
@@ -48,7 +42,10 @@ export function resizeWindow(container: HTMLElement) {
         const mapWidth = Math.max(state.camera.mapWidth, gridWidth);
         const mapHeight = Math.max(state.camera.mapHeight, gridHeight);
 
+        //increase grid/map sizes if necessary
         dispatch(setMapSize(mapWidth, mapHeight, gridWidth, gridHeight));
+        //ensure camera is updated to include cursor position
+        dispatch(setCursorPos(state.cursor.cursorX, state.cursor.cursorY));
     };
 }
 

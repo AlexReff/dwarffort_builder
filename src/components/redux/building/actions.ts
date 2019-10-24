@@ -1,9 +1,8 @@
 import produce from "immer";
-import { BUILDINGS } from "../../constants";
+import { ACTION_TYPE, IBuildingState, IInspectState, ReduxState } from "../";
+import { BUILDING_KEYS, BUILDINGS } from "../../constants";
 import { isBuildingPlaceable, updateWallNeighbors } from "../../util";
-import { IInspectState } from "../inspect/reducer";
-import { ACTION_TYPE, ReduxState } from "../store";
-import { IBuildingState } from "./reducer";
+import { store } from "../store";
 
 //#region REDUX ACTIONS
 
@@ -60,7 +59,7 @@ export function decreasePlaceBuildHeight(count: number = 1) {
 //#region THUNK ACTIONS
 
 export function placeCursorBuilding(mapX?: number, mapY?: number) {
-    return (dispatch, getState: () => ReduxState) => {
+    return (dispatch: typeof store.dispatch, getState: typeof store.getState) => {
         const state = getState();
         if (!(state.menu.currentMenuItem in BUILDINGS.ITEMS)) {
             return;
@@ -111,7 +110,7 @@ export function placeCursorBuilding(mapX?: number, mapY?: number) {
                         posX: centerX,
                         posY: centerY,
                         posZ: cameraZ,
-                        key: state.menu.currentMenuItem,
+                        key: state.menu.currentMenuItem as BUILDING_KEYS,
                     };
                 }
             }

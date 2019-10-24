@@ -1,12 +1,12 @@
+import { FlatGetState, FlatReduxState, store } from "./";
 import { IBuildingState } from "./building/reducer";
 import { ICameraState } from "./camera/reducer";
 import { ICursorState } from "./cursor/reducer";
 import { IDiggerState } from "./digger/reducer";
+import { IInputState } from "./input/reducer";
 import { IInspectState } from "./inspect/reducer";
 import { IMenuState } from "./menu/reducer";
 import { ISettingsState } from "./settings/reducer";
-import store, { FlatReduxState, FlatGetState } from "./store";
-import { IInputState } from "./input/reducer";
 
 export class ReduxVariables implements FlatReduxState {
     //building
@@ -38,7 +38,7 @@ export class ReduxVariables implements FlatReduxState {
     shiftDown: IInputState["shiftDown"];
     //inspect
     inspectedBuildings: IInspectState["inspectedBuildings"];
-    hoverInspectBuildings: IInspectState["hoverInspectBuildings"];
+    highlightedBuildings: IInspectState["highlightedBuildings"];
     //menu
     currentSubmenu: IMenuState["currentSubmenu"];
     currentMenuItem: IMenuState["currentMenuItem"];

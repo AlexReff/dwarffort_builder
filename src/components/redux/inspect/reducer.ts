@@ -3,12 +3,12 @@ import { ACTION_TYPE } from "../store";
 
 export interface IInspectState {
     inspectedBuildings: string[];
-    hoverInspectBuildings: string[];
+    highlightedBuildings: string[];
 }
 
 const initialState: IInspectState = {
     inspectedBuildings: [],
-    hoverInspectBuildings: [],
+    highlightedBuildings: [],
 };
 
 export default (state = initialState, action: AnyAction) => {
@@ -39,11 +39,21 @@ export default (state = initialState, action: AnyAction) => {
         }
         case ACTION_TYPE.SET_ZLEVEL: {
             state.inspectedBuildings = [];
+            break;
         }
         case ACTION_TYPE.DELETE_BUILDINGS: {
             state.inspectedBuildings = state.inspectedBuildings.filter((val) => {
-                return !action.targets.some((m) => m === val);
+                return !action.targets.some((m: string) => m === val);
             });
+            break;
+        }
+        case ACTION_TYPE.HIGHLIGHT_BUILDINGS: {
+            state.highlightedBuildings = action.items;
+            break;
+        }
+        case ACTION_TYPE.HIGHLIGHT_BUILDINGS_CLEAR: {
+            state.highlightedBuildings = [];
+            break;
         }
     }
     return state;

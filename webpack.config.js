@@ -2,7 +2,6 @@ const path = require("path");
 const HtmlWebpackPlugin = require("html-webpack-plugin");
 const MiniCssExtractPlugin = require("mini-css-extract-plugin");
 const CopyPlugin = require("copy-webpack-plugin");
-const LodashModuleReplacementPlugin = require('lodash-webpack-plugin');
 const TerserPlugin = require('terser-webpack-plugin');
 
 module.exports = (env, argv) => {
@@ -87,9 +86,6 @@ module.exports = (env, argv) => {
             hints: false
         },
         plugins: [
-            new LodashModuleReplacementPlugin({
-                collections: true,
-            }),
             new HtmlWebpackPlugin({
                 template: "./src/index.html"
             }),
@@ -102,8 +98,9 @@ module.exports = (env, argv) => {
         ],
         resolve: {
             alias: {
-                'react': 'preact/compat',
-                'react-dom': 'preact/compat',
+                "react": "preact/compat",
+                "react-dom/test-utils": "preact/test-utils",
+                "react-dom": "preact/compat",
             },
             extensions: [".ts", ".tsx", ".js", ".scss"]
         }

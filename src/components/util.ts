@@ -1,7 +1,6 @@
 import { IRenderTile, MENU_ID, Point, TILE_H, TILE_W, WALL_TILES } from "./constants";
 import { Game } from "./game";
-import { IBuildingState } from "./redux/building/reducer";
-import store, { FlatGetState, FlatReduxState, ReduxState } from "./redux/store";
+import { FlatGetState, FlatReduxState, IBuildingState, ReduxState, store } from "./redux/";
 import rng from "./rot/rng";
 
 export const renderTile = (_this: Game, tile: IRenderTile) => {
@@ -106,13 +105,21 @@ export const getNeighborsOfRange = (
     startY: number,
     endX: number,
     endY: number,
-    state: ReduxState,
+    state: ReduxState | FlatReduxState,
 ): Point[] => {
     const dict = {};
+    let mapWidth, mapHeight;
+    if (isFlatReduxState(state)) {
+        mapHeight = state.mapHeight;
+        mapWidth = state.mapWidth;
+    } else {
+        mapHeight = state.camera.mapHeight;
+        mapWidth = state.camera.mapWidth;
+    }
     if (startY > 0) {
         //add 'top'
         const xStart = Math.max(startX - 1, 0);
-        const xStop = Math.min(endX + 1, state.camera.mapWidth - 1);
+        const xStop = Math.min(endX + 1, mapWidth - 1);
         for (let x = xStart; x <= xStop; x++) {
             dict[`${x}:${startY - 1}`] = [x, startY - 1];
         }
@@ -120,23 +127,23 @@ export const getNeighborsOfRange = (
     if (startX > 0) {
         //add 'left'
         const yStart = Math.max(startY - 1, 0);
-        const yStop = Math.min(endY + 1, state.camera.mapHeight - 1);
+        const yStop = Math.min(endY + 1, mapHeight - 1);
         for (let y = yStart; y <= yStop; y++) {
             dict[`${startX - 1}:${y}`] = [startX - 1, y];
         }
     }
-    if (endY + 1 < state.camera.mapHeight) {
+    if (endY + 1 < mapHeight) {
         //add 'bot'
         const xStart = Math.max(startX - 1, 0);
-        const xStop = Math.min(endX + 1, state.camera.mapWidth - 1);
+        const xStop = Math.min(endX + 1, mapWidth - 1);
         for (let x = xStart; x <= xStop; x++) {
             dict[`${x}:${endY + 1}`] = [x, endY + 1];
         }
     }
-    if (endX + 1 < state.camera.mapWidth) {
+    if (endX + 1 < mapWidth) {
         //add 'right'
         const yStart = Math.max(startY - 1, 0);
-        const yStop = Math.min(endY + 1, state.camera.mapHeight - 1);
+        const yStop = Math.min(endY + 1, mapHeight - 1);
         for (let y = yStart; y <= yStop; y++) {
             dict[`${endX + 1}:${y}`] = [endX + 1, y];
         }
@@ -247,8 +254,8 @@ export function getWallNeighborFlags(
     return result;
 }
 
-export function debounce(func, wait, immediate) {
-    let timeout;
+export function debounce(func: (...args: any[]) => any, wait: number, immediate: boolean) {
+    let timeout: any;
     return () => {
         const context = this, args = arguments;
         const callNow = immediate && !timeout;

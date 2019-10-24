@@ -2,47 +2,42 @@
 import { Component, h, render } from "preact";
 import { Provider } from "react-redux";
 //components
-import { HEADER_H, MENU_W, TILE_URL, TILE_W } from "./components/constants";
+import { HEADER_H, MENU_W, TILE_H, TILE_URL, TILE_W } from "./components/constants";
 import { Game } from "./components/game";
-import DebugMenu from "./components/react/debug";
-import Footer from "./components/react/footer";
-import Header from "./components/react/header";
-import GameHighlighter from "./components/react/highlighter";
-import Menu from "./components/react/menu";
-import { resizeWindow } from "./components/redux/camera/actions";
-import { Initialize } from "./components/redux/settings/actions";
-import store from "./components/redux/store";
+import DebugMenu from "./components/react/debug/";
+import Footer from "./components/react/footer/";
+import Header from "./components/react/header/";
+import Highlighter from "./components/react/highlighter/";
+import Menu from "./components/react/menu/";
+import { Initialize, resizeWindow, store } from "./components/redux/";
 import { debounce } from "./components/util";
 
 require("./css/index.scss");
 
 interface IFortressDesignerState {
-    gridColumnLayout: number;
-    gridRowLayout: number;
-    // windowResizing: boolean;
-    // gameLoading: boolean;
+    gameLoading: boolean;
 }
 
 class FortressDesigner extends Component<{}, IFortressDesignerState> {
     private gridElement: HTMLElement;
     private tileSheetImage: HTMLImageElement;
     private game: Game;
+    private lastGridTemplateRow: number;
+    private lastGridTemplateCol: number;
 
     constructor() {
         super();
 
+        this.lastGridTemplateRow = 0;
+        this.lastGridTemplateCol = 0;
+
         this.setState({
-            // windowResizing: false,
-            // gameLoading: true,
-            gridColumnLayout: 0,
-            gridRowLayout: 0,
+            gameLoading: true,
         });
     }
 
     componentDidMount = () => {
         this.gridElement = document.getElementById("grid");
-
-        this.updateWrapperCss();
 
         this.tileSheetImage = new Image();
         this.tileSheetImage.crossOrigin = "Anonymous";
@@ -55,7 +50,7 @@ class FortressDesigner extends Component<{}, IFortressDesignerState> {
 
         store.dispatch(Initialize(this.gridElement));
 
-        this.tileSheetImage.src = TILE_URL; //to ensure onload runs at end
+        this.tileSheetImage.src = TILE_URL; //keep this as last line to ensure onload runs after rest of code
     }
 
     initGame = () => {
@@ -65,9 +60,9 @@ class FortressDesigner extends Component<{}, IFortressDesignerState> {
             this.game.restart();
         }
 
-        // this.setState({
-        //     gameLoading: false,
-        // });
+        this.setState({
+            gameLoading: false,
+        });
     }
 
     destroyGame = () => {
@@ -76,11 +71,12 @@ class FortressDesigner extends Component<{}, IFortressDesignerState> {
         }
 
         this.game.destroy();
-        // this.game = null;
 
-        // this.setState({
-        //     gameLoading: true,
-        // });
+        this.setState({
+            gameLoading: true,
+        });
+
+        // this.game = null;
     }
 
     componentWillUnmount = () => {
@@ -91,24 +87,18 @@ class FortressDesigner extends Component<{}, IFortressDesignerState> {
 
     setWindowResizing = () => {
         this.destroyGame();
-        // this.setState({
-        //     windowResizing: true,
-        // });
     }
 
     endWindowResizing = () => {
-        this.updateWrapperCss(() => {
-            store.dispatch(resizeWindow(this.gridElement));
-            this.initGame();
-            // this.setState({ windowResizing: false });
-        });
+        store.dispatch(resizeWindow(this.gridElement));
+        this.initGame();
     }
 
     // tslint:disable-next-line: member-ordering
-    windowResizeBouncer = debounce(this.setWindowResizing, 300, { leading: true, trailing: false });
+    windowResizeBouncer = debounce(this.setWindowResizing, 300, true);
 
     // tslint:disable-next-line: member-ordering
-    windowResizeEndBouncer = debounce(this.endWindowResizing, 400, { leading: false, trailing: true });
+    windowResizeEndBouncer = debounce(this.endWindowResizing, 400, false);
 
     handleWindowResize = () => {
         this.windowResizeBouncer();
@@ -117,42 +107,40 @@ class FortressDesigner extends Component<{}, IFortressDesignerState> {
 
     //#endregion
 
-    //#region wrapper CSS
-    updateWrapperCss = (callback?: () => void) => {
-        this.setState({
-            gridColumnLayout: null,
-            gridRowLayout: null,
-        }, () => {
-            //update the grid's width in css to divisible by grid
-            const wOff = (this.gridElement.offsetWidth + this.state.gridColumnLayout) % TILE_W;
-            const hOff = (this.gridElement.offsetHeight + this.state.gridRowLayout) % TILE_W;
-            this.setState({
-                gridColumnLayout: wOff,
-                gridRowLayout: hOff,
-            }, callback);
-        });
+    getWrapperCss = () => {
+        if (this.state.gameLoading) {
+            this.lastGridTemplateRow = 0;
+            this.lastGridTemplateCol = 0;
+            return {};
+        }
+
+        this.lastGridTemplateCol = (this.gridElement.offsetWidth - this.lastGridTemplateCol) % TILE_W;
+        this.lastGridTemplateRow = (this.gridElement.offsetHeight - this.lastGridTemplateRow) % TILE_H;
+
+        return {
+            gridTemplateColumns: `1fr ${(MENU_W + this.lastGridTemplateCol).toString()}px`,
+            gridTemplateRows: `${HEADER_H.toString()}px 1fr ${(HEADER_H + this.lastGridTemplateRow).toString()}px`,
+        };
     }
 
-    getWrapperCss = () => {
-        if (this.state.gridColumnLayout != null && this.state.gridRowLayout != null) {
+    getCenterCss = () => {
+        if (this.lastGridTemplateRow === 0 && this.lastGridTemplateCol === 0) {
             return {
-                gridTemplateColumns: `1fr ${(MENU_W + this.state.gridColumnLayout).toString()}px`,
-                gridTemplateRows: `${HEADER_H.toString()}px 1fr ${(HEADER_H + this.state.gridRowLayout).toString()}px`,
+                margin: "auto 0",
             };
         }
-        return null;
+        return {};
     }
-    //#endregion
 
-    render(props, state: IFortressDesignerState) {
+    render(props: any, state: IFortressDesignerState) {
         return (
             <div id="page">
-                <GameHighlighter />
+                <Highlighter />
                 <DebugMenu />
                 <div id="wrapper" style={this.getWrapperCss()}>
                     <div id="header">
                         <div class="left"><a class="home-link" href="https://reff.dev/">reff.dev</a></div>
-                        <div class="center">
+                        <div class="center" style={this.getCenterCss()}>
                             <a href="/" class="title">Fortress Designer</a>
                         </div>
                         <div class="right">

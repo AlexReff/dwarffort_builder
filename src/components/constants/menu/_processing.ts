@@ -7,7 +7,7 @@ import { BUILDING_KEYS } from "./_data";
 
 export const MENU: {
     ITEMS: Record<MENU_KEYS, IMenuItem>,
-    KEYS: Record<string, IMenuItem>,
+    KEYS: { [key: string]: IMenuItem },
     SUBMENUS: Record<MENU_ID, IMenuItem[]>,
 } = {
     ITEMS: MENU_DATA,
@@ -44,7 +44,7 @@ export const BUILDINGS: {
     /** Keys == 'id' */
     ITEMS: Record<BUILDING_KEYS, IMenuItem>,
     /** Keys == 'hotkey:path:full' */
-    KEYS: Record<string, IMenuItem>,
+    KEYS: { [key: string]: IMenuItem },
     /** Keys == submenu ids */
     SUBMENUS: Record<BUILDING_KEYS, IMenuItem[]>,
 } = {

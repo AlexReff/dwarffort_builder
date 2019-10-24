@@ -1,5 +1,5 @@
 import { IRenderTile } from "../constants";
-import { FlatReduxState } from "../redux/store";
+import { FlatReduxState } from "../redux/";
 
 export interface ITileGeneratorComponent {
     /** Returns all tiles for the current z-level */

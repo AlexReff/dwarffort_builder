@@ -11,7 +11,6 @@ const presets = [
 
 const plugins = [
     "@babel/plugin-proposal-class-properties",
-    "lodash"
 ];
 
 const ignore = [

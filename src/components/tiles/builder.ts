@@ -1,16 +1,16 @@
-import { BUILDINGS, IBuildingTileData, IRenderTile, MENU_ID } from "../constants";
-import { FlatReduxState } from "../redux/store";
+import { BUILDING_KEYS, BUILDINGS, IBuildingTileData, IRenderTile, MENU_ID } from "../constants";
+import { FlatReduxState } from "../redux/";
 import { ITileGeneratorComponent } from "./_base";
 
 export class Builder implements ITileGeneratorComponent {
     getTiles = (state: FlatReduxState): IRenderTile[] => {
-        const result = [];
+        const result: IRenderTile[] = [];
         if (!(state.cameraZ in state.buildingTiles)) {
             return result;
         }
         for (const key of Object.keys(state.buildingTiles[state.cameraZ])) {
             const tile = state.buildingTiles[state.cameraZ][key];
-            const bldg = BUILDINGS.ITEMS[tile.key];
+            const bldg = BUILDINGS.ITEMS[tile.key as BUILDING_KEYS];
             if (bldg == null) {
                 continue;
             }
@@ -21,7 +21,7 @@ export class Builder implements ITileGeneratorComponent {
             const endY = tile.posY + range;
             for (let y = startY, iy = 0; y <= endY; y++ && iy++) {
                 for (let x = startX, ix = 0; x <= endX; x++ && ix++) {
-                    const trgTile: IBuildingTileData = bldg.tiles[iy][ix];
+                    const trgTile = bldg.tiles[iy][ix];
                     if (trgTile == null || trgTile.char == null) {
                         continue; //no building character to place here
                     }
@@ -29,10 +29,8 @@ export class Builder implements ITileGeneratorComponent {
                         result.push({
                             x,
                             y,
-                            //char: ["f0", `wx${tile.characterVariant}`],
                             char: ["f0", `w${tile.characterVariant}`],
                             color: ["rgba(50, 50, 50, .2)", "transparent"],
-                            //bg,
                         });
                     } else {
                         let color = trgTile.fg;
