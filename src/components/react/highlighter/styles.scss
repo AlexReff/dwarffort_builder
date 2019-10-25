@@ -4,6 +4,20 @@ $toolbar_z: 3;
 $individual_inspect_z: 2;
 $all_inspect_z: 1;
 
+#highlighter {
+    box-sizing: border-box;
+    position: absolute;
+    z-index: 2;
+    pointer-events: none;
+    border: 1px solid rgba(0,128,0,.7);
+    display: none;
+    transition: .1s ease all;
+
+    &.active {
+        display: inline-block;
+    }
+}
+
 .building_inspect {
     position: absolute;
     display: block;

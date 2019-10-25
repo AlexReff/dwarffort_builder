@@ -131,6 +131,10 @@ export class Menu extends Component<IMenuProps, IGameMenuState> {
                 {Object.keys(listItems).map((m) => (
                     <div class={"entry" + (this.state.expandedToolbarItems.some((n) => m === n) ? " expanded" : "")}>
                         <div class="entry_title">
+                            <a href="#"
+                                title={listItems[m].length > 1 ? "Delete Buildings" : "Delete Building"}
+                                class="entry_delete"
+                                onClick={(e) => this.handleDeleteClick(e, listItems[m])}><i class="far fa-times-circle"></i></a>
                             <a class={"entry_name" + (listItems[m].length > 1 ? " has_multi" : "")} href="#"
                                 onMouseEnter={(e) => this.handleInspectHoverEnter(e, listItems[m])}
                                 onMouseLeave={this.handleInspectHoverLeave}
@@ -141,19 +145,21 @@ export class Menu extends Component<IMenuProps, IGameMenuState> {
                                 {listItems[m].length > 1 ?
                                     <span>(x{listItems[m].length})</span>
                                     : null}
+                                {Object.values(this.props.buildingTiles[this.props.cameraZ]).filter((tile) => tile.key === m).length > 1 ?
+                                    <a href="#"
+                                        title={`Select All ${BUILDINGS.ITEMS[m as BUILDING_KEYS].text}`}
+                                        class="entry_select_all"
+                                        onClick={(e) => this.handleSelectAllClick(e, m)}><i class="fas fa-object-group"></i></a>
+                                    : null}
                             </a>
-                            <a href="#"
-                                title="Delete Building(s)"
-                                class="entry_delete"
-                                onClick={(e) => this.handleDeleteClick(e, listItems[m])}>&times;</a>
                         </div>
-                        <div class="entry_options">
-                            {/* <a href="#">X Clone</a> */}
+                        {/* <div class="entry_options">
+                            <a href="#">X Clone</a>
                             <ul>
                                 <li><a href="#" onClick={(e) => this.handleSelectAllClick(e, m)}>Select All</a></li>
-                                {/* <li><a href="#" onClick={(e) => this.handleDeleteClick(e, listItems[m])}>Delete</a></li> */}
+                                <li><a href="#" onClick={(e) => this.handleDeleteClick(e, listItems[m])}>Delete</a></li>
                             </ul>
-                        </div>
+                        </div> */}
                         {listItems[m].length > 1 ?
                             <div class="entry_singles">
                                 {listItems[m].map((key) => {
