@@ -1,39 +1,33 @@
 import OpenSimplexNoise from "open-simplex-noise";
+import { RenderTileState } from ".";
 import { DEC_TILES, DEC_TILES_COLORS, IRenderTile } from "../constants";
-import { FlatReduxState } from "../redux/";
 import rng from "../rot/rng";
-import { ITileGeneratorComponent } from "./_base";
 
-class Decorator implements ITileGeneratorComponent {
-    /** Key: zLevel */
-    decoratorTiles: { [key: string]: { [key: string]: IRenderTile } };
-    /** Used for tracking grid resizes | Key: zLevel */
-    decoratorMaxSizes: { [key: string]: { x: number, y: number } };
-    noiseMaps: { [key: string]: OpenSimplexNoise };
+/** Key: zLevel */
+const decoratorTiles: { [key: string]: { [key: string]: IRenderTile } } = {};
+/** Used for tracking grid resizes | Key: zLevel */
+const decoratorMaxSizes: { [key: string]: { x: number, y: number } } = {};
+const noiseMaps: { [key: string]: OpenSimplexNoise } = {};
 
-    constructor() {
-        this.decoratorTiles = {};
-        this.decoratorMaxSizes = {};
-        this.noiseMaps = {};
-    }
+const getRandomDecoratorTile = (x: number, y: number): IRenderTile => {
+    const char = `z${rng.getUniformInt(0, DEC_TILES.length - 1)}`;
+    const color = DEC_TILES_COLORS[rng.getUniformInt(0, DEC_TILES_COLORS.length - 1)];
+    return {
+        x,
+        y,
+        char,
+        color,
+    };
+};
 
-    getTiles = (state: FlatReduxState) => {
-        this.initFloor(state);
-        return Object.values(this.decoratorTiles[state.cameraZ]);
-    }
-
-    private initFloor = (state: FlatReduxState) => {
-        if (state.cameraZ in this.decoratorTiles) {
-            //already populated, check to see if mapSize has expanded
-            if (state.mapHeight <= this.decoratorMaxSizes[state.cameraZ].y &&
-                state.mapWidth <= this.decoratorMaxSizes[state.cameraZ].x) {
-                return;
-            }
+export const getDecoratorTiles = (state: RenderTileState) => {
+    if (!(state.cameraZ in decoratorTiles) ||
+        state.mapHeight > decoratorMaxSizes[state.cameraZ].y ||
+        state.mapWidth > decoratorMaxSizes[state.cameraZ].x) {
+        if (!(state.cameraZ in noiseMaps)) {
+            noiseMaps[state.cameraZ] = new OpenSimplexNoise(Date.now() * rng.getUniform());
         }
-        if (!(state.cameraZ in this.noiseMaps)) {
-            this.noiseMaps[state.cameraZ] = new OpenSimplexNoise(Date.now() * rng.getUniform());
-        }
-        const noiseMap = this.noiseMaps[state.cameraZ].array2D(state.mapWidth, state.mapHeight).map((e) => {
+        const noiseMap = noiseMaps[state.cameraZ].array2D(state.mapWidth, state.mapHeight).map((e) => {
             return e.map((x) => {
                 return Math.floor(((x + 1.0) / 2.0) * 100.0);
             });
@@ -42,24 +36,13 @@ class Decorator implements ITileGeneratorComponent {
         for (let x = 0; x < noiseMap.length; x++) {
             for (let y = 0; y < noiseMap[x].length; y++) {
                 if (noiseMap[x][y] <= 15) {
-                    bucket[`${x}:${y}`] = this.getRandomDecoratorTile(x, y);
+                    bucket[`${x}:${y}`] = getRandomDecoratorTile(x, y);
                 }
             }
         }
-        this.decoratorTiles[state.cameraZ] = bucket;
-        this.decoratorMaxSizes[state.cameraZ] = { x: state.mapWidth, y: state.mapHeight };
+        decoratorTiles[state.cameraZ] = bucket;
+        decoratorMaxSizes[state.cameraZ] = { x: state.mapWidth, y: state.mapHeight };
     }
 
-    private getRandomDecoratorTile = (x: number, y: number): IRenderTile => {
-        const char = `z${rng.getUniformInt(0, DEC_TILES.length - 1)}`;
-        const color = DEC_TILES_COLORS[rng.getUniformInt(0, DEC_TILES_COLORS.length - 1)];
-        return {
-            x,
-            y,
-            char,
-            color,
-        };
-    }
-}
-
-export default Decorator;
+    return Object.values(decoratorTiles[state.cameraZ]);
+};

@@ -1,5 +1,5 @@
+import { ACTION_TYPE, FlatGetState, store } from "../";
 import { BUILDINGS, MENU, MENU_ID } from "../../constants";
-import { ACTION_TYPE, FlatGetState, store } from "../store";
 import { IMenuState } from "./reducer";
 
 //#region REDUX ACTIONS
@@ -13,7 +13,7 @@ export function _setMenus(currentSubmenu: MENU_ID, currentMenuItem: MENU_ID) {
         }
     }
     return {
-        type: ACTION_TYPE.SET_MENU,
+        type: ACTION_TYPE.SET_MENU as const,
         currentSubmenu,
         currentMenuItem,
         cursorRadius,

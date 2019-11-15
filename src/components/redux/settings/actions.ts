@@ -1,5 +1,5 @@
+import { ACTION_TYPE } from "../";
 import { DEFAULTS, TILE_H, TILE_W } from "../../constants";
-import { ACTION_TYPE } from "../store";
 
 //#region REDUX ACTIONS
 
@@ -19,7 +19,7 @@ export function Initialize(container: HTMLElement) {
     const gridBounds = container.getBoundingClientRect();
 
     return {
-        type: ACTION_TYPE.INITIALIZE,
+        type: ACTION_TYPE.INITIALIZE as const,
         gridWidth,
         gridHeight,
         mapWidth,
@@ -34,13 +34,7 @@ export function Initialize(container: HTMLElement) {
 
 export const toggleAnimation = () => {
     return {
-        type: ACTION_TYPE.ANIMATION_TOGGLE,
-    };
-};
-
-export const toggleDebugMode = () => {
-    return {
-        type: ACTION_TYPE.DEBUG_TOGGLE,
+        type: ACTION_TYPE.ANIMATION_TOGGLE as const,
     };
 };
 

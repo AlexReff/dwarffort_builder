@@ -1,4 +1,4 @@
-import { BUILDING_KEYS, IMenuItem, MENU_ID } from ".";
+import { BUILDING_KEYS, MENU_ID } from ".";
 
 export type Point = [number, number];
 

@@ -1,6 +1,5 @@
-import { AnyAction } from "redux";
+import { ACTION_TYPE, NON_THUNK_ACTIONS } from "../";
 import { IMenuItem, MENU_ID } from "../../constants";
-import { ACTION_TYPE } from "../store";
 
 export interface IMenuState {
     currentSubmenu: IMenuItem["id"];
@@ -12,7 +11,7 @@ const initialState: IMenuState = {
     currentMenuItem: null,
 };
 
-export default (state = initialState, action: AnyAction) => {
+export default (state = initialState, action: NON_THUNK_ACTIONS) => {
     switch (action.type) {
         case ACTION_TYPE.SET_MENU: {
             state.currentMenuItem = action.currentMenuItem;
@@ -21,7 +20,7 @@ export default (state = initialState, action: AnyAction) => {
         }
         case ACTION_TYPE.SET_BUILDINGS:
         case ACTION_TYPE.DESIGNATE_SET_TILES: {
-            state.currentMenuItem = null;
+            // state.currentMenuItem = null;
             break;
         }
         case ACTION_TYPE.ADD_INSPECT_BUILDING:

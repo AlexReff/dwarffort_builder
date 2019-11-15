@@ -1,6 +1,5 @@
-import { AnyAction } from "redux";
+import { ACTION_TYPE, NON_THUNK_ACTIONS } from "../";
 import { BUILDINGS, INPUT_STATE, MENU, MENU_ID } from "../../constants";
-import { ACTION_TYPE } from "../store";
 
 export interface IInputState {
     inputState: INPUT_STATE;
@@ -12,7 +11,7 @@ const initialState: IInputState = {
     shiftDown: false,
 };
 
-export default (state = initialState, action: AnyAction) => {
+export default (state = initialState, action: NON_THUNK_ACTIONS) => {
     switch (action.type) {
         case ACTION_TYPE.SET_MENU: {
             if (action.currentMenuItem != null &&

@@ -56,46 +56,6 @@ canvas {
     display: block;
 }
 
-#debug-menu {
-    position: fixed;
-    top: $header-height-px;
-    left: 0;
-    width: calc(100% - #{$menu-width}px);
-    height: calc(100vh - #{$header-height * 2}px);
-    background: #000;
-    display: none;
-    overflow-x: hidden;
-    overflow-y: auto;
-    z-index: 999;
-
-    &.active {
-        display: block;
-    }
-
-    .chars {
-        padding: 2px;
-        font-size: 16px;
-        border: 0;
-        outline: 0;
-
-        .row {
-            width: 20%;
-            display: inline-block;
-            margin-bottom: 2px;
-
-            > div {
-                display: inline-block;
-                width: 45%;
-
-                &:first-child {
-                    text-align: right;
-                    padding-right: 8%;
-                }
-            }
-        }
-    }
-}
-
 #grid {
     overflow: hidden;
     user-select: none;
@@ -117,7 +77,7 @@ canvas {
     }
 }
 
-@import "../components/react/menu/styles.scss";
-@import "../components/react/header/styles.scss";
-@import "../components/react/highlighter/styles.scss";
 @import "../components/react/footer/styles.scss";
+@import "../components/react/header/styles.scss";
+@import "../components/react/input/styles.scss";
+@import "../components/react/menu/styles.scss";

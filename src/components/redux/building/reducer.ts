@@ -1,6 +1,5 @@
 import { produce } from "immer";
-import { AnyAction } from "redux";
-import { ACTION_TYPE } from "../";
+import { ACTION_TYPE, NON_THUNK_ACTIONS } from "../";
 import { IBuildingTile } from "../../constants/";
 
 export interface IBuildingState {
@@ -17,7 +16,7 @@ const initialState: IBuildingState = {
     buildPlaceHeight: 1,
 };
 
-export default (state: IBuildingState = initialState, action: AnyAction) => {
+export default (state: IBuildingState = initialState, action: NON_THUNK_ACTIONS) => {
     switch (action.type) {
         case ACTION_TYPE.SET_BUILDINGS:
         case ACTION_TYPE.MOVE_INSPECT_BUILDINGS: {
@@ -25,8 +24,7 @@ export default (state: IBuildingState = initialState, action: AnyAction) => {
             state.buildingPositions = action.buildingPositions;
             break;
         }
-        case ACTION_TYPE.SET_MENU:
-        case ACTION_TYPE.SELECT_PREV_MENU: {
+        case ACTION_TYPE.SET_MENU: {
             state.buildPlaceWidth = 1;
             state.buildPlaceHeight = 1;
             break;

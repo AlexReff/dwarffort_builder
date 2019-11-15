@@ -1,12 +1,12 @@
+import { ACTION_TYPE, ReduxState, store } from "../";
 import { TILE_H, TILE_W } from "../../constants";
-import { setCursorPos } from "../cursor/actions";
-import { ACTION_TYPE, ReduxState, store } from "../store";
+import { moveCursorToPos, setCursorPos } from "../cursor/actions";
 
 //#region REDUX ACTIONS
 
 export function setCameraPos(x: number, y: number) {
     return {
-        type: ACTION_TYPE.SET_CAMERA_POS,
+        type: ACTION_TYPE.SET_CAMERA_POS as const,
         x,
         y,
     };
@@ -14,14 +14,14 @@ export function setCameraPos(x: number, y: number) {
 
 export function setCameraZ(z: number) {
     return {
-        type: ACTION_TYPE.SET_ZLEVEL,
+        type: ACTION_TYPE.SET_ZLEVEL as const,
         z,
     };
 }
 
 export function setMapSize(mapWidth: number, mapHeight: number, gridWidth: number, gridHeight: number) {
     return {
-        type: ACTION_TYPE.SET_MAP_SIZE,
+        type: ACTION_TYPE.SET_MAP_SIZE as const,
         mapWidth,
         mapHeight,
         gridWidth,
@@ -45,7 +45,7 @@ export function resizeWindow(container: HTMLElement) {
         //increase grid/map sizes if necessary
         dispatch(setMapSize(mapWidth, mapHeight, gridWidth, gridHeight));
         //ensure camera is updated to include cursor position
-        dispatch(setCursorPos(state.cursor.cursorX, state.cursor.cursorY));
+        dispatch(moveCursorToPos(state.cursor.cursorX, state.cursor.cursorY));
     };
 }
 

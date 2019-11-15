@@ -3,12 +3,13 @@ import { ACTION_TYPE, IDiggerState, store } from "../";
 import { FLOOR_TILES, INPUT_STATE, MENU_ID } from "../../constants";
 import rng from "../../rot/rng";
 import { getMapCoord } from "../../util";
+import { FlatGetState } from "../helpers";
 
 //#region REDUX ACTIONS
 
 export function setDesignateStart(x: number, y: number, z: number) {
     return {
-        type: ACTION_TYPE.DESIGNATE_START,
+        type: ACTION_TYPE.DESIGNATE_START as const,
         x,
         y,
         z,
@@ -17,7 +18,7 @@ export function setDesignateStart(x: number, y: number, z: number) {
 
 export function setDigData(tiles: IDiggerState["terrainTiles"]) {
     return {
-        type: ACTION_TYPE.DESIGNATE_SET_TILES,
+        type: ACTION_TYPE.DESIGNATE_SET_TILES as const,
         tiles,
     };
 }
@@ -114,9 +115,9 @@ export function submitDesignating() {
 
 export function startDesignatingGrid(gridX: number, gridY: number) {
     return (dispatch: typeof store.dispatch, getState: typeof store.getState) => {
-        const state = getState();
+        const state = FlatGetState({}, getState);
         const [x, y] = getMapCoord(gridX, gridY, state);
-        dispatch(setDesignateStart(x, y, state.camera.cameraZ));
+        dispatch(setDesignateStart(x, y, state.cameraZ));
     };
 }
 

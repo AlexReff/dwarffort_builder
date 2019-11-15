@@ -6,7 +6,7 @@
     "dependencies": {
         "immer": "^4.0.1",
         "open-simplex-noise": "^1.6.0",
-        "preact": "^10.0.1",
+        "preact": "^10.0.5",
         "react-redux": "^7.1.1",
         "redux": "^4.0.4",
         "redux-thunk": "^2.3.0"
@@ -17,6 +17,7 @@
         "@babel/plugin-proposal-class-properties": "^7.5.5",
         "@babel/polyfill": "^7.6.0",
         "@babel/preset-env": "^7.6.3",
+        "@types/react-redux": "^7.1.5",
         "awesome-typescript-loader": "^5.2.1",
         "babel-loader": "^8.0.6",
         "copy-webpack-plugin": "^5.0.4",
@@ -26,7 +27,7 @@
         "node-sass": "^4.12.0",
         "sass-loader": "^7.3.1",
         "style-loader": "^0.23.1",
-        "typescript": "^3.6.4",
+        "typescript": "^3.7.2",
         "webpack": "^4.41.2",
         "webpack-bundle-analyzer": "^3.5.2",
         "webpack-cli": "^3.3.9",

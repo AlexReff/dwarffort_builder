@@ -18,6 +18,6 @@ export const MENU_W: number = Number(styles.menuWidth);
 export const HEADER_H: number = Number(styles.headerHeight);
 
 // Tile Data
-export const TILE_W = styles.tileWidth;
-export const TILE_H = styles.tileHeight;
-export const TILE_URL = "/assets/Phoebus_cleaned.png";
+export const TILE_W = +styles.tileWidth;
+export const TILE_H = +styles.tileHeight;
+export const TILE_URL = "/assets/Phoebus_cleaned.png" as const;

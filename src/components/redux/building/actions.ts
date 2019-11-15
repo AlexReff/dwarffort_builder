@@ -1,8 +1,8 @@
 import produce from "immer";
-import { ACTION_TYPE, IBuildingState, IInspectState, ReduxState } from "../";
+import { ACTION_TYPE, IBuildingState, IInspectState, store } from "../";
 import { BUILDING_KEYS, BUILDINGS } from "../../constants";
 import { isBuildingPlaceable, updateWallNeighbors } from "../../util";
-import { store } from "../store";
+import { FlatGetState } from "../helpers";
 
 //#region REDUX ACTIONS
 
@@ -10,9 +10,9 @@ export function setBuildings(
     buildingTiles: IBuildingState["buildingTiles"],
     buildingPositions: IBuildingState["buildingPositions"],
     inspectedBuildings: IInspectState["inspectedBuildings"],
-    ) {
+) {
     return {
-        type: ACTION_TYPE.SET_BUILDINGS,
+        type: ACTION_TYPE.SET_BUILDINGS as const,
         buildingTiles,
         buildingPositions,
         inspectedBuildings,
@@ -21,7 +21,7 @@ export function setBuildings(
 
 export function deleteBuildings(cameraZ: number, targets: string[]) {
     return {
-        type: ACTION_TYPE.DELETE_BUILDINGS,
+        type: ACTION_TYPE.DELETE_BUILDINGS as const,
         cameraZ,
         targets,
     };
@@ -29,28 +29,28 @@ export function deleteBuildings(cameraZ: number, targets: string[]) {
 
 export function increasePlaceBuildWidth(count: number = 1) {
     return {
-        type: ACTION_TYPE.PLACEBUILD_WIDTH_INCREASE,
+        type: ACTION_TYPE.PLACEBUILD_WIDTH_INCREASE as const,
         count,
     };
 }
 
 export function increasePlaceBuildHeight(count: number = 1) {
     return {
-        type: ACTION_TYPE.PLACEBUILD_HEIGHT_INCREASE,
+        type: ACTION_TYPE.PLACEBUILD_HEIGHT_INCREASE as const,
         count,
     };
 }
 
 export function decreasePlaceBuildWidth(count: number = 1) {
     return {
-        type: ACTION_TYPE.PLACEBUILD_WIDTH_DECREASE,
+        type: ACTION_TYPE.PLACEBUILD_WIDTH_DECREASE as const,
         count,
     };
 }
 
 export function decreasePlaceBuildHeight(count: number = 1) {
     return {
-        type: ACTION_TYPE.PLACEBUILD_HEIGHT_DECREASE,
+        type: ACTION_TYPE.PLACEBUILD_HEIGHT_DECREASE as const,
         count,
     };
 }
@@ -60,22 +60,22 @@ export function decreasePlaceBuildHeight(count: number = 1) {
 
 export function placeCursorBuilding(mapX?: number, mapY?: number) {
     return (dispatch: typeof store.dispatch, getState: typeof store.getState) => {
-        const state = getState();
-        if (!(state.menu.currentMenuItem in BUILDINGS.ITEMS)) {
+        const state = FlatGetState({}, getState);
+        if (!(state.currentMenuItem in BUILDINGS.ITEMS)) {
             return;
         }
 
-        const buildingTiles = state.building.buildingTiles;
-        const buildingPositions = state.building.buildingPositions;
-        const cameraZ = state.camera.cameraZ;
-        const radius = state.cursor.cursorRadius;
+        const buildingTiles = state.buildingTiles;
+        const buildingPositions = state.buildingPositions;
+        const cameraZ = state.cameraZ;
+        const radius = state.cursorRadius;
         const buildingSize = 1 + (radius * 2);
-        const targetX = mapX || state.cursor.cursorX;
-        const targetY = mapY || state.cursor.cursorY;
+        const targetX = mapX || state.cursorX;
+        const targetY = mapY || state.cursorY;
         const startX = targetX - radius;
         const startY = targetY - radius;
-        const endX = targetX + radius + (buildingSize * (state.building.buildPlaceWidth - 1));
-        const endY = targetY + radius + (buildingSize * (state.building.buildPlaceHeight - 1));
+        const endX = targetX + radius + (buildingSize * (state.buildPlaceWidth - 1));
+        const endY = targetY + radius + (buildingSize * (state.buildPlaceHeight - 1));
 
         let newPositions = {};
         if (cameraZ in buildingPositions) {
@@ -101,8 +101,8 @@ export function placeCursorBuilding(mapX?: number, mapY?: number) {
             if (!(cameraZ in draft)) {
                 draft[cameraZ] = {};
             }
-            for (let x = 0; x < state.building.buildPlaceWidth; x++) {
-                for (let y = 0; y < state.building.buildPlaceHeight; y++) {
+            for (let x = 0; x < state.buildPlaceWidth; x++) {
+                for (let y = 0; y < state.buildPlaceHeight; y++) {
                     const centerX = startX + (x * buildingSize) + radius;
                     const centerY = startY + (y * buildingSize) + radius;
                     const centerKey = `${centerX}:${centerY}`;
@@ -110,7 +110,7 @@ export function placeCursorBuilding(mapX?: number, mapY?: number) {
                         posX: centerX,
                         posY: centerY,
                         posZ: cameraZ,
-                        key: state.menu.currentMenuItem as BUILDING_KEYS,
+                        key: state.currentMenuItem as BUILDING_KEYS,
                     };
                 }
             }

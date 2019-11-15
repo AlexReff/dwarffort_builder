@@ -1,5 +1,4 @@
-import { ACTION_TYPE } from "../store";
-import { AnyAction } from "redux";
+import { ACTION_TYPE, NON_THUNK_ACTIONS } from "../";
 
 export interface ICursorState {
     cursorX: number;
@@ -13,7 +12,7 @@ const initialState: ICursorState = {
     cursorRadius: 0,
 };
 
-export default (state = initialState, action: AnyAction) => {
+export default (state = initialState, action: NON_THUNK_ACTIONS) => {
     switch (action.type) {
         case ACTION_TYPE.INITIALIZE: {
             state.cursorX = action.cursorX;

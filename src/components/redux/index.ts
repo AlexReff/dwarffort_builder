@@ -1,13 +1,26 @@
 
 export {
     store,
+    ALL_REDUCERS,
+    ReduxState,
+    initialStoreState,
+} from "./store";
+
+export {
+    ACTION_TYPE,
+    NON_THUNK_ACTIONS,
+} from "./actions";
+
+export {
     FlatGetState,
     FlatReduxState,
-    ReduxState,
-    ACTION_TYPE,
+    combineReducersImmer,
     mapStateToProps,
-    mapDispatchToProps,
-} from "./store";
+    useSelectors,
+    ReduxPropsType,
+    useThunkDispatch,
+    ExtractActionTypes,
+} from "./helpers";
 
 export {
     GameComponent,
@@ -81,7 +94,7 @@ export {
     inspectGridRange,
     inspectMapPos,
     moveInspectedBuildings,
-    removeInspectBuilding,
+    removeInspectBuildings,
     setInspectBuildings,
     toggleInspectBuilding,
 } from "./inspect/actions";
@@ -103,7 +116,6 @@ export {
 export {
     Initialize,
     toggleAnimation,
-    toggleDebugMode,
 } from "./settings/actions";
 
 export {

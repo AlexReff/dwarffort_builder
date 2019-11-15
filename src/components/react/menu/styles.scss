@@ -89,48 +89,51 @@
         padding-bottom: 5px;
     }
 
-    .entry_options {
-        display: flex;
-        flex-direction: column;
-        margin-left: 14px;
+    .entry_title,
+    .entry_child {
+        display: grid;
+        grid-template-columns: 1fr auto auto;
+    }
 
-        ul {
-            margin: 0;
-            padding-left: 10px;
+    .entry_name,
+    .entry_delete,
+    .entry_select_all {
+        display: inline-block;
+        padding: 4px 8px;
+    }
+
+    .entry_delete {
+        color: #AD0000;
+
+        &:hover {
+            color: lighten(#AD0000, 15%);
+        }
+    }
+
+    .entry_name {
+        position: relative;
+        color: #fff;
+        text-decoration: none;
+        margin-left: 12px;
+
+        &:hover {
+            text-decoration: underline;
+        }
+
+        &.has_multi {
+            &:before {
+                content: "+";
+                position: absolute;
+                left: -5px;
+                top: 50%;
+                transform: translateY(-50%);
+                line-height: 0;
+            }
         }
     }
 
     .entry {
         font-size: 13px;
-
-        .entry_name {
-            color: #fff;
-            padding: 4px 8px;
-            text-decoration: none;
-            display: inline-block;
-            margin-left: 12px;
-
-            &:hover {
-                text-decoration: underline;
-            }
-        }
-
-        .entry_title {
-            .entry_name {
-                position: relative;
-
-                &.has_multi {
-                    &:before {
-                        content: "+";
-                        position: absolute;
-                        left: -5px;
-                        top: 50%;
-                        transform: translateY(-50%);
-                        line-height: 0;
-                    }
-                }
-            }
-        }
 
         .entry_singles {
             max-height: 0;
@@ -154,10 +157,6 @@
             }
         }
     }
-}
-
-.menu-status {
-    //
 }
 
 .menu-bottom {

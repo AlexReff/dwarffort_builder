@@ -44,7 +44,6 @@ export class ReduxVariables implements FlatReduxState {
     currentMenuItem: IMenuState["currentMenuItem"];
     //settings
     animationFlag: ISettingsState["animationFlag"];
-    debugMode: ISettingsState["debugMode"];
 }
 
 export abstract class GameComponent extends ReduxVariables {
@@ -77,3 +76,20 @@ export abstract class GameComponent extends ReduxVariables {
         }
     }
 }
+
+/*
+export class ExampleComponent extends GameComponent {
+    constructor() {
+        super();
+        this.init();
+    }
+
+    dataLoaded = () => {
+        //perform actions on initial data load
+    }
+
+    storeUpdated = () => {
+        //perform actions after every update
+    }
+}
+*/

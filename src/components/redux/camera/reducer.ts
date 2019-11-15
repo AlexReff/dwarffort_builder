@@ -1,6 +1,5 @@
-import { AnyAction } from "redux";
+import { ACTION_TYPE, NON_THUNK_ACTIONS } from "../";
 import { IRenderTile } from "../../constants";
-import { ACTION_TYPE } from "../store";
 
 export interface ICameraState {
     gridHeight: number;
@@ -26,7 +25,7 @@ const initialState: ICameraState = {
     gridBounds: null,
 };
 
-export default (state: ICameraState = initialState, action: AnyAction) => {
+export default (state: ICameraState = initialState, action: NON_THUNK_ACTIONS) => {
     switch (action.type) {
         case ACTION_TYPE.INITIALIZE: {
             state.gridHeight = action.gridHeight;

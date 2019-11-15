@@ -1,5 +1,4 @@
-import { AnyAction } from "redux";
-import { ACTION_TYPE } from "../store";
+import { ACTION_TYPE, NON_THUNK_ACTIONS } from "../";
 
 export interface IInspectState {
     inspectedBuildings: string[];
@@ -11,7 +10,7 @@ const initialState: IInspectState = {
     highlightedBuildings: [],
 };
 
-export default (state = initialState, action: AnyAction) => {
+export default (state = initialState, action: NON_THUNK_ACTIONS) => {
     switch (action.type) {
         case ACTION_TYPE.SET_MENU: {
             state.inspectedBuildings = [];
@@ -30,11 +29,8 @@ export default (state = initialState, action: AnyAction) => {
             state.inspectedBuildings.concat(action.items);
             break;
         }
-        case ACTION_TYPE.REMOVE_INSPECT_BUILDING: {
-            const idx = state.inspectedBuildings.indexOf(action.item);
-            if (idx >= 0) {
-                state.inspectedBuildings.splice(idx, 1);
-            }
+        case ACTION_TYPE.REMOVE_INSPECT_BUILDINGS: {
+            state.inspectedBuildings = state.inspectedBuildings.filter((m) => !action.items.some((n: string) => n === m));
             break;
         }
         case ACTION_TYPE.SET_ZLEVEL: {

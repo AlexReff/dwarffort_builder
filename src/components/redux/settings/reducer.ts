@@ -1,24 +1,17 @@
-import { AnyAction } from "redux";
-import { ACTION_TYPE } from "../store";
+import { ACTION_TYPE, NON_THUNK_ACTIONS } from "../";
 
 export interface ISettingsState {
     animationFlag: boolean;
-    debugMode: boolean;
 }
 
 const initialState: ISettingsState = {
     animationFlag: false,
-    debugMode: false,
 };
 
-export default (state = initialState, action: AnyAction) => {
+export default (state = initialState, action: NON_THUNK_ACTIONS) => {
     switch (action.type) {
         case ACTION_TYPE.ANIMATION_TOGGLE: {
             state.animationFlag = !state.animationFlag;
-            break;
-        }
-        case ACTION_TYPE.DEBUG_TOGGLE: {
-            state.debugMode = !state.debugMode;
             break;
         }
     }

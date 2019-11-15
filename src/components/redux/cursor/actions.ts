@@ -1,13 +1,13 @@
+import { ACTION_TYPE, store } from "../";
 import { DIRECTION } from "../../constants";
 import { setCameraPos } from "../camera/actions";
-import { ACTION_TYPE, ReduxState, store } from "../store";
 
 //#region REDUX ACTIONS
 
 /** DO NOT CALL DIRECTLY -- USE 'moveCursorToPos' INSTEAD */
 export function setCursorPos(cursorX: number, cursorY: number) {
     return {
-        type: ACTION_TYPE.SET_CURSOR_POS,
+        type: ACTION_TYPE.SET_CURSOR_POS as const,
         cursorX,
         cursorY,
     };
